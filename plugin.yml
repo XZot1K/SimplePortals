@@ -1,0 +1,55 @@
+name: SimplePortals
+version: 1.0
+main: xzot1k.plugins.sp.SimplePortals
+author: XZot1K
+description: A simple yet effective way to create portals for your server!
+softdepend: [Multiverse, MultiWorld]
+commands:
+  simpleportals:
+    default: op
+    aliases: [portals, portal]
+permissions:
+  simpleportals.admin:
+    default: op
+    description: Gives the player permission to everything in the plugin.
+    children:
+      simpleportals.showregion: true
+      simpleportals.setlocation: true
+      simpleportals.info: true
+      simpleportals.reload: true
+      simpleportals.create: true
+      simpleportals.delete: true
+      simpleportals.list: true
+      simpleportals.switchserver: true
+      simpleportals.selectionmode: true
+      simpleportals.portals.*: true
+  simpleportals.showregion:
+    default: op
+    description: Allows the player to view a portal's region
+  simpleportals.setlocation:
+    default: op
+    description: Allows the player to set a portal's teleport location.
+  simpleportals.info:
+    default: op
+    description: Allows the player to view the plugin's information.
+  simpleportals.reload:
+    default: op
+    description: Allows the player to reload the configuration files.
+  simpleportals.create:
+    default: op
+    description: Allows the player to create a portal.
+  simpleportals.delete:
+    default: op
+    description: Allows the player to delete a portal.
+  simpleportals.list:
+    default: op
+    description: Allows the player to list all portals.
+  simpleportals.switchserver:
+    default: op
+    description: Allows the player to change the server a portal can teleport a player to using BungeeCord.
+  simpleportals.selectionmode:
+    default: op
+    description: Allows the player to enter/exit selection mode.
+  simpleportals.portals.*:
+    default: op
+    description: Allows the player to use all portals.
