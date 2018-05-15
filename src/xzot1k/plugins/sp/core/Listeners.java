@@ -6,6 +6,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import xzot1k.plugins.sp.SimplePortals;
 import xzot1k.plugins.sp.api.enums.PointType;
 import xzot1k.plugins.sp.api.objects.Portal;
@@ -29,7 +30,7 @@ public class Listeners implements Listener
             e.setCancelled(true);
             if (pluginInstance.getManager().updateCurrentSelection(e.getPlayer(), e.getClickedBlock().getLocation(), PointType.POINT_ONE))
             {
-                pluginInstance.getManager().highlightBlock(e.getClickedBlock(), e.getPlayer());
+                pluginInstance.getManager().highlightBlock(e.getClickedBlock(), e.getPlayer(), PointType.POINT_ONE);
                 e.getPlayer().sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
                         + pluginInstance.getConfig().getString("point-1-set-message")));
             }
@@ -39,9 +40,17 @@ public class Listeners implements Listener
                 && pluginInstance.getManager().isInSelectionMode(e.getPlayer()))
         {
             e.setCancelled(true);
+
+            if (pluginInstance.getManager().getServerVersion().equalsIgnoreCase("v1_12_R1")
+                    || pluginInstance.getManager().getServerVersion().equalsIgnoreCase("v1_11_R1")
+                    || pluginInstance.getManager().getServerVersion().equalsIgnoreCase("v1_10_R1")
+                    || pluginInstance.getManager().getServerVersion().equalsIgnoreCase("v1_9_R2")
+                    || pluginInstance.getManager().getServerVersion().equalsIgnoreCase("v1_9_R1"))
+                if (e.getHand() != EquipmentSlot.HAND) return;
+
             if (pluginInstance.getManager().updateCurrentSelection(e.getPlayer(), e.getClickedBlock().getLocation(), PointType.POINT_TWO))
             {
-                pluginInstance.getManager().highlightBlock(e.getClickedBlock(), e.getPlayer());
+                pluginInstance.getManager().highlightBlock(e.getClickedBlock(), e.getPlayer(), PointType.POINT_TWO);
                 e.getPlayer().sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
                         + pluginInstance.getConfig().getString("point-2-set-message")));
             }

@@ -8,7 +8,9 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import xzot1k.plugins.sp.SimplePortals;
+import xzot1k.plugins.sp.core.objects.TaskHolder;
 
 import java.io.File;
 
@@ -126,7 +128,7 @@ public class Portal
         String particleEffect = pluginInstance.getConfig().getString("region-visual-effect")
                 .toUpperCase().replace(" ", "_").replace("-", "_");
 
-        new BukkitRunnable()
+        BukkitTask bukkitTask = new BukkitRunnable()
         {
             Location point1 = getRegion().getPoint1().clone(), point2 = getRegion().getPoint2().clone();
             int duration = pluginInstance.getConfig().getInt("region-visual-duration");
@@ -273,6 +275,22 @@ public class Portal
                 lifetime += 0.25;
             }
         }.runTaskTimer(pluginInstance, 0, 5);
+
+        if (!pluginInstance.getManager().getVisualTasks().isEmpty() && pluginInstance.getManager().getVisualTasks().containsKey(player.getUniqueId()))
+        {
+            TaskHolder taskHolder = pluginInstance.getManager().getVisualTasks().get(player.getUniqueId());
+            if (taskHolder != null)
+            {
+                if (taskHolder.getSelectionPointOne() != null) taskHolder.getSelectionPointOne().cancel();
+                if (taskHolder.getSelectionPointTwo() != null) taskHolder.getSelectionPointTwo().cancel();
+                taskHolder.setRegionDisplay(bukkitTask);
+                return;
+            }
+        }
+
+        TaskHolder taskHolder = new TaskHolder(pluginInstance);
+        taskHolder.setRegionDisplay(bukkitTask);
+        pluginInstance.getManager().getVisualTasks().put(player.getUniqueId(), taskHolder);
     }
 
     public Region getRegion()

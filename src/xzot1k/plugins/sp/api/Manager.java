@@ -9,11 +9,14 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Horse;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import xzot1k.plugins.sp.SimplePortals;
 import xzot1k.plugins.sp.api.enums.PointType;
 import xzot1k.plugins.sp.api.objects.Portal;
 import xzot1k.plugins.sp.api.objects.Region;
+import xzot1k.plugins.sp.core.objects.TaskHolder;
 import xzot1k.plugins.sp.core.packets.particles.ParticleHandler;
 import xzot1k.plugins.sp.core.packets.particles.versions.*;
 
@@ -27,13 +30,13 @@ import java.util.UUID;
 
 public class Manager
 {
-
     private String serverVersion;
     private SimplePortals pluginInstance;
     private HashMap<UUID, Region> currentSelections;
     private HashMap<UUID, Boolean> selectionMode;
     private HashMap<UUID, Long> playerPortalCooldowns;
     private List<Portal> portals;
+    private HashMap<UUID, TaskHolder> visualTasks;
 
     private ParticleHandler particleHandler;
 
@@ -43,6 +46,7 @@ public class Manager
         currentSelections = new HashMap<>();
         selectionMode = new HashMap<>();
         playerPortalCooldowns = new HashMap<>();
+        visualTasks = new HashMap<>();
         portals = new ArrayList<>();
 
         serverVersion = pluginInstance.getServer().getClass().getPackage().getName()
@@ -285,14 +289,14 @@ public class Manager
         }
     }
 
-    public void highlightBlock(Block block, Player player)
+    public void highlightBlock(Block block, Player player, PointType pointType)
     {
         if (particleHandler == null) return;
 
         String particleEffect = pluginInstance.getConfig().getString("selection-visual-effect")
                 .toUpperCase().replace(" ", "_").replace("-", "_");
 
-        new BukkitRunnable()
+        BukkitTask bukkitTask = new BukkitRunnable()
         {
             int duration = pluginInstance.getConfig().getInt("selection-visual-duration");
             double lifetime = 0;
@@ -329,6 +333,24 @@ public class Manager
                 lifetime += 0.25;
             }
         }.runTaskTimer(pluginInstance, 0, 5);
+
+
+        if (!getVisualTasks().isEmpty() && getVisualTasks().containsKey(player.getUniqueId()))
+        {
+            TaskHolder taskHolder = getVisualTasks().get(player.getUniqueId());
+            if (taskHolder != null)
+            {
+                if (taskHolder.getRegionDisplay() != null) taskHolder.getRegionDisplay().cancel();
+                if (pointType == PointType.POINT_ONE) taskHolder.setSelectionPointOne(bukkitTask);
+                else taskHolder.setSelectionPointTwo(bukkitTask);
+                return;
+            }
+        }
+
+        TaskHolder taskHolder = new TaskHolder(pluginInstance);
+        if (pointType == PointType.POINT_ONE) taskHolder.setSelectionPointOne(bukkitTask);
+        else taskHolder.setSelectionPointTwo(bukkitTask);
+        getVisualTasks().put(player.getUniqueId(), taskHolder);
     }
 
     public void loadPortals()
@@ -387,6 +409,16 @@ public class Manager
         }
     }
 
+    @SuppressWarnings("deprecation")
+    public ItemStack getHandItem(Player player)
+    {
+        if (getServerVersion().equalsIgnoreCase("v1_12_R1") || getServerVersion().equalsIgnoreCase("v1_11_R1")
+                || getServerVersion().equalsIgnoreCase("v1_10_R1") || getServerVersion().equalsIgnoreCase("v1_9_R2")
+                || getServerVersion().equalsIgnoreCase("v1_9_R1"))
+            return player.getInventory().getItemInMainHand();
+        return player.getItemInHand();
+    }
+
     private HashMap<UUID, Region> getCurrentSelections()
     {
         return currentSelections;
@@ -412,4 +444,13 @@ public class Manager
         return particleHandler;
     }
 
+    public HashMap<UUID, TaskHolder> getVisualTasks()
+    {
+        return visualTasks;
+    }
+
+    public String getServerVersion()
+    {
+        return serverVersion;
+    }
 }
