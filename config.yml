@@ -43,10 +43,6 @@ region-filled-message: "&aThe portal &e{name}'s &aregion has been filled with &e
 # running these tasks in seconds. (Note: setting this value to -1 will disable the general task entirely.)
 general-task-duration: 300
 
-# If enabled, all portals will be filled with a animated particle that repeats if there is a player in range.
-portal-Animation: true
-portal-update-range: 15
-
 # Should players have a cooldown for portal usage?
 use-portal-cooldown: true
 # How long should the player have to wait in between portal usages in seconds?
