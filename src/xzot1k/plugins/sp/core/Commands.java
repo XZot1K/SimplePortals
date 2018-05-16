@@ -1,5 +1,7 @@
 package xzot1k.plugins.sp.core;
 
+import org.apache.commons.lang.WordUtils;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -66,6 +68,10 @@ public class Commands implements CommandExecutor
                     {
                         initiatePortalRegion(sender, args[1]);
                         return true;
+                    } else if (args[0].equalsIgnoreCase("relocate") || args[0].equalsIgnoreCase("rl"))
+                    {
+                        initiateRelocate(sender, args[1]);
+                        return true;
                     }
 
                     break;
@@ -74,6 +80,10 @@ public class Commands implements CommandExecutor
                     {
                         initiateSwitchServerSet(sender, args[1], args[2]);
                         return true;
+                    } else if (args[0].equalsIgnoreCase("fill"))
+                    {
+                        initiateFill(sender, args[1], args[2]);
+                        return true;
                     }
 
                     break;
@@ -81,12 +91,106 @@ public class Commands implements CommandExecutor
                     break;
             }
 
-            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
-                    + pluginInstance.getConfig().getString("usage-message")));
+            List<String> usageMessageList = pluginInstance.getConfig().getStringList("usage-message");
+            for (int i = -1; ++i < usageMessageList.size(); )
+                sender.sendMessage(pluginInstance.getManager().colorText(usageMessageList.get(i)));
             return true;
         }
 
         return false;
+    }
+
+    private void initiateFill(CommandSender sender, String portalName, String materialString)
+    {
+        if (sender instanceof Player)
+        {
+            Player player = (Player) sender;
+            if (!player.hasPermission("simpleportals.fill"))
+            {
+                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
+                        + pluginInstance.getConfig().getString("no-permission-message")));
+                return;
+            }
+
+            Portal portal = pluginInstance.getManager().getPortalById(portalName);
+            if (portal != null)
+            {
+                Material material;
+                int durability = 0;
+
+                if (materialString.contains(":"))
+                {
+                    String[] materialStringArgs = materialString.split(":");
+
+                    try
+                    {
+                        material = Material.getMaterial(materialStringArgs[0].toUpperCase().replace(" ", "_").replace("-", "_"));
+                        durability = Integer.parseInt(materialStringArgs[1]);
+                    } catch (Exception e)
+                    {
+                        e.printStackTrace();
+                        pluginInstance.getManager().sendConsoleMessage("&cThere seems to have been a issue with the material argument " +
+                                "you entered. Be sure if a colon is used to follow it by a integer.");
+                        return;
+                    }
+                } else
+                {
+                    try
+                    {
+                        material = Material.getMaterial(materialString.toUpperCase().replace(" ", "_").replace("-", "_"));
+                    } catch (Exception e)
+                    {
+                        e.printStackTrace();
+                        pluginInstance.getManager().sendConsoleMessage("&cThere seems to have been a issue with the material argument you entered.");
+                        return;
+                    }
+                }
+
+                Region region = portal.getRegion();
+                region.setAirBlocks(material, durability);
+                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
+                        + pluginInstance.getConfig().getString("region-filled-message")
+                        .replace("{material}", WordUtils.capitalize(material.name()) + ":" + String.valueOf(durability))
+                        .replace("{name}", portal.getPortalId())));
+            } else
+                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
+                        + pluginInstance.getConfig().getString("portal-invalid-message").replace("{name}", portalName)));
+        } else sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
+                + pluginInstance.getConfig().getString("must-be-player-message")));
+    }
+
+    private void initiateRelocate(CommandSender sender, String portalName)
+    {
+        if (sender instanceof Player)
+        {
+            Player player = (Player) sender;
+            if (!player.hasPermission("simpleportals.relocate") || !player.hasPermission("simpleportals.rl"))
+            {
+                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
+                        + pluginInstance.getConfig().getString("no-permission-message")));
+                return;
+            }
+
+            Region region = pluginInstance.getManager().getCurrentSelection(player);
+            if (region == null || region.getPoint1() == null || region.getPoint2() == null)
+            {
+                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
+                        + pluginInstance.getConfig().getString("selected-region-invalid-message")));
+                return;
+            }
+
+            Portal portal = pluginInstance.getManager().getPortalById(portalName);
+            if (portal != null)
+            {
+                portal.setRegion(region);
+                pluginInstance.getManager().clearCurrentSelection(player);
+                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
+                        + pluginInstance.getConfig().getString("region-relocated-message").replace("{name}", portal.getPortalId())));
+            } else
+                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
+                        + pluginInstance.getConfig().getString("portal-invalid-message").replace("{name}", portalName)));
+        } else sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
+                + pluginInstance.getConfig().getString("must-be-player-message")));
     }
 
     private void initiatePortalRegion(CommandSender sender, String portalName)
@@ -221,6 +325,10 @@ public class Commands implements CommandExecutor
         Portal portal = pluginInstance.getManager().getPortalById(portalName);
         if (portal != null)
         {
+            if (sender instanceof Player) pluginInstance.getManager().clearAllVisuals((Player) sender);
+            Region region = portal.getRegion();
+            region.revertFilledBlocks();
+
             portal.delete();
             portal.unregister();
             sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
@@ -276,6 +384,7 @@ public class Commands implements CommandExecutor
             Portal newPortal = new Portal(pluginInstance, portalName, region);
             newPortal.register();
             newPortal.displayRegion(player);
+            pluginInstance.getManager().clearCurrentSelection(player);
             player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
                     + pluginInstance.getConfig().getString("portal-created-message")
                     .replace("{name}", newPortal.getPortalId())));

@@ -1,5 +1,5 @@
 name: SimplePortals
-version: 1.0
+version: 1.1
 main: xzot1k.plugins.sp.SimplePortals
 author: XZot1K
 description: A simple yet effective way to create portals for your server!
@@ -25,7 +25,7 @@ permissions:
       simpleportals.portals.*: true
   simpleportals.showregion:
     default: op
-    description: Allows the player to view a portal's region
+    description: Allows the player to view a portal's region.
   simpleportals.setlocation:
     default: op
     description: Allows the player to set a portal's teleport location.

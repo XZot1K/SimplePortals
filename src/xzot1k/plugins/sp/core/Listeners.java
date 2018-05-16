@@ -1,9 +1,11 @@
 package xzot1k.plugins.sp.core;
 
+import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -19,6 +21,17 @@ public class Listeners implements Listener
     public Listeners(SimplePortals pluginInstance)
     {
         this.pluginInstance = pluginInstance;
+    }
+
+    @EventHandler
+    public void onBlockFromTo(BlockFromToEvent e)
+    {
+        if (e.getBlock().getType() == Material.WATER || e.getBlock().getType() == Material.STATIONARY_WATER
+                || e.getBlock().getType() == Material.LAVA || e.getBlock().getType() == Material.STATIONARY_LAVA)
+        {
+            Portal portal = pluginInstance.getManager().getPortalAtLocation(e.getBlock().getLocation());
+            if (portal != null) e.setCancelled(true);
+        }
     }
 
     @EventHandler

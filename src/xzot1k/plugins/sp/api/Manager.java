@@ -174,6 +174,11 @@ public class Manager
         return null;
     }
 
+    public void clearCurrentSelection(Player player)
+    {
+        if (!getCurrentSelections().isEmpty()) getCurrentSelections().remove(player.getUniqueId());
+    }
+
     public void setSelectionMode(Player player, boolean selectionMode)
     {
         getSelectionMode().put(player.getUniqueId(), selectionMode);
@@ -391,6 +396,17 @@ public class Manager
         }
     }
 
+    public void clearAllVisuals(Player player)
+    {
+        if (!getVisualTasks().isEmpty() && getVisualTasks().containsKey(player.getUniqueId()))
+        {
+            TaskHolder taskHolder = getVisualTasks().get(player.getUniqueId());
+            if (taskHolder.getRegionDisplay() != null) taskHolder.getRegionDisplay().cancel();
+            if (taskHolder.getSelectionPointOne() != null) taskHolder.getSelectionPointOne().cancel();
+            if (taskHolder.getSelectionPointTwo() != null) taskHolder.getSelectionPointTwo().cancel();
+        }
+    }
+
     public boolean switchServer(Player player, String serverName)
     {
         try
@@ -405,18 +421,9 @@ public class Manager
         } catch (Exception ex)
         {
             ex.printStackTrace();
+            sendConsoleMessage("&cThere seems to have been a issue when switching the player to the &e" + serverName + " &cserver.");
             return false;
         }
-    }
-
-    @SuppressWarnings("deprecation")
-    public ItemStack getHandItem(Player player)
-    {
-        if (getServerVersion().equalsIgnoreCase("v1_12_R1") || getServerVersion().equalsIgnoreCase("v1_11_R1")
-                || getServerVersion().equalsIgnoreCase("v1_10_R1") || getServerVersion().equalsIgnoreCase("v1_9_R2")
-                || getServerVersion().equalsIgnoreCase("v1_9_R1"))
-            return player.getInventory().getItemInMainHand();
-        return player.getItemInHand();
     }
 
     private HashMap<UUID, Region> getCurrentSelections()
@@ -453,4 +460,5 @@ public class Manager
     {
         return serverVersion;
     }
+
 }

@@ -109,7 +109,7 @@ public class Portal
 
     public void performAction(Player player)
     {
-        if (getServerSwitchName() == null || !getServerSwitchName().equalsIgnoreCase("none"))
+        if (getServerSwitchName() == null || getServerSwitchName().equalsIgnoreCase("none"))
             pluginInstance.getManager().teleportPlayerWithEntity(player, getTeleportLocation());
         else pluginInstance.getManager().switchServer(player, getServerSwitchName());
 

@@ -1,9 +1,25 @@
 # NOTE: the permission "simpleportals.portal.*" and "simpleportals.portal.<name>" allows players to use specific or all portals.
 
+usage-message:
+- "&e&m---------------&r&d[ &bSimple Portals &d]&e&m-------------------"
+- ""
+- "&e/portals selectionmode or /portals sm &7- toggles selection mode."
+- "&e/portals reload &7- reloads the configurartion files."
+- "&e/portals switchserver <server> or /portals ss <name> <server> &7- sets the server for the portal."
+- "&e/portals showregion <name> or /portals sr <name> &7- shows the portal's current region."
+- "&e/portals setlocation <name> or /portals sl <name> &7- sets the portal's teleport location."
+- "&e/portals info &7- shows plugin information."
+- "&e/portals create <name> &7- creates a new portal."
+- "&e/portals delete <name> &7- deletes the given portal."
+- "&e/portals list &7- shows all available portals."
+- "&e/portals fill <name> <material:durability> &7- replaces air inside the portals region."
+- "&e/portals relocate <name> &7- relocates the portal to a selected region."
+- ""
+- "&e&m------------------------------------------------"
+
 prefix: "&d[&bSP&d]&r "
 no-permission-message: "&cYou don't have permission to use this."
 must-be-player-message: "&cYou must be a player to use this."
-usage-message: "&c/portal <selectionmode/reload/switchserver/showregion/setlocation/info/create/delete/list/switchserver> <name> <server>"
 portal-location-exists-message: "&cThe portal &e{name} &cexists at this location. Please try somewhere else."
 portal-exists-message: "&cThe portal &e{name} &calready exists."
 selected-region-invalid-message: "&cPlease check your selected region. It seems one of your points or the entire region is invalid."
@@ -20,6 +36,16 @@ location-set-message: "&aThe teleport location for the &e{name} &aportal has bee
 region-displayed-message: "&aThe portal &e{name}'s &aregions has been displayed temporarily!"
 point-1-set-message: "&ePoint 1 &aof your selection region has been set!"
 point-2-set-message: "&ePoint 2 &aof your selection region has been set!"
+region-relocated-message: "&aThe portal &e{name} &ahas been relocated successfully!"
+region-filled-message: "&aThe portal &e{name}'s &aregion has been filled with &e{material} &asuccessfully!"
+
+# The general task handles things like auto-saving and update checking. This value is the delay in between
+# running these tasks in seconds. (Note: setting this value to -1 will disable the general task entirely.)
+general-task-duration: 300
+
+# If enabled, all portals will be filled with a animated particle that repeats if there is a player in range.
+portal-Animation: true
+portal-update-range: 15
 
 # Should players have a cooldown for portal usage?
 use-portal-cooldown: true
