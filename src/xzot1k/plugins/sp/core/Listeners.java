@@ -11,6 +11,8 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import xzot1k.plugins.sp.SimplePortals;
 import xzot1k.plugins.sp.api.enums.PointType;
+import xzot1k.plugins.sp.api.events.PortalActionEvent;
+import xzot1k.plugins.sp.api.events.PortalEnterEvent;
 import xzot1k.plugins.sp.api.objects.Portal;
 
 public class Listeners implements Listener
@@ -79,9 +81,17 @@ public class Listeners implements Listener
             Portal portal = pluginInstance.getManager().getPortalAtLocation(e.getTo());
             if (portal != null)
             {
+                PortalEnterEvent portalEnterEvent = new PortalEnterEvent(e.getPlayer(), portal);
+                pluginInstance.getServer().getPluginManager().callEvent(portalEnterEvent);
+                if (portalEnterEvent.isCancelled()) return;
+
                 if (pluginInstance.getManager().isPlayerOnCooldown(e.getPlayer())) return;
                 if (!e.getPlayer().hasPermission("simpleportals.portal." + portal.getPortalId())
                         || !e.getPlayer().hasPermission("simpleportals.portal.*")) return;
+
+                PortalActionEvent portalActionEvent = new PortalActionEvent(e.getPlayer(), portal, portal.getTeleportLocation());
+                pluginInstance.getServer().getPluginManager().callEvent(portalActionEvent);
+                if (portalActionEvent.isCancelled()) return;
 
                 try
                 {

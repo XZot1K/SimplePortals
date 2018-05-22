@@ -4,49 +4,49 @@ import xzot1k.plugins.sp.SimplePortals;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 
 public class UpdateChecker
 {
 
     private SimplePortals pluginInstance;
+    private int projectId;
+    private URL checkURL;
+    private String newVersion;
 
-    public UpdateChecker(SimplePortals pluginInstance)
+    public UpdateChecker(SimplePortals pluginInstance, int projectId)
     {
         this.pluginInstance = pluginInstance;
-    }
-
-    public boolean isOutdated()
-    {
+        this.newVersion = pluginInstance.getDescription().getVersion();
+        this.projectId = projectId;
         try
         {
-            HttpURLConnection c = (HttpURLConnection) new URL("http://www.spigotmc.org/api/general.php").openConnection();
-            c.setDoOutput(true);
-            c.setRequestMethod("POST");
-            c.getOutputStream().write(("key=98BE0FE67F88AB82B4C197FAF1DC3B69206EFDCC4D3B80FC83A00037510B99B4&resource=56772").getBytes("UTF-8"));
-            String oldversion = pluginInstance.getDescription().getVersion(),
-                    newversion = new BufferedReader(new InputStreamReader(c.getInputStream())).readLine();
-            if (!newversion.equalsIgnoreCase(oldversion)) return true;
-        } catch (Exception ignored)
-        {
-        }
+            this.checkURL = new URL("https://api.spigotmc.org/legacy/update.php?resource=" + projectId);
+        } catch (MalformedURLException ignored) {}
+    }
 
-        return false;
+    public int getProjectId()
+    {
+        return projectId;
     }
 
     public String getLatestVersion()
     {
-        try
-        {
-            HttpURLConnection c = (HttpURLConnection) new URL("http://www.spigotmc.org/api/general.php").openConnection();
-            c.setDoOutput(true);
-            c.setRequestMethod("POST");
-            c.getOutputStream().write(("key=98BE0FE67F88AB82B4C197FAF1DC3B69206EFDCC4D3B80FC83A00037510B99B4&resource=56772").getBytes("UTF-8"));
-            return new BufferedReader(new InputStreamReader(c.getInputStream())).readLine();
-        } catch (Exception ex)
-        {
-            return pluginInstance.getDescription().getVersion();
-        }
+        return newVersion;
     }
+
+    public String getResourceURL()
+    {
+        return "https://www.spigotmc.org/resources/" + projectId;
+    }
+
+    public boolean checkForUpdates() throws Exception
+    {
+        URLConnection con = checkURL.openConnection();
+        this.newVersion = new BufferedReader(new InputStreamReader(con.getInputStream())).readLine();
+        return !pluginInstance.getDescription().getVersion().equals(newVersion);
+    }
+
 }

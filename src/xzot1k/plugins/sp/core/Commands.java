@@ -184,6 +184,7 @@ public class Commands implements CommandExecutor
             {
                 portal.setRegion(region);
                 pluginInstance.getManager().clearCurrentSelection(player);
+                portal.displayRegion(player);
                 player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
                         + pluginInstance.getConfig().getString("region-relocated-message").replace("{name}", portal.getPortalId())));
             } else

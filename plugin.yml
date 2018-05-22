@@ -1,5 +1,5 @@
 name: SimplePortals
-version: 1.1
+version: 1.1.2
 main: xzot1k.plugins.sp.SimplePortals
 author: XZot1K
 description: A simple yet effective way to create portals for your server!

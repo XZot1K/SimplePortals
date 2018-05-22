@@ -19,7 +19,7 @@ public class SimplePortals extends JavaPlugin
     {
         pluginInstance = this;
         manager = new Manager(getPluginInstance());
-        updateChecker = new UpdateChecker(getPluginInstance());
+        updateChecker = new UpdateChecker(getPluginInstance(), 56772);
         saveDefaultConfig();
 
         getCommand("simpleportals").setExecutor(new Commands(getPluginInstance()));
@@ -30,20 +30,30 @@ public class SimplePortals extends JavaPlugin
 
         if (generalTask != null) generalTask.cancel();
 
+        try
+        {
+            try
+            {
+                if (updateChecker.checkForUpdates()) getManager().sendConsoleMessage("&cThe version &e" + getDescription().getVersion()
+                        + " &cis doesn't match the latest version!");
+                else getManager().sendConsoleMessage("&aEverything looks like it is up to date!");
+            } catch (Exception ignored) {}
+        } catch (Exception ignored) {}
+
         int generalTaskDuration = getConfig().getInt("general-task-duration");
         if (!(generalTaskDuration <= -1))
             generalTask = getServer().getScheduler().runTaskTimerAsynchronously(getPluginInstance(), () ->
             {
                 try
                 {
-                    if (updateChecker.isOutdated())
-                        getManager().sendConsoleMessage("&cThe version &c" + getDescription().getVersion() + " &cdoes not match the latest version found on spigot, therefore it may be outdated!");
+                    if (updateChecker.checkForUpdates()) getManager().sendConsoleMessage("&cThe version &e" + getDescription().getVersion()
+                            + " &cis doesn't match the latest version!");
                     else getManager().sendConsoleMessage("&aEverything looks like it is up to date!");
                 } catch (Exception ignored) {}
 
                 getManager().savePortals();
                 getManager().sendConsoleMessage("&aAll portals have been saved!");
-            }, 0, 20 * generalTaskDuration);
+            }, 20 * generalTaskDuration, 20 * generalTaskDuration);
     }
 
     @Override
@@ -51,6 +61,7 @@ public class SimplePortals extends JavaPlugin
     {
         if (generalTask != null) generalTask.cancel();
         getManager().savePortals();
+        getManager().sendConsoleMessage("&aAll portals have been saved!");
         getManager().sendConsoleMessage("&cThe plugin has been disabled.");
     }
 
