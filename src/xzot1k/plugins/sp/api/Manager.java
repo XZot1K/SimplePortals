@@ -60,6 +60,10 @@ public class Manager
         boolean success = false;
         switch (serverVersion)
         {
+            case "v1_13_R1":
+                particleHandler = new PH1_13R1(pluginInstance);
+                success = true;
+                break;
             case "v1_12_R1":
                 particleHandler = new PH1_12R1(pluginInstance);
                 success = true;
