@@ -9,7 +9,6 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Horse;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import xzot1k.plugins.sp.SimplePortals;
@@ -17,6 +16,8 @@ import xzot1k.plugins.sp.api.enums.PointType;
 import xzot1k.plugins.sp.api.objects.Portal;
 import xzot1k.plugins.sp.api.objects.Region;
 import xzot1k.plugins.sp.core.objects.TaskHolder;
+import xzot1k.plugins.sp.core.packets.jsonmsgs.JSONHandler;
+import xzot1k.plugins.sp.core.packets.jsonmsgs.versions.*;
 import xzot1k.plugins.sp.core.packets.particles.ParticleHandler;
 import xzot1k.plugins.sp.core.packets.particles.versions.*;
 
@@ -39,6 +40,7 @@ public class Manager
     private HashMap<UUID, TaskHolder> visualTasks;
 
     private ParticleHandler particleHandler;
+    private JSONHandler jsonHandler;
 
     public Manager(SimplePortals pluginInstance)
     {
@@ -62,38 +64,47 @@ public class Manager
         {
             case "v1_13_R1":
                 particleHandler = new PH1_13R1(pluginInstance);
+                setJSONHandler(new JSONHandler1_13R1());
                 success = true;
                 break;
             case "v1_12_R1":
                 particleHandler = new PH1_12R1(pluginInstance);
+                setJSONHandler(new JSONHandler1_12R1());
                 success = true;
                 break;
             case "v1_11_R1":
                 particleHandler = new PH1_11R1(pluginInstance);
+                setJSONHandler(new JSONHandler1_11R1());
                 success = true;
                 break;
             case "v1_10_R1":
                 particleHandler = new PH1_10R1(pluginInstance);
+                setJSONHandler(new JSONHandler1_10R1());
                 success = true;
                 break;
             case "v1_9_R2":
                 particleHandler = new PH1_9R2(pluginInstance);
+                setJSONHandler(new JSONHandler1_9R2());
                 success = true;
                 break;
             case "v1_9_R1":
                 particleHandler = new PH1_9R1(pluginInstance);
+                setJSONHandler(new JSONHandler1_9R1());
                 success = true;
                 break;
             case "v1_8_R3":
                 particleHandler = new PH1_8R3(pluginInstance);
+                setJSONHandler(new JSONHandler1_8R3());
                 success = true;
                 break;
             case "v1_8_R2":
                 particleHandler = new PH1_8R2(pluginInstance);
+                setJSONHandler(new JSONHandler1_8R2());
                 success = true;
                 break;
             case "v1_8_R1":
                 particleHandler = new PH1_8R1(pluginInstance);
+                setJSONHandler(new JSONHandler1_8R1());
                 success = true;
                 break;
             default:
@@ -384,7 +395,12 @@ public class Manager
                     Region region = new Region(pluginInstance, point1, point2);
 
                     Portal portal = new Portal(pluginInstance, yamlConfiguration.getString("portal-id"), region);
-                    portal.setServerSwitchName(yamlConfiguration.getString("portal-server"));
+                    try
+                    {
+                        portal.setServerSwitchName(yamlConfiguration.getString("portal-server"));
+                        portal.setCommandsOnly(yamlConfiguration.getBoolean("commands-only"));
+                        portal.setCommands(yamlConfiguration.getStringList("commands"));
+                    } catch (Exception ignored) {}
                     portal.register();
                 } catch (Exception e) {e.printStackTrace();}
             }
@@ -465,4 +481,13 @@ public class Manager
         return serverVersion;
     }
 
+    public JSONHandler getJSONHandler()
+    {
+        return jsonHandler;
+    }
+
+    private void setJSONHandler(JSONHandler jsonHandler)
+    {
+        this.jsonHandler = jsonHandler;
+    }
 }

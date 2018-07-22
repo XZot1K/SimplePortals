@@ -32,12 +32,10 @@ public class SimplePortals extends JavaPlugin
 
         try
         {
-            try
-            {
-                if (updateChecker.checkForUpdates()) getManager().sendConsoleMessage("&cThe version &e" + getDescription().getVersion()
+            if (updateChecker.checkForUpdates())
+                getManager().sendConsoleMessage("&cThe version &e" + getDescription().getVersion()
                         + " &cis doesn't match the latest version!");
-                else getManager().sendConsoleMessage("&aEverything looks like it is up to date!");
-            } catch (Exception ignored) {}
+            else getManager().sendConsoleMessage("&aEverything looks like it is up to date!");
         } catch (Exception ignored) {}
 
         int generalTaskDuration = getConfig().getInt("general-task-duration");
@@ -46,8 +44,9 @@ public class SimplePortals extends JavaPlugin
             {
                 try
                 {
-                    if (updateChecker.checkForUpdates()) getManager().sendConsoleMessage("&cThe version &e" + getDescription().getVersion()
-                            + " &cis doesn't match the latest version!");
+                    if (updateChecker.checkForUpdates())
+                        getManager().sendConsoleMessage("&cThe version &e" + getDescription().getVersion()
+                                + " &cis doesn't match the latest version!");
                     else getManager().sendConsoleMessage("&aEverything looks like it is up to date!");
                 } catch (Exception ignored) {}
 

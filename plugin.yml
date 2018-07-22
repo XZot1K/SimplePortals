@@ -24,6 +24,9 @@ permissions:
       simpleportals.switchserver: true
       simpleportals.selectionmode: true
       simpleportals.portals.*: true
+      simpleportals.addcommand: true
+      simpleportals.clearcommands: true
+      simpleportals.togglecommandonly: true
   simpleportals.showregion:
     default: op
     description: Allows the player to view a portal's region.
@@ -54,3 +57,12 @@ permissions:
   simpleportals.portals.*:
     default: op
     description: Allows the player to use all portals.
+  simpleportals.addcommand:
+    default: op
+    desdcription: Allows the player to add a command to a portal.
+  simpleportals.clearcommands:
+    default: op
+    desdcription: Allows the player to clear all commands from a portal.
+  simpleportals.togglecommandonly:
+    default: op
+    description: Allows the player to toggle command only mode for a portal.

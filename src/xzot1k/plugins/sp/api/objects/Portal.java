@@ -13,6 +13,8 @@ import xzot1k.plugins.sp.SimplePortals;
 import xzot1k.plugins.sp.core.objects.TaskHolder;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Portal
 {
@@ -21,12 +23,16 @@ public class Portal
     private Region region;
     private SerializableLocation teleportLocation;
     private String portalId, serverSwitchName;
+    private boolean commandsOnly;
+    private List<String> commands;
 
     public Portal(SimplePortals pluginInstance, String portalId, Region region)
     {
         this.pluginInstance = pluginInstance;
         setRegion(region);
         setPortalId(portalId);
+        setCommands(new ArrayList<>());
+        setCommandsOnly(false);
         if (getRegion() != null && getRegion().getPoint1() != null)
             setTeleportLocation(getRegion().getPoint1().add(0, 2, 0));
     }
@@ -99,12 +105,12 @@ public class Portal
                 yaml.set("teleport-location.pitch", teleportLocation.getPitch());
             }
 
+            yaml.set("commands-only", isCommandsOnly());
+            yaml.set("commands", getCommands());
+
             // save file.
             yaml.save(file);
-        } catch (Exception ignored)
-        {
-            ignored.printStackTrace();
-        }
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     public void performAction(Player player)
@@ -339,5 +345,25 @@ public class Portal
     public void setServerSwitchName(String serverSwitchName)
     {
         this.serverSwitchName = serverSwitchName;
+    }
+
+    public List<String> getCommands()
+    {
+        return commands;
+    }
+
+    public void setCommands(List<String> commands)
+    {
+        this.commands = commands;
+    }
+
+    public boolean isCommandsOnly()
+    {
+        return commandsOnly;
+    }
+
+    public void setCommandsOnly(boolean commandsOnly)
+    {
+        this.commandsOnly = commandsOnly;
     }
 }

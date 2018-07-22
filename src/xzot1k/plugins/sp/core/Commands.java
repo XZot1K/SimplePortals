@@ -1,7 +1,5 @@
 package xzot1k.plugins.sp.core;
 
-import org.apache.commons.lang.WordUtils;
-import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -9,18 +7,26 @@ import org.bukkit.entity.Player;
 import xzot1k.plugins.sp.SimplePortals;
 import xzot1k.plugins.sp.api.objects.Portal;
 import xzot1k.plugins.sp.api.objects.Region;
+import xzot1k.plugins.sp.core.utils.jsonmsgs.JSONClickAction;
+import xzot1k.plugins.sp.core.utils.jsonmsgs.JSONExtra;
+import xzot1k.plugins.sp.core.utils.jsonmsgs.JSONHoverAction;
+import xzot1k.plugins.sp.core.utils.jsonmsgs.JSONMessage;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class Commands implements CommandExecutor
 {
 
     private SimplePortals pluginInstance;
+    private HashMap<Integer, List<String>> helpPageMap;
 
     public Commands(SimplePortals pluginInstance)
     {
         this.pluginInstance = pluginInstance;
+        setHelpPageMap(new HashMap<>());
+        setupHelpPageMap();
     }
 
     @Override
@@ -72,6 +78,18 @@ public class Commands implements CommandExecutor
                     {
                         initiateRelocate(sender, args[1]);
                         return true;
+                    } else if (args[0].equalsIgnoreCase("clearcommands") || args[0].equalsIgnoreCase("clearcmds"))
+                    {
+                        clearCommands(sender, args[1]);
+                        return true;
+                    } else if (args[0].equalsIgnoreCase("togglecommandsonly") || args[0].equalsIgnoreCase("tco"))
+                    {
+                        toggleCommandOnly(sender, args[1]);
+                        return true;
+                    } else if (args[0].equalsIgnoreCase("help"))
+                    {
+                        sendHelpPage(sender, args[1]);
+                        return true;
                     }
 
                     break;
@@ -80,9 +98,9 @@ public class Commands implements CommandExecutor
                     {
                         initiateSwitchServerSet(sender, args[1], args[2]);
                         return true;
-                    } else if (args[0].equalsIgnoreCase("fill"))
+                    } else if (args[0].equalsIgnoreCase("addcommand") || args[0].equalsIgnoreCase("addcmd"))
                     {
-                        initiateFill(sender, args[1], args[2]);
+                        addCommand(sender, args[1], args[2]);
                         return true;
                     }
 
@@ -91,21 +109,19 @@ public class Commands implements CommandExecutor
                     break;
             }
 
-            List<String> usageMessageList = pluginInstance.getConfig().getStringList("usage-message");
-            for (int i = -1; ++i < usageMessageList.size(); )
-                sender.sendMessage(pluginInstance.getManager().colorText(usageMessageList.get(i)));
+            sendHelpPage(sender, "1");
             return true;
         }
 
         return false;
     }
 
-    private void initiateFill(CommandSender sender, String portalName, String materialString)
+    private void addCommand(CommandSender sender, String portalName, String commandString)
     {
         if (sender instanceof Player)
         {
             Player player = (Player) sender;
-            if (!player.hasPermission("simpleportals.fill"))
+            if (!player.hasPermission("simpleportals.addcommand"))
             {
                 player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
                         + pluginInstance.getConfig().getString("no-permission-message")));
@@ -115,42 +131,63 @@ public class Commands implements CommandExecutor
             Portal portal = pluginInstance.getManager().getPortalById(portalName);
             if (portal != null)
             {
-                Material material;
-                int durability = 0;
-
-                if (materialString.contains(":"))
-                {
-                    String[] materialStringArgs = materialString.split(":");
-
-                    try
-                    {
-                        material = Material.getMaterial(materialStringArgs[0].toUpperCase().replace(" ", "_").replace("-", "_"));
-                        durability = Integer.parseInt(materialStringArgs[1]);
-                    } catch (Exception e)
-                    {
-                        e.printStackTrace();
-                        pluginInstance.getManager().sendConsoleMessage("&cThere seems to have been a issue with the material argument " +
-                                "you entered. Be sure if a colon is used to follow it by a integer.");
-                        return;
-                    }
-                } else
-                {
-                    try
-                    {
-                        material = Material.getMaterial(materialString.toUpperCase().replace(" ", "_").replace("-", "_"));
-                    } catch (Exception e)
-                    {
-                        e.printStackTrace();
-                        pluginInstance.getManager().sendConsoleMessage("&cThere seems to have been a issue with the material argument you entered.");
-                        return;
-                    }
-                }
-
-                Region region = portal.getRegion();
-                region.setAirBlocks(material, durability);
+                portal.getCommands().add(commandString.replace("_", " "));
                 player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
-                        + pluginInstance.getConfig().getString("region-filled-message")
-                        .replace("{material}", WordUtils.capitalize(material.name()) + ":" + String.valueOf(durability))
+                        + pluginInstance.getConfig().getString("portal-command-added-message")
+                        .replace("{command}", commandString.replace("_", " "))
+                        .replace("{name}", portal.getPortalId())));
+            } else
+                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
+                        + pluginInstance.getConfig().getString("portal-invalid-message").replace("{name}", portalName)));
+        } else sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
+                + pluginInstance.getConfig().getString("must-be-player-message")));
+    }
+
+    private void clearCommands(CommandSender sender, String portalName)
+    {
+        if (sender instanceof Player)
+        {
+            Player player = (Player) sender;
+            if (!player.hasPermission("simpleportals.clearcommands"))
+            {
+                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
+                        + pluginInstance.getConfig().getString("no-permission-message")));
+                return;
+            }
+
+            Portal portal = pluginInstance.getManager().getPortalById(portalName);
+            if (portal != null)
+            {
+                portal.getCommands().clear();
+                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
+                        + pluginInstance.getConfig().getString("portal-commands-cleared-message")
+                        .replace("{name}", portal.getPortalId())));
+            } else
+                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
+                        + pluginInstance.getConfig().getString("portal-invalid-message").replace("{name}", portalName)));
+        } else sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
+                + pluginInstance.getConfig().getString("must-be-player-message")));
+    }
+
+    private void toggleCommandOnly(CommandSender sender, String portalName)
+    {
+        if (sender instanceof Player)
+        {
+            Player player = (Player) sender;
+            if (!player.hasPermission("simpleportals.togglecommandonly"))
+            {
+                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
+                        + pluginInstance.getConfig().getString("no-permission-message")));
+                return;
+            }
+
+            Portal portal = pluginInstance.getManager().getPortalById(portalName);
+            if (portal != null)
+            {
+                portal.setCommandsOnly(!portal.isCommandsOnly());
+                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
+                        + pluginInstance.getConfig().getString("portal-command-only-toggle-message")
+                        .replace("{status}", portal.isCommandsOnly() ? "Enabled" : "Disabled")
                         .replace("{name}", portal.getPortalId())));
             } else
                 player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
@@ -328,7 +365,6 @@ public class Commands implements CommandExecutor
         {
             if (sender instanceof Player) pluginInstance.getManager().clearAllVisuals((Player) sender);
             Region region = portal.getRegion();
-            region.revertFilledBlocks();
 
             portal.delete();
             portal.unregister();
@@ -414,4 +450,125 @@ public class Commands implements CommandExecutor
                 + pluginInstance.getConfig().getString("must-be-player-message")));
     }
 
+    private void setupHelpPageMap()
+    {
+        if (!getHelpPageMap().isEmpty()) getHelpPageMap().clear();
+        List<String> page1Lines = new ArrayList<>(), page2Lines = new ArrayList<>(), page3Lines = new ArrayList<>();
+
+        page1Lines.add("&e/portals <selectionmode/sm> &7- toggles selection mode.");
+        page1Lines.add("&e/portals reload &7- reloads the configurartion files.");
+        page1Lines.add("&e/portals <switchserver/ss> <server> &7- sets the server for the portal.");
+        page1Lines.add("&e/portals <showregion/sr> <name> &7- shows the portal's current region.");
+        page1Lines.add("&e/portals <setlocation/sl> <name> &7- sets the portal's teleport location.");
+        page1Lines.add("&e/portals info &7- shows plugin information.");
+        page1Lines.add("&e/portals create <name> &7- creates a new portal.");
+        getHelpPageMap().put(1, page1Lines);
+
+        page2Lines.add("&e/portals delete <name> &7- deletes the given portal.");
+        page2Lines.add("&e/portals list &7- shows all available portals.");
+        page2Lines.add("&e/portals fill <name> <material:durability> &7- replaces air inside the portals region.");
+        page2Lines.add("&e/portals relocate <name> &7- relocates the portal to a selected region.");
+        page2Lines.add("&e/portals <addcommand/addcmd> <name> <command> &7- adds the entered command line to the portal's command list.");
+        page2Lines.add("&e/portals <clearcommands/clearcmds> <name> &7- clears all commands from the specified portal.");
+        page2Lines.add("&e/portals <togglecommandonly/tco> <name> &7- toggles command only mode for a portal.");
+        getHelpPageMap().put(2, page2Lines);
+
+        // page3Lines.add("&e/portals delete <name> &7- deletes the given portal.");
+        //  getHelpPageMap().put(3, page3Lines);
+    }
+
+    private void sendHelpPage(CommandSender commandSender, String pageString)
+    {
+        int page;
+        try
+        {
+            page = Integer.parseInt(pageString);
+        } catch (Exception ignored)
+        {
+            commandSender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
+                    + pluginInstance.getConfig().getString("invalid-page-message").replace("{pages}", String.valueOf(getHelpPageMap().size()))));
+            return;
+        }
+
+        if (getHelpPageMap().isEmpty() || !getHelpPageMap().containsKey(page))
+        {
+            commandSender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
+                    + pluginInstance.getConfig().getString("invalid-page-message").replace("{pages}", String.valueOf(getHelpPageMap().size()))));
+            return;
+        }
+
+        if (commandSender instanceof Player)
+        {
+            Player player = (Player) commandSender;
+            List<String> pageLines = getHelpPageMap().get(page);
+
+            player.sendMessage(pluginInstance.getManager().colorText("\n&e&m---------------&d[ &bSP Help &e(&a" + page + "&e) &d]&e&m---------------"));
+            for (int i = -1; ++i < pageLines.size(); )
+                player.sendMessage(pluginInstance.getManager().colorText(pageLines.get(i)));
+
+            if (page < getHelpPageMap().size() && page > 1)
+            {
+                // page is both below the max page and above 1
+                JSONMessage footerMessage1 = new JSONMessage("&e&m-------&r&d[");
+                JSONExtra footerExtra1 = new JSONExtra(" &b(Previous Page)"),
+                        footerExtra2 = new JSONExtra(" &b(Next Page) "),
+                        footerExtra3 = new JSONExtra("&d]&e&m--------\n");
+
+                footerExtra1.setClickEvent(JSONClickAction.RUN_COMMAND, "/portals help " + (page - 1));
+                footerExtra1.setHoverEvent(JSONHoverAction.SHOW_TEXT, "&aClicking this will open the help menu at page &e" + (page - 1) + "&a.");
+                footerExtra2.setClickEvent(JSONClickAction.RUN_COMMAND, "/portals help " + (page + 1));
+                footerExtra2.setHoverEvent(JSONHoverAction.SHOW_TEXT, "&aClicking this will open the help menu at page &e" + (page + 1) + "&a.");
+
+                footerMessage1.addExtra(footerExtra1);
+                footerMessage1.addExtra(footerExtra2);
+                footerMessage1.addExtra(footerExtra3);
+
+                footerMessage1.sendJSONToPlayer(player);
+            } else if (page < getHelpPageMap().size() && page <= 1)
+            {
+                // page is less than or = to 1
+                JSONMessage footerMessage1 = new JSONMessage("&e&m---------------&r&d[");
+                JSONExtra footerExtra1 = new JSONExtra(" &b(Next Page) "),
+                        footerExtra2 = new JSONExtra("&d]&e&m---------------\n");
+
+                footerExtra1.setClickEvent(JSONClickAction.RUN_COMMAND, "/portals help " + (page + 1));
+                footerExtra1.setHoverEvent(JSONHoverAction.SHOW_TEXT, "&aClicking this will open the help menu at page &e" + (page + 1) + "&a.");
+                footerMessage1.addExtra(footerExtra1);
+                footerMessage1.addExtra(footerExtra2);
+
+                footerMessage1.sendJSONToPlayer(player);
+            } else if (page >= getHelpPageMap().size() && page > 1)
+            {
+                // page at/above max page and greater that 1
+                JSONMessage footerMessage1 = new JSONMessage("&d[&e&m------------&r&d]");
+                JSONExtra footerExtra1 = new JSONExtra(" &b(Previous Page) "),
+                        footerExtra2 = new JSONExtra("&d]&e&m-------------\n");
+
+                footerExtra1.setClickEvent(JSONClickAction.RUN_COMMAND, "/portals help " + (page - 1));
+                footerExtra1.setHoverEvent(JSONHoverAction.SHOW_TEXT, "&aClicking this will open the help menu at page &e" + (page - 1) + "&a.");
+                footerMessage1.addExtra(footerExtra1);
+                footerMessage1.addExtra(footerExtra2);
+
+                footerMessage1.sendJSONToPlayer(player);
+            } else
+                player.sendMessage(pluginInstance.getManager().colorText("&d[&e&m---------------------------------------&r&d]\n"));
+        } else
+        {
+            List<String> pageLines = getHelpPageMap().get(page);
+            commandSender.sendMessage(pluginInstance.getManager().colorText("&d[&e&m-------------&r&d] &bSP Help &e(&a" + page + "&e) &d[&e&m-------------&r&d]"));
+            for (int i = -1; ++i < pageLines.size(); )
+                commandSender.sendMessage(pluginInstance.getManager().colorText(pageLines.get(i)));
+            commandSender.sendMessage(pluginInstance.getManager().colorText("&d[&e&m---------------------------------------&r&d]\n"));
+        }
+    }
+
+    public HashMap<Integer, List<String>> getHelpPageMap()
+    {
+        return helpPageMap;
+    }
+
+    private void setHelpPageMap(HashMap<Integer, List<String>> helpPageMap)
+    {
+        this.helpPageMap = helpPageMap;
+    }
 }

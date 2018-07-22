@@ -1,6 +1,5 @@
 package xzot1k.plugins.sp.core;
 
-import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -28,8 +27,7 @@ public class Listeners implements Listener
     @EventHandler
     public void onBlockFromTo(BlockFromToEvent e)
     {
-        if (e.getBlock().getType() == Material.WATER || e.getBlock().getType() == Material.getMaterial("STATIONARY_WATER")
-                || e.getBlock().getType() == Material.LAVA || e.getBlock().getType() == Material.getMaterial("STATIONARY_LAVA"))
+        if (e.getBlock().isLiquid())
         {
             Portal portal = pluginInstance.getManager().getPortalAtLocation(e.getBlock().getLocation());
             if (portal != null) e.setCancelled(true);
@@ -93,6 +91,26 @@ public class Listeners implements Listener
                 PortalActionEvent portalActionEvent = new PortalActionEvent(e.getPlayer(), portal, portal.getTeleportLocation());
                 pluginInstance.getServer().getPluginManager().callEvent(portalActionEvent);
                 if (portalActionEvent.isCancelled()) return;
+
+                for (int i = -1; ++i < portal.getCommands().size(); )
+                {
+                    String commandLine = portal.getCommands().get(i);
+                    try
+                    {
+                        if (commandLine.contains(":"))
+                        {
+                            String[] commandLineArgs = commandLine.split(":");
+                            String command = commandLineArgs[0], type = commandLineArgs[1];
+                            if (type.equalsIgnoreCase("PLAYER"))
+                                pluginInstance.getServer().dispatchCommand(e.getPlayer(), command.replace("{player}", e.getPlayer().getName()));
+                            else
+                                pluginInstance.getServer().dispatchCommand(pluginInstance.getServer().getConsoleSender(), command.replace("{player}", e.getPlayer().getName()));
+                        } else
+                            pluginInstance.getServer().dispatchCommand(pluginInstance.getServer().getConsoleSender(), commandLine.replace("{player}", e.getPlayer().getName()));
+                    } catch (Exception ignored) {}
+                }
+
+                if (portal.isCommandsOnly()) return;
 
                 try
                 {
