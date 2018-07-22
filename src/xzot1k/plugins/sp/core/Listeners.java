@@ -28,8 +28,8 @@ public class Listeners implements Listener
     @EventHandler
     public void onBlockFromTo(BlockFromToEvent e)
     {
-        if (e.getBlock().getType() == Material.WATER || e.getBlock().getType() == Material.STATIONARY_WATER
-                || e.getBlock().getType() == Material.LAVA || e.getBlock().getType() == Material.STATIONARY_LAVA)
+        if (e.getBlock().getType() == Material.WATER || e.getBlock().getType() == Material.getMaterial("STATIONARY_WATER")
+                || e.getBlock().getType() == Material.LAVA || e.getBlock().getType() == Material.getMaterial("STATIONARY_LAVA"))
         {
             Portal portal = pluginInstance.getManager().getPortalAtLocation(e.getBlock().getLocation());
             if (portal != null) e.setCancelled(true);
@@ -56,7 +56,8 @@ public class Listeners implements Listener
         {
             e.setCancelled(true);
 
-            if (pluginInstance.getManager().getServerVersion().equalsIgnoreCase("v1_12_R1")
+            if (pluginInstance.getManager().getServerVersion().equalsIgnoreCase("v1_13_R1")
+                    || pluginInstance.getManager().getServerVersion().equalsIgnoreCase("v1_12_R1")
                     || pluginInstance.getManager().getServerVersion().equalsIgnoreCase("v1_11_R1")
                     || pluginInstance.getManager().getServerVersion().equalsIgnoreCase("v1_10_R1")
                     || pluginInstance.getManager().getServerVersion().equalsIgnoreCase("v1_9_R2")

@@ -110,8 +110,16 @@ public class Portal
     public void performAction(Player player)
     {
         if (getServerSwitchName() == null || getServerSwitchName().equalsIgnoreCase("none"))
-            pluginInstance.getManager().teleportPlayerWithEntity(player, getTeleportLocation());
-        else pluginInstance.getManager().switchServer(player, getServerSwitchName());
+        {
+            Location location = getTeleportLocation();
+            if (pluginInstance.getConfig().getBoolean("keep-teleport-head-axis"))
+            {
+                location.setYaw(player.getLocation().getYaw());
+                location.setPitch(player.getLocation().getPitch());
+            }
+
+            pluginInstance.getManager().teleportPlayerWithEntity(player, location);
+        } else pluginInstance.getManager().switchServer(player, getServerSwitchName());
 
         try
         {

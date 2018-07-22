@@ -42,6 +42,8 @@ region-filled-message: "&aThe portal &e{name}'s &aregion has been filled with &e
 # The general task handles things like auto-saving and update checking. This value is the delay in between
 # running these tasks in seconds. (Note: setting this value to -1 will disable the general task entirely.)
 general-task-duration: 300
+# If this is enabled when the player is teleport they will keep their current Yaw and Pitch.
+keep-teleport-head-axis: true
 
 # Should players have a cooldown for portal usage?
 use-portal-cooldown: true

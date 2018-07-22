@@ -22,13 +22,13 @@ public class PH1_13R1 implements ParticleHandler
     @Override
     public void displayParticle(Player player, Location location, float offsetX, float offsetY, float offsetZ, int speed, String enumParticle, int amount)
     {
-        player.spawnParticle(Particle.valueOf(enumParticle), location, amount, offsetX, offsetY, offsetZ);
+        player.spawnParticle(Particle.valueOf(enumParticle), location, amount, offsetX, offsetY, offsetZ, 0);
     }
 
     @Override
     public void broadcastParticle(Location location, float offsetX, float offsetY, float offsetZ, int speed, String enumParticle, int amount)
     {
-        location.getWorld().spawnParticle(Particle.valueOf(enumParticle), location, amount, offsetX, offsetY, offsetZ);
+        location.getWorld().spawnParticle(Particle.valueOf(enumParticle), location, amount, offsetX, offsetY, offsetZ, 0);
     }
 
 }
