@@ -51,6 +51,12 @@ public class SimplePortals extends JavaPlugin
                 } catch (Exception ignored) {}
 
                 getManager().savePortals();
+                if (getConfig().getBoolean("reload-plugin-timer"))
+                {
+                    getManager().getPortals().clear();
+                    getManager().loadPortals();
+                }
+
                 getManager().sendConsoleMessage("&aAll portals have been saved!");
             }, 20 * generalTaskDuration, 20 * generalTaskDuration);
     }

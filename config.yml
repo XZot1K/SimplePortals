@@ -28,6 +28,9 @@ invalid-page-message: "&cThe page you entered was invalid. (Page Count: &e{pages
 # The general task handles things like auto-saving and update checking. This value is the delay in between
 # running these tasks in seconds. (Note: setting this value to -1 will disable the general task entirely.)
 general-task-duration: 300
+# If this option is enabled, the general task will completely reload all portals by saving found portals than quickly loading them back in.
+# (Note: If you plan to run the server for an extremely long period of time without restarts, this can be useful as reloading can prevent weird bugs)
+reload-plugin-timer: true
 # If this is enabled when the player is teleport they will keep their current Yaw and Pitch.
 keep-teleport-head-axis: true
 

@@ -310,6 +310,8 @@ public class Commands implements CommandExecutor
         }
 
         pluginInstance.reloadConfig();
+        pluginInstance.getManager().savePortals();
+        pluginInstance.getManager().loadPortals();
         sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
                 + pluginInstance.getConfig().getString("reload-message")));
     }
