@@ -145,7 +145,7 @@ public class Manager
                         break;
                 }
 
-                if (!region.getPoint1().getWorld().getName().equalsIgnoreCase(region.getPoint2().getWorld().getName()))
+                if (!region.getPoint1().getWorldName().equalsIgnoreCase(region.getPoint2().getWorldName()))
                 {
                     player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
                             + pluginInstance.getConfig().getString("not-same-world-message")));
@@ -171,7 +171,7 @@ public class Manager
                 break;
         }
 
-        if (!region.getPoint1().getWorld().getName().equalsIgnoreCase(region.getPoint2().getWorld().getName()))
+        if (!region.getPoint1().getWorldName().equalsIgnoreCase(region.getPoint2().getWorldName()))
         {
             player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
                     + pluginInstance.getConfig().getString("not-same-world-message")));
@@ -375,6 +375,7 @@ public class Manager
 
     public void loadPortals()
     {
+        getPortals().clear();
         File dir = new File(pluginInstance.getDataFolder(), "/portals");
         dir.mkdirs();
         File[] files = dir.listFiles();
@@ -388,20 +389,22 @@ public class Manager
                 try
                 {
                     YamlConfiguration yamlConfiguration = YamlConfiguration.loadConfiguration(file);
-                    Location point1 = new Location(pluginInstance.getServer().getWorld(yamlConfiguration.getString("point-1.world")),
-                            (float) yamlConfiguration.getDouble("point-1.x"), (float) yamlConfiguration.getDouble("point-1.y"), (float) yamlConfiguration.getDouble("point-1.z")),
-                            point2 = new Location(pluginInstance.getServer().getWorld(yamlConfiguration.getString("point-2.world")),
-                                    (float) yamlConfiguration.getDouble("point-2.x"), (float) yamlConfiguration.getDouble("point-2.y"), (float) yamlConfiguration.getDouble("point-2.z"));
-                    Region region = new Region(pluginInstance, point1, point2);
-
-                    Portal portal = new Portal(pluginInstance, yamlConfiguration.getString("portal-id"), region);
-                    try
+                    if (!doesPortalExist(yamlConfiguration.getString("portal-id")))
                     {
-                        portal.setServerSwitchName(yamlConfiguration.getString("portal-server"));
-                        portal.setCommandsOnly(yamlConfiguration.getBoolean("commands-only"));
-                        portal.setCommands(yamlConfiguration.getStringList("commands"));
-                    } catch (Exception ignored) {}
-                    portal.register();
+                        Location point1 = new Location(pluginInstance.getServer().getWorld(yamlConfiguration.getString("point-1.world")),
+                                (float) yamlConfiguration.getDouble("point-1.x"), (float) yamlConfiguration.getDouble("point-1.y"), (float) yamlConfiguration.getDouble("point-1.z")),
+                                point2 = new Location(pluginInstance.getServer().getWorld(yamlConfiguration.getString("point-2.world")),
+                                        (float) yamlConfiguration.getDouble("point-2.x"), (float) yamlConfiguration.getDouble("point-2.y"), (float) yamlConfiguration.getDouble("point-2.z"));
+                        Region region = new Region(pluginInstance, point1, point2);
+                        Portal portal = new Portal(pluginInstance, yamlConfiguration.getString("portal-id"), region);
+                        try
+                        {
+                            portal.setServerSwitchName(yamlConfiguration.getString("portal-server"));
+                            portal.setCommandsOnly(yamlConfiguration.getBoolean("commands-only"));
+                            portal.setCommands(yamlConfiguration.getStringList("commands"));
+                        } catch (Exception ignored) {}
+                        portal.register();
+                    }
                 } catch (Exception e) {e.printStackTrace();}
             }
         }

@@ -1,7 +1,6 @@
 package xzot1k.plugins.sp;
 
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitTask;
 import xzot1k.plugins.sp.api.Manager;
 import xzot1k.plugins.sp.core.Commands;
 import xzot1k.plugins.sp.core.Listeners;
@@ -12,7 +11,6 @@ public class SimplePortals extends JavaPlugin
     private static SimplePortals pluginInstance;
     private Manager manager;
     private UpdateChecker updateChecker;
-    private BukkitTask generalTask;
 
     @Override
     public void onEnable()
@@ -28,8 +26,6 @@ public class SimplePortals extends JavaPlugin
         getManager().loadPortals();
         getManager().sendConsoleMessage("&aThe plugin has enabled successfully!");
 
-        if (generalTask != null) generalTask.cancel();
-
         try
         {
             if (updateChecker.checkForUpdates())
@@ -40,7 +36,7 @@ public class SimplePortals extends JavaPlugin
 
         int generalTaskDuration = getConfig().getInt("general-task-duration");
         if (!(generalTaskDuration <= -1))
-            generalTask = getServer().getScheduler().runTaskTimerAsynchronously(getPluginInstance(), () ->
+            getServer().getScheduler().runTaskTimerAsynchronously(getPluginInstance(), () ->
             {
                 try
                 {
@@ -64,7 +60,6 @@ public class SimplePortals extends JavaPlugin
     @Override
     public void onDisable()
     {
-        if (generalTask != null) generalTask.cancel();
         getManager().savePortals();
         getManager().sendConsoleMessage("&aAll portals have been saved!");
         getManager().sendConsoleMessage("&cThe plugin has been disabled.");

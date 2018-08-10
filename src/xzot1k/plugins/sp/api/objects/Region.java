@@ -18,7 +18,7 @@ public class Region
 
     public boolean isInRegion(Location location)
     {
-        Location point1 = getPoint1(), point2 = getPoint2();
+        Location point1 = getPoint1().asBukkitLocation(), point2 = getPoint2().asBukkitLocation();
 
         return ((location.getBlockX() <= point1.getBlockX() && location.getBlockX() >= point2.getBlockX())
                 || (location.getBlockX() <= point2.getBlockX() && location.getBlockX() >= point1.getBlockX()))
@@ -29,9 +29,9 @@ public class Region
 
     }
 
-    public Location getPoint1()
+    public SerializableLocation getPoint1()
     {
-        return point1.asBukkitLocation();
+        return point1;
     }
 
     public void setPoint1(Location point1)
@@ -39,9 +39,9 @@ public class Region
         this.point1 = new SerializableLocation(pluginInstance, point1);
     }
 
-    public Location getPoint2()
+    public SerializableLocation getPoint2()
     {
-        return point2.asBukkitLocation();
+        return point2;
     }
 
     public void setPoint2(Location point2)

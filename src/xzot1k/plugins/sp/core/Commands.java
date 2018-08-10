@@ -413,7 +413,7 @@ public class Commands implements CommandExecutor
                 return;
             }
 
-            if (!region.getPoint1().getWorld().getName().equalsIgnoreCase(region.getPoint2().getWorld().getName()))
+            if (!region.getPoint1().getWorldName().equalsIgnoreCase(region.getPoint2().getWorldName()))
             {
                 player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
                         + pluginInstance.getConfig().getString("not-same-world-message")));

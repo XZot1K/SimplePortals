@@ -88,7 +88,7 @@ public class Listeners implements Listener
                 if (!e.getPlayer().hasPermission("simpleportals.portal." + portal.getPortalId())
                         || !e.getPlayer().hasPermission("simpleportals.portal.*")) return;
 
-                PortalActionEvent portalActionEvent = new PortalActionEvent(e.getPlayer(), portal, portal.getTeleportLocation());
+                PortalActionEvent portalActionEvent = new PortalActionEvent(e.getPlayer(), portal, portal.getTeleportLocation().asBukkitLocation());
                 pluginInstance.getServer().getPluginManager().callEvent(portalActionEvent);
                 if (portalActionEvent.isCancelled()) return;
 

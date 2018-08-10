@@ -1,9 +1,7 @@
 package xzot1k.plugins.sp.api.objects;
 
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.Sound;
-import org.bukkit.block.Block;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -34,7 +32,7 @@ public class Portal
         setCommands(new ArrayList<>());
         setCommandsOnly(false);
         if (getRegion() != null && getRegion().getPoint1() != null)
-            setTeleportLocation(getRegion().getPoint1().add(0, 2, 0));
+            setTeleportLocation(getRegion().getPoint1().asBukkitLocation().clone().add(0, 2, 0));
     }
 
     public void register()
@@ -54,9 +52,7 @@ public class Portal
         {
             File file = new File(pluginInstance.getDataFolder() + "/portals/" + getPortalId() + ".yml");
             file.delete();
-        } catch (Exception ignored)
-        {
-        }
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     public void save()
@@ -73,20 +69,20 @@ public class Portal
             if (getRegion() != null)
             {
                 // save point 1.
-                Location point1 = getRegion().getPoint1();
+                SerializableLocation point1 = getRegion().getPoint1();
                 if (point1 != null)
                 {
-                    yaml.set("point-1.world", point1.getWorld().getName());
+                    yaml.set("point-1.world", point1.getWorldName());
                     yaml.set("point-1.x", point1.getX());
                     yaml.set("point-1.y", point1.getY());
                     yaml.set("point-1.z", point1.getZ());
                 }
 
                 // save point 2.
-                Location point2 = getRegion().getPoint2();
+                SerializableLocation point2 = getRegion().getPoint2();
                 if (point2 != null)
                 {
-                    yaml.set("point-2.world", point2.getWorld().getName());
+                    yaml.set("point-2.world", point2.getWorldName());
                     yaml.set("point-2.x", point2.getX());
                     yaml.set("point-2.y", point2.getY());
                     yaml.set("point-2.z", point2.getZ());
@@ -94,10 +90,10 @@ public class Portal
             }
 
             // save teleport location.
-            Location teleportLocation = getTeleportLocation();
+            SerializableLocation teleportLocation = getTeleportLocation();
             if (teleportLocation != null)
             {
-                yaml.set("teleport-location.world", teleportLocation.getWorld().getName());
+                yaml.set("teleport-location.world", teleportLocation.getWorldName());
                 yaml.set("teleport-location.x", teleportLocation.getX());
                 yaml.set("teleport-location.y", teleportLocation.getY());
                 yaml.set("teleport-location.z", teleportLocation.getZ());
@@ -117,7 +113,7 @@ public class Portal
     {
         if (getServerSwitchName() == null || getServerSwitchName().equalsIgnoreCase("none"))
         {
-            Location location = getTeleportLocation();
+            Location location = getTeleportLocation().asBukkitLocation();
             if (pluginInstance.getConfig().getBoolean("keep-teleport-head-axis"))
             {
                 location.setYaw(player.getLocation().getYaw());
@@ -144,7 +140,7 @@ public class Portal
 
         BukkitTask bukkitTask = new BukkitRunnable()
         {
-            Location point1 = getRegion().getPoint1().clone(), point2 = getRegion().getPoint2().clone();
+            Location point1 = getRegion().getPoint1().asBukkitLocation(), point2 = getRegion().getPoint2().asBukkitLocation();
             int duration = pluginInstance.getConfig().getInt("region-visual-duration");
             double lifetime = 0;
 
@@ -327,9 +323,9 @@ public class Portal
         this.portalId = portalId;
     }
 
-    public Location getTeleportLocation()
+    public SerializableLocation getTeleportLocation()
     {
-        return teleportLocation != null ? teleportLocation.asBukkitLocation() : null;
+        return teleportLocation;
     }
 
     public void setTeleportLocation(Location teleportLocation)
