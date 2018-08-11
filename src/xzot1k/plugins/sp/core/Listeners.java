@@ -110,26 +110,27 @@ public class Listeners implements Listener
                     } catch (Exception ignored) {}
                 }
 
-                if (portal.isCommandsOnly()) return;
-
-                try
+                if (!portal.isCommandsOnly())
                 {
-                    String particleEffect = pluginInstance.getConfig().getString("teleport-visual-effect")
-                            .toUpperCase().replace(" ", "_").replace("-", "_");
-                    e.getPlayer().getWorld().playSound(e.getPlayer().getLocation(), Sound.valueOf(pluginInstance.getConfig().getString("teleport-sound")
-                            .toUpperCase().replace(" ", "_").replace("-", "_")), 1, 1);
-                    pluginInstance.getManager().getParticleHandler().broadcastParticle(e.getPlayer().getLocation(), 1, 2, 1, 0, particleEffect, 50);
-                } catch (Exception ignored) {}
+                    try
+                    {
+                        String particleEffect = pluginInstance.getConfig().getString("teleport-visual-effect")
+                                .toUpperCase().replace(" ", "_").replace("-", "_");
+                        e.getPlayer().getWorld().playSound(e.getPlayer().getLocation(), Sound.valueOf(pluginInstance.getConfig().getString("teleport-sound")
+                                .toUpperCase().replace(" ", "_").replace("-", "_")), 1, 1);
+                        pluginInstance.getManager().getParticleHandler().broadcastParticle(e.getPlayer().getLocation(), 1, 2, 1, 0, particleEffect, 50);
+                    } catch (Exception ignored) {}
 
-                if (pluginInstance.getConfig().getBoolean("use-portal-cooldown"))
-                    pluginInstance.getManager().updatePlayerPortalCooldown(e.getPlayer());
+                    if (pluginInstance.getConfig().getBoolean("use-portal-cooldown"))
+                        pluginInstance.getManager().updatePlayerPortalCooldown(e.getPlayer());
 
-                e.getPlayer().sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
-                        + pluginInstance.getConfig().getString("portal-message")
-                        .replace("{name}", portal.getPortalId())
-                        .replace("{time}", String.valueOf(pluginInstance.getManager().getCooldownTimeLeft(e.getPlayer())))));
+                    e.getPlayer().sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
+                            + pluginInstance.getConfig().getString("portal-message")
+                            .replace("{name}", portal.getPortalId())
+                            .replace("{time}", String.valueOf(pluginInstance.getManager().getCooldownTimeLeft(e.getPlayer())))));
 
-                portal.performAction(e.getPlayer());
+                    portal.performAction(e.getPlayer());
+                }
             }
         }
     }

@@ -397,6 +397,14 @@ public class Manager
                                         (float) yamlConfiguration.getDouble("point-2.x"), (float) yamlConfiguration.getDouble("point-2.y"), (float) yamlConfiguration.getDouble("point-2.z"));
                         Region region = new Region(pluginInstance, point1, point2);
                         Portal portal = new Portal(pluginInstance, yamlConfiguration.getString("portal-id"), region);
+
+                        try
+                        {
+                            portal.setTeleportLocation(new Location(pluginInstance.getServer().getWorld(yamlConfiguration.getString("teleport-location.world")),
+                                    (float) yamlConfiguration.getDouble("teleport-location.x"), (float) yamlConfiguration.getDouble("teleport-location.y"),
+                                    (float) yamlConfiguration.getDouble("teleport-location.z")));
+                        } catch (Exception e) { e.printStackTrace(); }
+
                         try
                         {
                             portal.setServerSwitchName(yamlConfiguration.getString("portal-server"));

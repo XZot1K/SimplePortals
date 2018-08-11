@@ -114,13 +114,16 @@ public class Portal
         if (getServerSwitchName() == null || getServerSwitchName().equalsIgnoreCase("none"))
         {
             Location location = getTeleportLocation().asBukkitLocation();
-            if (pluginInstance.getConfig().getBoolean("keep-teleport-head-axis"))
+            if (location != null)
             {
-                location.setYaw(player.getLocation().getYaw());
-                location.setPitch(player.getLocation().getPitch());
-            }
+                if (pluginInstance.getConfig().getBoolean("keep-teleport-head-axis"))
+                {
+                    location.setYaw(player.getLocation().getYaw());
+                    location.setPitch(player.getLocation().getPitch());
+                }
 
-            pluginInstance.getManager().teleportPlayerWithEntity(player, location);
+                pluginInstance.getManager().teleportPlayerWithEntity(player, location);
+            }
         } else pluginInstance.getManager().switchServer(player, getServerSwitchName());
 
         try
