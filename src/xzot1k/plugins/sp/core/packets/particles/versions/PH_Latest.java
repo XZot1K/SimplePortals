@@ -7,12 +7,12 @@ import org.bukkit.entity.Player;
 import xzot1k.plugins.sp.SimplePortals;
 import xzot1k.plugins.sp.core.packets.particles.ParticleHandler;
 
-public class PH1_13R1 implements ParticleHandler
+public class PH_Latest implements ParticleHandler
 {
 
     private SimplePortals pluginInstance;
 
-    public PH1_13R1(SimplePortals pluginInstance)
+    public PH_Latest(SimplePortals pluginInstance)
     {
         this.pluginInstance = pluginInstance;
     }

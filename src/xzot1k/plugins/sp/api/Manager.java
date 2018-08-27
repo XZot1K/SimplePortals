@@ -62,8 +62,13 @@ public class Manager
         boolean success = false;
         switch (serverVersion)
         {
+            case "v1_13_R2":
+                particleHandler = new PH_Latest(pluginInstance);
+                setJSONHandler(new JSONHandler1_13R2());
+                success = true;
+                break;
             case "v1_13_R1":
-                particleHandler = new PH1_13R1(pluginInstance);
+                particleHandler = new PH_Latest(pluginInstance);
                 setJSONHandler(new JSONHandler1_13R1());
                 success = true;
                 break;
