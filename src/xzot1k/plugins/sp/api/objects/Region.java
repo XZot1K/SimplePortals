@@ -19,8 +19,8 @@ public class Region
     public boolean isInRegion(Location location)
     {
         Location point1 = getPoint1().asBukkitLocation(), point2 = getPoint2().asBukkitLocation();
-
-        return ((location.getBlockX() <= point1.getBlockX() && location.getBlockX() >= point2.getBlockX())
+        return (location.getWorld().getName().equals(point1.getWorld().getName()) && location.getWorld().getName().equals(point2.getWorld().getName()))
+                && ((location.getBlockX() <= point1.getBlockX() && location.getBlockX() >= point2.getBlockX())
                 || (location.getBlockX() <= point2.getBlockX() && location.getBlockX() >= point1.getBlockX()))
                 && ((location.getBlockY() <= point1.getBlockY() && location.getY() >= point2.getBlockY())
                 || (location.getBlockY() <= point2.getBlockY() && location.getBlockY() >= point1.getBlockY()))
