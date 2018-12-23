@@ -11,6 +11,7 @@ import xzot1k.plugins.sp.SimplePortals;
 import xzot1k.plugins.sp.core.objects.TaskHolder;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,11 +49,8 @@ public class Portal
 
     public void delete()
     {
-        try
-        {
-            File file = new File(pluginInstance.getDataFolder() + "/portals/" + getPortalId() + ".yml");
-            file.delete();
-        } catch (Exception e) { e.printStackTrace(); }
+        File file = new File(pluginInstance.getDataFolder() + "/portals/" + getPortalId() + ".yml");
+        file.delete();
     }
 
     public void save()
@@ -106,7 +104,7 @@ public class Portal
 
             // save file.
             yaml.save(file);
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (IOException e) { e.printStackTrace(); }
     }
 
     public void performAction(Player player)
@@ -321,7 +319,7 @@ public class Portal
         return portalId;
     }
 
-    public void setPortalId(String portalId)
+    private void setPortalId(String portalId)
     {
         this.portalId = portalId;
     }
@@ -336,7 +334,12 @@ public class Portal
         this.teleportLocation = new SerializableLocation(pluginInstance, teleportLocation);
     }
 
-    public String getServerSwitchName()
+    public void setTeleportLocation(SerializableLocation teleportLocation)
+    {
+        this.teleportLocation = teleportLocation;
+    }
+
+    private String getServerSwitchName()
     {
         return serverSwitchName;
     }

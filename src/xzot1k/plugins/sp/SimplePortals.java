@@ -23,6 +23,7 @@ public class SimplePortals extends JavaPlugin
         getCommand("simpleportals").setExecutor(new Commands(getPluginInstance()));
         getServer().getPluginManager().registerEvents(new Listeners(pluginInstance), this);
 
+
         getManager().loadPortals();
         getManager().sendConsoleMessage("&aThe plugin has enabled successfully!");
 

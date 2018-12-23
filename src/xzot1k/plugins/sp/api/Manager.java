@@ -15,6 +15,7 @@ import xzot1k.plugins.sp.SimplePortals;
 import xzot1k.plugins.sp.api.enums.PointType;
 import xzot1k.plugins.sp.api.objects.Portal;
 import xzot1k.plugins.sp.api.objects.Region;
+import xzot1k.plugins.sp.api.objects.SerializableLocation;
 import xzot1k.plugins.sp.core.objects.TaskHolder;
 import xzot1k.plugins.sp.core.packets.jsonmsgs.JSONHandler;
 import xzot1k.plugins.sp.core.packets.jsonmsgs.versions.*;
@@ -24,6 +25,7 @@ import xzot1k.plugins.sp.core.packets.particles.versions.*;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -391,34 +393,25 @@ public class Manager
             File file = files[i];
             if (file != null && file.getName().toLowerCase().endsWith(".yml"))
             {
-                try
+                YamlConfiguration yamlConfiguration = YamlConfiguration.loadConfiguration(file);
+                if (!doesPortalExist(yamlConfiguration.getString("portal-id")))
                 {
-                    YamlConfiguration yamlConfiguration = YamlConfiguration.loadConfiguration(file);
-                    if (!doesPortalExist(yamlConfiguration.getString("portal-id")))
-                    {
-                        Location point1 = new Location(pluginInstance.getServer().getWorld(yamlConfiguration.getString("point-1.world")),
-                                (float) yamlConfiguration.getDouble("point-1.x"), (float) yamlConfiguration.getDouble("point-1.y"), (float) yamlConfiguration.getDouble("point-1.z")),
-                                point2 = new Location(pluginInstance.getServer().getWorld(yamlConfiguration.getString("point-2.world")),
-                                        (float) yamlConfiguration.getDouble("point-2.x"), (float) yamlConfiguration.getDouble("point-2.y"), (float) yamlConfiguration.getDouble("point-2.z"));
-                        Region region = new Region(pluginInstance, point1, point2);
-                        Portal portal = new Portal(pluginInstance, yamlConfiguration.getString("portal-id"), region);
+                    SerializableLocation teleportPoint1 = new SerializableLocation(pluginInstance, yamlConfiguration.getString("point-1.world"), yamlConfiguration.getDouble("point-1.x"),
+                            yamlConfiguration.getDouble("point-1.y"), yamlConfiguration.getDouble("point-1.z"), 0, 0),
+                            teleportPoint2 = new SerializableLocation(pluginInstance, yamlConfiguration.getString("point-2.world"), yamlConfiguration.getDouble("point-1.x"),
+                                    yamlConfiguration.getDouble("point-1.y"), yamlConfiguration.getDouble("point-1.z"), 0, 0);
+                    Region region = new Region(pluginInstance, teleportPoint1, teleportPoint2);
+                    Portal portal = new Portal(pluginInstance, yamlConfiguration.getString("portal-id"), region);
 
-                        try
-                        {
-                            portal.setTeleportLocation(new Location(pluginInstance.getServer().getWorld(yamlConfiguration.getString("teleport-location.world")),
-                                    (float) yamlConfiguration.getDouble("teleport-location.x"), (float) yamlConfiguration.getDouble("teleport-location.y"),
-                                    (float) yamlConfiguration.getDouble("teleport-location.z")));
-                        } catch (Exception e) { e.printStackTrace(); }
-
-                        try
-                        {
-                            portal.setServerSwitchName(yamlConfiguration.getString("portal-server"));
-                            portal.setCommandsOnly(yamlConfiguration.getBoolean("commands-only"));
-                            portal.setCommands(yamlConfiguration.getStringList("commands"));
-                        } catch (Exception ignored) {}
-                        portal.register();
-                    }
-                } catch (Exception e) {e.printStackTrace();}
+                    SerializableLocation tpLocation = new SerializableLocation(pluginInstance, yamlConfiguration.getString("teleport-location.world"), yamlConfiguration.getDouble("teleport-location.x"),
+                            yamlConfiguration.getDouble("teleport-location.y"), yamlConfiguration.getDouble("teleport-location.z"), (float) yamlConfiguration.getDouble("teleport-location.yaw"),
+                            (float) yamlConfiguration.getDouble("teleport-location.pitch"));
+                    portal.setTeleportLocation(tpLocation);
+                    portal.setServerSwitchName(yamlConfiguration.getString("portal-server"));
+                    portal.setCommandsOnly(yamlConfiguration.getBoolean("commands-only"));
+                    portal.setCommands(yamlConfiguration.getStringList("commands"));
+                    portal.register();
+                }
             }
         }
     }

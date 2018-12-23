@@ -16,6 +16,13 @@ public class Region
         setPoint2(point2);
     }
 
+    public Region(SimplePortals pluginInstance, SerializableLocation point1, SerializableLocation point2)
+    {
+        this.pluginInstance = pluginInstance;
+        setPoint1(point1);
+        setPoint2(point2);
+    }
+
     public boolean isInRegion(Location location)
     {
         Location point1 = getPoint1().asBukkitLocation(), point2 = getPoint2().asBukkitLocation();
@@ -39,6 +46,11 @@ public class Region
         this.point1 = new SerializableLocation(pluginInstance, point1);
     }
 
+    private void setPoint1(SerializableLocation point1)
+    {
+        this.point1 = point1;
+    }
+
     public SerializableLocation getPoint2()
     {
         return point2;
@@ -47,5 +59,10 @@ public class Region
     public void setPoint2(Location point2)
     {
         this.point2 = new SerializableLocation(pluginInstance, point2);
+    }
+
+    private void setPoint2(SerializableLocation point2)
+    {
+        this.point2 = point2;
     }
 }

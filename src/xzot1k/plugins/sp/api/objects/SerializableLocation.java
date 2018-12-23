@@ -23,6 +23,17 @@ public class SerializableLocation
         setWorldName(location.getWorld().getName());
     }
 
+    public SerializableLocation(SimplePortals pluginInstance, String worldName, double x, double y, double z, float yaw, float pitch)
+    {
+        this.pluginInstance = pluginInstance;
+        setX(x);
+        setY(y);
+        setZ(z);
+        setYaw(yaw);
+        setPitch(pitch);
+        setWorldName(worldName);
+    }
+
     public Location asBukkitLocation()
     {
         World world = pluginInstance.getServer().getWorld(getWorldName());

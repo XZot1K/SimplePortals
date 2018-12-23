@@ -366,8 +366,6 @@ public class Commands implements CommandExecutor
         if (portal != null)
         {
             if (sender instanceof Player) pluginInstance.getManager().clearAllVisuals((Player) sender);
-            Region region = portal.getRegion();
-
             portal.delete();
             portal.unregister();
             sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
@@ -455,10 +453,10 @@ public class Commands implements CommandExecutor
     private void setupHelpPageMap()
     {
         if (!getHelpPageMap().isEmpty()) getHelpPageMap().clear();
-        List<String> page1Lines = new ArrayList<>(), page2Lines = new ArrayList<>(), page3Lines = new ArrayList<>();
+        List<String> page1Lines = new ArrayList<>(), page2Lines = new ArrayList<>();
 
         page1Lines.add("&e/portals <selectionmode/sm> &7- toggles selection mode.");
-        page1Lines.add("&e/portals reload &7- reloads the configurartion files.");
+        page1Lines.add("&e/portals reload &7- reloads the configuration files.");
         page1Lines.add("&e/portals <switchserver/ss> <server> &7- sets the server for the portal.");
         page1Lines.add("&e/portals <showregion/sr> <name> &7- shows the portal's current region.");
         page1Lines.add("&e/portals <setlocation/sl> <name> &7- sets the portal's teleport location.");
@@ -474,9 +472,6 @@ public class Commands implements CommandExecutor
         page2Lines.add("&e/portals <clearcommands/clearcmds> <name> &7- clears all commands from the specified portal.");
         page2Lines.add("&e/portals <togglecommandonly/tco> <name> &7- toggles command only mode for a portal.");
         getHelpPageMap().put(2, page2Lines);
-
-        // page3Lines.add("&e/portals delete <name> &7- deletes the given portal.");
-        //  getHelpPageMap().put(3, page3Lines);
     }
 
     private void sendHelpPage(CommandSender commandSender, String pageString)
@@ -564,7 +559,7 @@ public class Commands implements CommandExecutor
         }
     }
 
-    public HashMap<Integer, List<String>> getHelpPageMap()
+    private HashMap<Integer, List<String>> getHelpPageMap()
     {
         return helpPageMap;
     }
