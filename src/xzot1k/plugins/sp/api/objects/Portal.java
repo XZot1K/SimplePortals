@@ -1,6 +1,7 @@
 package xzot1k.plugins.sp.api.objects;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -24,6 +25,7 @@ public class Portal
     private String portalId, serverSwitchName;
     private boolean commandsOnly;
     private List<String> commands;
+    private Material lastFillMaterial;
 
     public Portal(SimplePortals pluginInstance, String portalId, Region region)
     {
@@ -32,6 +34,7 @@ public class Portal
         setPortalId(portalId);
         setCommands(new ArrayList<>());
         setCommandsOnly(false);
+        setLastFillMaterial(Material.AIR);
         if (getRegion() != null && getRegion().getPoint1() != null)
             setTeleportLocation(getRegion().getPoint1().asBukkitLocation().clone().add(0, 2, 0));
     }
@@ -55,56 +58,53 @@ public class Portal
 
     public void save()
     {
-        try
+        File file = new File(pluginInstance.getDataFolder(), "/portals/" + getPortalId() + ".yml");
+        FileConfiguration yaml = YamlConfiguration.loadConfiguration(file);
+
+        // save region id
+        yaml.set("portal-id", getPortalId());
+        yaml.set("last-fill-material", getLastFillMaterial().name());
+        yaml.set("portal-server", getServerSwitchName());
+
+        if (getRegion() != null)
         {
-            File file = new File(pluginInstance.getDataFolder(), "/portals/" + getPortalId() + ".yml");
-            FileConfiguration yaml = YamlConfiguration.loadConfiguration(file);
-
-            // save region id
-            yaml.set("portal-id", getPortalId());
-            yaml.set("portal-server", getServerSwitchName());
-
-            if (getRegion() != null)
+            // save point 1.
+            SerializableLocation point1 = getRegion().getPoint1();
+            if (point1 != null)
             {
-                // save point 1.
-                SerializableLocation point1 = getRegion().getPoint1();
-                if (point1 != null)
-                {
-                    yaml.set("point-1.world", point1.getWorldName());
-                    yaml.set("point-1.x", point1.getX());
-                    yaml.set("point-1.y", point1.getY());
-                    yaml.set("point-1.z", point1.getZ());
-                }
-
-                // save point 2.
-                SerializableLocation point2 = getRegion().getPoint2();
-                if (point2 != null)
-                {
-                    yaml.set("point-2.world", point2.getWorldName());
-                    yaml.set("point-2.x", point2.getX());
-                    yaml.set("point-2.y", point2.getY());
-                    yaml.set("point-2.z", point2.getZ());
-                }
+                yaml.set("point-1.world", point1.getWorldName());
+                yaml.set("point-1.x", point1.getX());
+                yaml.set("point-1.y", point1.getY());
+                yaml.set("point-1.z", point1.getZ());
             }
 
-            // save teleport location.
-            SerializableLocation teleportLocation = getTeleportLocation();
-            if (teleportLocation != null)
+            // save point 2.
+            SerializableLocation point2 = getRegion().getPoint2();
+            if (point2 != null)
             {
-                yaml.set("teleport-location.world", teleportLocation.getWorldName());
-                yaml.set("teleport-location.x", teleportLocation.getX());
-                yaml.set("teleport-location.y", teleportLocation.getY());
-                yaml.set("teleport-location.z", teleportLocation.getZ());
-                yaml.set("teleport-location.yaw", teleportLocation.getYaw());
-                yaml.set("teleport-location.pitch", teleportLocation.getPitch());
+                yaml.set("point-2.world", point2.getWorldName());
+                yaml.set("point-2.x", point2.getX());
+                yaml.set("point-2.y", point2.getY());
+                yaml.set("point-2.z", point2.getZ());
             }
+        }
 
-            yaml.set("commands-only", isCommandsOnly());
-            yaml.set("commands", getCommands());
+        // save teleport location.
+        SerializableLocation teleportLocation = getTeleportLocation();
+        if (teleportLocation != null)
+        {
+            yaml.set("teleport-location.world", teleportLocation.getWorldName());
+            yaml.set("teleport-location.x", teleportLocation.getX());
+            yaml.set("teleport-location.y", teleportLocation.getY());
+            yaml.set("teleport-location.z", teleportLocation.getZ());
+            yaml.set("teleport-location.yaw", teleportLocation.getYaw());
+            yaml.set("teleport-location.pitch", teleportLocation.getPitch());
+        }
 
-            // save file.
-            yaml.save(file);
-        } catch (IOException e) { e.printStackTrace(); }
+        yaml.set("commands-only", isCommandsOnly());
+        yaml.set("commands", getCommands());
+
+        try { yaml.save(file); } catch (IOException e) { e.printStackTrace(); }
     }
 
     public void performAction(Player player)
@@ -132,6 +132,115 @@ public class Portal
                     .toUpperCase().replace(" ", "_").replace("-", "_")), 1, 1);
             pluginInstance.getManager().getParticleHandler().broadcastParticle(player.getLocation(), 1, 2, 1, 0, particleEffect, 50);
         } catch (Exception ignored) {}
+    }
+
+    public void fillPortal(Material material, int durability)
+    {
+        Location point1 = getRegion().getPoint1().asBukkitLocation(), point2 = getRegion().getPoint2().asBukkitLocation();
+        if (point1.getWorld().getName().equalsIgnoreCase(point2.getWorld().getName()))
+        {
+            if (point1.getBlockX() <= point2.getBlockX())
+            {
+                for (int pos_x = point1.getBlockX() - 1; ++pos_x <= point2.getBlockX(); )
+                    if (point1.getBlockZ() <= point2.getBlockZ())
+                        for (int pos_z = point1.getBlockZ() - 1; ++pos_z <= point2.getBlockZ(); )
+                            if (point1.getBlockY() <= point2.getBlockY())
+                                for (int pos_y = point1.getBlockY() - 1; ++pos_y <= point2.getBlockY(); )
+                                {
+                                    Location location = new Location(point1.getWorld(), pos_x, pos_y, pos_z);
+                                    if (location.getBlock().getType() == Material.AIR || location.getBlock().getType() == getLastFillMaterial())
+                                    {
+                                        location.getBlock().setType(material);
+                                        if (!pluginInstance.getManager().getServerVersion().toLowerCase().startsWith("v1_13"))
+                                            location.getBlock().setData((byte) durability);
+                                    }
+                                }
+                            else for (int pos_y = point2.getBlockY() - 1; ++pos_y <= point1.getBlockY(); )
+                            {
+                                Location location = new Location(point1.getWorld(), pos_x, pos_y, pos_z);
+                                if (location.getBlock().getType() == Material.AIR || location.getBlock().getType() == getLastFillMaterial())
+                                {
+                                    location.getBlock().setType(material);
+                                    if (!pluginInstance.getManager().getServerVersion().toLowerCase().startsWith("v1_13"))
+                                        location.getBlock().setData((byte) durability);
+                                }
+                            }
+                    else for (int pos_z = point2.getBlockZ() - 1; ++pos_z <= point1.getBlockZ(); )
+                        if (point1.getBlockY() <= point2.getBlockY())
+                            for (int pos_y = point1.getBlockY() - 1; ++pos_y <= point2.getBlockY(); )
+                            {
+                                Location location = new Location(point1.getWorld(), pos_x, pos_y, pos_z);
+                                if (location.getBlock().getType() == Material.AIR || location.getBlock().getType() == getLastFillMaterial())
+                                {
+                                    location.getBlock().setType(material);
+                                    if (!pluginInstance.getManager().getServerVersion().toLowerCase().startsWith("v1_13"))
+                                        location.getBlock().setData((byte) durability);
+                                }
+                            }
+                        else for (int pos_y = point2.getBlockY() - 1; ++pos_y <= point1.getBlockY(); )
+                        {
+                            Location location = new Location(point1.getWorld(), pos_x, pos_y, pos_z);
+                            if (location.getBlock().getType() == Material.AIR || location.getBlock().getType() == getLastFillMaterial())
+                            {
+                                location.getBlock().setType(material);
+                                if (!pluginInstance.getManager().getServerVersion().toLowerCase().startsWith("v1_13"))
+                                    location.getBlock().setData((byte) durability);
+                            }
+                        }
+            } else
+            {
+                for (int pos_x = point2.getBlockX(); pos_x <= point1.getBlockX(); pos_x++)
+                    if (point1.getBlockZ() <= point2.getBlockZ())
+                        for (int pos_z = point1.getBlockZ(); pos_z <= point2.getBlockZ(); pos_z++)
+                            if (point1.getBlockY() <= point2.getBlockY())
+                                for (int pos_y = point1.getBlockY(); pos_y <= point2.getBlockY(); pos_y++)
+                                {
+                                    Location location = new Location(point1.getWorld(), pos_x, pos_y, pos_z);
+                                    if (location.getBlock().getType() == Material.AIR || location.getBlock().getType() == getLastFillMaterial())
+                                    {
+                                        location.getBlock().setType(material);
+                                        if (!pluginInstance.getManager().getServerVersion().toLowerCase().startsWith("v1_13"))
+                                            location.getBlock().setData((byte) durability);
+                                    }
+                                }
+                            else for (int pos_y = point2.getBlockY(); pos_y <= point1.getBlockY(); pos_y++)
+                            {
+                                Location location = new Location(point1.getWorld(), pos_x, pos_y, pos_z);
+                                if (location.getBlock().getType() == Material.AIR || location.getBlock().getType() == getLastFillMaterial())
+                                {
+                                    location.getBlock().setType(material);
+                                    if (!pluginInstance.getManager().getServerVersion().toLowerCase().startsWith("v1_13"))
+                                        location.getBlock().setData((byte) durability);
+                                }
+                            }
+                    else for (int pos_z = point2.getBlockZ(); pos_z <= point1.getBlockZ(); pos_z++)
+                    {
+                        if (point1.getBlockY() <= point2.getBlockY())
+                            for (int pos_y = point1.getBlockY(); pos_y <= point2.getBlockY(); pos_y++)
+                            {
+                                Location location = new Location(point1.getWorld(), pos_x, pos_y, pos_z);
+                                if (location.getBlock().getType() == Material.AIR || location.getBlock().getType() == getLastFillMaterial())
+                                {
+                                    location.getBlock().setType(material);
+                                    if (!pluginInstance.getManager().getServerVersion().toLowerCase().startsWith("v1_13"))
+                                        location.getBlock().setData((byte) durability);
+                                }
+                            }
+                        else for (int pos_y = point2.getBlockY(); pos_y <= point1.getBlockY(); pos_y++)
+                        {
+                            Location location = new Location(point1.getWorld(), pos_x, pos_y, pos_z);
+                            if (location.getBlock().getType() == Material.AIR || location.getBlock().getType() == getLastFillMaterial())
+                            {
+                                location.getBlock().setType(material);
+                                if (!pluginInstance.getManager().getServerVersion().toLowerCase().startsWith("v1_13"))
+                                    location.getBlock().setData((byte) durability);
+                            }
+                        }
+                    }
+            }
+        }
+
+        setLastFillMaterial(material);
     }
 
     public void displayRegion(Player player)
@@ -367,5 +476,15 @@ public class Portal
     public void setCommandsOnly(boolean commandsOnly)
     {
         this.commandsOnly = commandsOnly;
+    }
+
+    public Material getLastFillMaterial()
+    {
+        return lastFillMaterial;
+    }
+
+    public void setLastFillMaterial(Material lastFillMaterial)
+    {
+        this.lastFillMaterial = lastFillMaterial;
     }
 }

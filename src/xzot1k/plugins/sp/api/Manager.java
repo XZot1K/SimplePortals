@@ -3,6 +3,7 @@ package xzot1k.plugins.sp.api;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Entity;
@@ -124,6 +125,11 @@ public class Manager
             sendConsoleMessage("&cYour server version (&e" + serverVersion + "&c) is not yet supported. " +
                     "Most packet features will be disabled until official release.");
 
+    }
+
+    public boolean isNumeric(String string)
+    {
+        return string.matches("-?\\d+(\\.\\d+)?");
     }
 
     public String colorText(String text) {return ChatColor.translateAlternateColorCodes('&', text);}
@@ -397,19 +403,26 @@ public class Manager
                 if (!doesPortalExist(yamlConfiguration.getString("portal-id")))
                 {
                     SerializableLocation teleportPoint1 = new SerializableLocation(pluginInstance, yamlConfiguration.getString("point-1.world"), yamlConfiguration.getDouble("point-1.x"),
-                            yamlConfiguration.getDouble("point-1.y"), yamlConfiguration.getDouble("point-1.z"), 0, 0),
-                            teleportPoint2 = new SerializableLocation(pluginInstance, yamlConfiguration.getString("point-2.world"), yamlConfiguration.getDouble("point-1.x"),
-                                    yamlConfiguration.getDouble("point-1.y"), yamlConfiguration.getDouble("point-1.z"), 0, 0);
+                            yamlConfiguration.getDouble("point-1.y"), yamlConfiguration.getDouble("point-1.z")),
+                            teleportPoint2 = new SerializableLocation(pluginInstance, yamlConfiguration.getString("point-2.world"), yamlConfiguration.getDouble("point-2.x"),
+                                    yamlConfiguration.getDouble("point-2.y"), yamlConfiguration.getDouble("point-2.z"));
                     Region region = new Region(pluginInstance, teleportPoint1, teleportPoint2);
                     Portal portal = new Portal(pluginInstance, yamlConfiguration.getString("portal-id"), region);
 
                     SerializableLocation tpLocation = new SerializableLocation(pluginInstance, yamlConfiguration.getString("teleport-location.world"), yamlConfiguration.getDouble("teleport-location.x"),
-                            yamlConfiguration.getDouble("teleport-location.y"), yamlConfiguration.getDouble("teleport-location.z"), (float) yamlConfiguration.getDouble("teleport-location.yaw"),
-                            (float) yamlConfiguration.getDouble("teleport-location.pitch"));
+                            yamlConfiguration.getDouble("teleport-location.y"), yamlConfiguration.getDouble("teleport-location.z"));
                     portal.setTeleportLocation(tpLocation);
                     portal.setServerSwitchName(yamlConfiguration.getString("portal-server"));
                     portal.setCommandsOnly(yamlConfiguration.getBoolean("commands-only"));
                     portal.setCommands(yamlConfiguration.getStringList("commands"));
+
+                    String materialName = yamlConfiguration.getString("last-fill-material");
+                    if (materialName != null && !materialName.equalsIgnoreCase(""))
+                    {
+                        Material material = Material.getMaterial(materialName.toUpperCase().replace(" ", "_").replace("-", "_"));
+                        portal.setLastFillMaterial(material == null ? Material.AIR : material);
+                    } else portal.setLastFillMaterial(Material.AIR);
+
                     portal.register();
                 }
             }

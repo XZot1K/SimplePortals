@@ -1,5 +1,6 @@
 package xzot1k.plugins.sp.core;
 
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -98,6 +99,10 @@ public class Commands implements CommandExecutor
                     {
                         initiateSwitchServerSet(sender, args[1], args[2]);
                         return true;
+                    } else if (args[0].equalsIgnoreCase("fill"))
+                    {
+                        initiateFill(sender, args[1], args[2]);
+                        return true;
                     } else if (args[0].equalsIgnoreCase("addcommand") || args[0].equalsIgnoreCase("addcmd"))
                     {
                         addCommand(sender, args[1], args[2]);
@@ -114,6 +119,53 @@ public class Commands implements CommandExecutor
         }
 
         return false;
+    }
+
+    private void initiateFill(CommandSender sender, String portalName, String materialString)
+    {
+        if (!sender.hasPermission("simpleportals.fill"))
+        {
+            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
+                    + pluginInstance.getConfig().getString("no-permission-message")));
+            return;
+        }
+
+        Portal portal = pluginInstance.getManager().getPortalById(portalName);
+        if (portal == null)
+        {
+            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
+                    + pluginInstance.getConfig().getString("portal-invalid-message").replace("{name}", portalName)));
+            return;
+        }
+
+        String materialName;
+        int durability = 0;
+        if (materialString.contains(":"))
+        {
+            String[] args = materialString.split(":");
+            materialName = args[0];
+            if (pluginInstance.getManager().isNumeric(args[1]))
+                durability = Integer.parseInt(args[1]);
+        } else materialName = materialString;
+
+        if (materialName == null || materialName.equalsIgnoreCase(""))
+        {
+            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
+                    + pluginInstance.getConfig().getString("invalid-material-message")));
+            return;
+        }
+
+        Material material = Material.getMaterial(materialName.toUpperCase().replace(" ", "_").replace("-", "_"));
+        if (material == null)
+        {
+            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
+                    + pluginInstance.getConfig().getString("invalid-material-message")));
+            return;
+        }
+
+        portal.fillPortal(material, durability);
+        sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
+                + pluginInstance.getConfig().getString("portal-filled-message").replace("{name}", portal.getPortalId()).replace("{material}", material.name())));
     }
 
     private void addCommand(CommandSender sender, String portalName, String commandString)
@@ -457,7 +509,7 @@ public class Commands implements CommandExecutor
 
         page1Lines.add("&e/portals <selectionmode/sm> &7- toggles selection mode.");
         page1Lines.add("&e/portals reload &7- reloads the configuration files.");
-        page1Lines.add("&e/portals <switchserver/ss> <server> &7- sets the server for the portal.");
+        page1Lines.add("&e/portals <switchserver/ss> <name> <server> &7- sets the server for the portal.");
         page1Lines.add("&e/portals <showregion/sr> <name> &7- shows the portal's current region.");
         page1Lines.add("&e/portals <setlocation/sl> <name> &7- sets the portal's teleport location.");
         page1Lines.add("&e/portals info &7- shows plugin information.");

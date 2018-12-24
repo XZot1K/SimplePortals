@@ -54,7 +54,7 @@ public class Listeners implements Listener
         {
             e.setCancelled(true);
 
-            if (pluginInstance.getManager().getServerVersion().equalsIgnoreCase("v1_13_R1")
+            if (pluginInstance.getManager().getServerVersion().toLowerCase().startsWith("v1_13")
                     || pluginInstance.getManager().getServerVersion().equalsIgnoreCase("v1_12_R1")
                     || pluginInstance.getManager().getServerVersion().equalsIgnoreCase("v1_11_R1")
                     || pluginInstance.getManager().getServerVersion().equalsIgnoreCase("v1_10_R1")

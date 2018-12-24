@@ -24,6 +24,8 @@ portal-command-added-message: "&aThe command &e{command} &ahas been added to the
 portal-commands-cleared-message: "&aAll commands have been cleared from the &e{name} &aportal!"
 portal-command-only-toggle-message: "&aCommand only mode has been &e{status} &afor the &e{name} &aportal!"
 invalid-page-message: "&cThe page you entered was invalid. (Page Count: &e{pages}&c)"
+invalid-material-message: "&cThe material you entered was invalid. Please check spelling and punctuation."
+portal-filled-message: "&aThe portal &e{name} &ahas been successfully filled with the &e{material} &amaterial!"
 
 # The general task handles things like auto-saving and update checking. This value is the delay in between
 # running these tasks in seconds. (Note: setting this value to -1 will disable the general task entirely.)
