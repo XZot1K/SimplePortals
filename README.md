@@ -13,25 +13,26 @@ import java.util.logging.Level;
 public class Main extends JavaPlugin
 {
 
-    private SimplePortals simplePortals;
+    private satic SimplePortals simplePortals;
 
     @Override
     public void onEnable()
     {
         if (!isSimplePortalsInstalled())
         {
-            getServer().getConsoleSender().sendMessage(ChatColor.translateAlternateColorCodes('&', "&e"
-                    + getName() + " &cwas unable to enable, due to &bSimplePortals &cnot being installed."));
             getServer().getPluginManager().disablePlugin(this);
-            return;
+            
+            return; // This plugin is now disabled since SimplePortals was not installed.
         }
 
-        getZotBox().getGeneralLibrary().sendConsoleMessage(this, "&bSimplePortals &awas found and has been successfully hooked into!");
+        // SimplePortals was found and now can be accessed with the getSimplePortals() getter.
     }
 
+    // This method tells you whether SimplePortals is installed or not.
     private boolean isSimplePortalsInstalled()
     {
         SimplePortals simplePortals = (SimplePortals) getServer().getPluginManager().getPlugin("SimplePortals");
+        
         if(simplePortals != null)
         {
             setSimplePortals(simplePortals);
@@ -41,9 +42,9 @@ public class Main extends JavaPlugin
         return false;
     }
 
-    public SimplePortals getSimplePortals() { return simplePortals; }
+    public static SimplePortals getSimplePortals() { return simplePortals; }
 
-    private void setSimplePortals(SimplePortals simplePortals) { this.simplePortals = simplePortals; }
+    private static void setSimplePortals(SimplePortals simplePortals) { Main.simplePortals = simplePortals; }
 
 }
 ```
