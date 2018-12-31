@@ -13,6 +13,8 @@ import xzot1k.plugins.sp.core.objects.TaskHolder;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -152,7 +154,14 @@ public class Portal
                                     {
                                         location.getBlock().setType(material);
                                         if (!pluginInstance.getManager().getServerVersion().toLowerCase().startsWith("v1_13"))
-                                            location.getBlock().setData((byte) durability);
+                                        {
+                                            try
+                                            {
+                                                Method closeMethod = location.getBlock().getClass().getMethod("setData", Short.class);
+                                                if (closeMethod != null)
+                                                    closeMethod.invoke(location.getBlock().getClass(), (short) durability);
+                                            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {}
+                                        }
                                     }
                                 }
                             else for (int pos_y = point2.getBlockY() - 1; ++pos_y <= point1.getBlockY(); )
@@ -162,7 +171,12 @@ public class Portal
                                 {
                                     location.getBlock().setType(material);
                                     if (!pluginInstance.getManager().getServerVersion().toLowerCase().startsWith("v1_13"))
-                                        location.getBlock().setData((byte) durability);
+                                        try
+                                        {
+                                            Method closeMethod = location.getBlock().getClass().getMethod("setData", Short.class);
+                                            if (closeMethod != null)
+                                                closeMethod.invoke(location.getBlock().getClass(), (short) durability);
+                                        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {}
                                 }
                             }
                     else for (int pos_z = point2.getBlockZ() - 1; ++pos_z <= point1.getBlockZ(); )
@@ -174,7 +188,14 @@ public class Portal
                                 {
                                     location.getBlock().setType(material);
                                     if (!pluginInstance.getManager().getServerVersion().toLowerCase().startsWith("v1_13"))
-                                        location.getBlock().setData((byte) durability);
+                                    {
+                                        try
+                                        {
+                                            Method closeMethod = location.getBlock().getClass().getMethod("setData", Short.class);
+                                            if (closeMethod != null)
+                                                closeMethod.invoke(location.getBlock().getClass(), (short) durability);
+                                        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {}
+                                    }
                                 }
                             }
                         else for (int pos_y = point2.getBlockY() - 1; ++pos_y <= point1.getBlockY(); )
@@ -184,7 +205,14 @@ public class Portal
                             {
                                 location.getBlock().setType(material);
                                 if (!pluginInstance.getManager().getServerVersion().toLowerCase().startsWith("v1_13"))
-                                    location.getBlock().setData((byte) durability);
+                                {
+                                    try
+                                    {
+                                        Method closeMethod = location.getBlock().getClass().getMethod("setData", Short.class);
+                                        if (closeMethod != null)
+                                            closeMethod.invoke(location.getBlock().getClass(), (short) durability);
+                                    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {}
+                                }
                             }
                         }
             } else
@@ -200,7 +228,14 @@ public class Portal
                                     {
                                         location.getBlock().setType(material);
                                         if (!pluginInstance.getManager().getServerVersion().toLowerCase().startsWith("v1_13"))
-                                            location.getBlock().setData((byte) durability);
+                                        {
+                                            try
+                                            {
+                                                Method closeMethod = location.getBlock().getClass().getMethod("setData", Short.class);
+                                                if (closeMethod != null)
+                                                    closeMethod.invoke(location.getBlock().getClass(), (short) durability);
+                                            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {}
+                                        }
                                     }
                                 }
                             else for (int pos_y = point2.getBlockY(); pos_y <= point1.getBlockY(); pos_y++)
@@ -210,7 +245,14 @@ public class Portal
                                 {
                                     location.getBlock().setType(material);
                                     if (!pluginInstance.getManager().getServerVersion().toLowerCase().startsWith("v1_13"))
-                                        location.getBlock().setData((byte) durability);
+                                    {
+                                        try
+                                        {
+                                            Method closeMethod = location.getBlock().getClass().getMethod("setData", Short.class);
+                                            if (closeMethod != null)
+                                                closeMethod.invoke(location.getBlock().getClass(), (short) durability);
+                                        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {}
+                                    }
                                 }
                             }
                     else for (int pos_z = point2.getBlockZ(); pos_z <= point1.getBlockZ(); pos_z++)
@@ -223,7 +265,14 @@ public class Portal
                                 {
                                     location.getBlock().setType(material);
                                     if (!pluginInstance.getManager().getServerVersion().toLowerCase().startsWith("v1_13"))
-                                        location.getBlock().setData((byte) durability);
+                                    {
+                                        try
+                                        {
+                                            Method closeMethod = location.getBlock().getClass().getMethod("setData", Short.class);
+                                            if (closeMethod != null)
+                                                closeMethod.invoke(location.getBlock().getClass(), (short) durability);
+                                        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {}
+                                    }
                                 }
                             }
                         else for (int pos_y = point2.getBlockY(); pos_y <= point1.getBlockY(); pos_y++)
@@ -233,7 +282,14 @@ public class Portal
                             {
                                 location.getBlock().setType(material);
                                 if (!pluginInstance.getManager().getServerVersion().toLowerCase().startsWith("v1_13"))
-                                    location.getBlock().setData((byte) durability);
+                                {
+                                    try
+                                    {
+                                        Method closeMethod = location.getBlock().getClass().getMethod("setData", Short.class);
+                                        if (closeMethod != null)
+                                            closeMethod.invoke(location.getBlock().getClass(), (short) durability);
+                                    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {}
+                                }
                             }
                         }
                     }

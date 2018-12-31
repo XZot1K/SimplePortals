@@ -14,13 +14,14 @@ public class PortalActionEvent extends Event implements Cancellable
     private boolean cancelled;
     private Player player;
     private Portal portal;
-    private Location teleportLocation;
+    private Location teleportLocation, fromLocation;
 
-    public PortalActionEvent(Player player, Portal portal, Location teleportLocation)
+    public PortalActionEvent(Player player, Portal portal, Location fromLocation, Location teleportLocation)
     {
         this.player = player;
         this.portal = portal;
         this.teleportLocation = teleportLocation;
+        this.fromLocation = fromLocation;
     }
 
     @Override
@@ -54,5 +55,10 @@ public class PortalActionEvent extends Event implements Cancellable
     public Location getTeleportLocation()
     {
         return teleportLocation;
+    }
+
+    public Location getFromLocation()
+    {
+        return fromLocation;
     }
 }

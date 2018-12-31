@@ -85,43 +85,40 @@ public class Listeners implements Listener
                 if (portalEnterEvent.isCancelled()) return;
 
                 if (pluginInstance.getManager().isPlayerOnCooldown(e.getPlayer())) return;
-                if ((!e.getPlayer().hasPermission("simpleportals.portal." + portal.getPortalId())
-                        || !e.getPlayer().hasPermission("simpleportals.portals." + portal.getPortalId()))
-                        && (!e.getPlayer().hasPermission("simpleportals.portal.*") || !e.getPlayer().hasPermission("simpleportals.portals.*")))
+                if (!e.getPlayer().hasPermission("simpleportals.portal." + portal.getPortalId()) && !e.getPlayer().hasPermission("simpleportals.portals." + portal.getPortalId())
+                        && !e.getPlayer().hasPermission("simpleportals.portal.*") && !e.getPlayer().hasPermission("simpleportals.portals.*"))
                     return;
 
-                PortalActionEvent portalActionEvent = new PortalActionEvent(e.getPlayer(), portal, portal.getTeleportLocation().asBukkitLocation());
+                PortalActionEvent portalActionEvent = new PortalActionEvent(e.getPlayer(), portal, e.getFrom(), portal.getTeleportLocation().asBukkitLocation());
                 pluginInstance.getServer().getPluginManager().callEvent(portalActionEvent);
                 if (portalActionEvent.isCancelled()) return;
 
                 for (int i = -1; ++i < portal.getCommands().size(); )
                 {
                     String commandLine = portal.getCommands().get(i);
-                    try
+                    if (commandLine.contains(":"))
                     {
-                        if (commandLine.contains(":"))
-                        {
-                            String[] commandLineArgs = commandLine.split(":");
-                            String command = commandLineArgs[0], type = commandLineArgs[1];
-                            if (type.equalsIgnoreCase("PLAYER"))
-                                pluginInstance.getServer().dispatchCommand(e.getPlayer(), command.replace("{player}", e.getPlayer().getName()));
-                            else
-                                pluginInstance.getServer().dispatchCommand(pluginInstance.getServer().getConsoleSender(), command.replace("{player}", e.getPlayer().getName()));
-                        } else
-                            pluginInstance.getServer().dispatchCommand(pluginInstance.getServer().getConsoleSender(), commandLine.replace("{player}", e.getPlayer().getName()));
-                    } catch (Exception ignored) {}
+                        String[] commandLineArgs = commandLine.split(":");
+                        String command = commandLineArgs[0], type = commandLineArgs[1];
+                        if (type.equalsIgnoreCase("PLAYER"))
+                            pluginInstance.getServer().dispatchCommand(e.getPlayer(), command.replace("{player}", e.getPlayer().getName()));
+                        else
+                            pluginInstance.getServer().dispatchCommand(pluginInstance.getServer().getConsoleSender(), command.replace("{player}", e.getPlayer().getName()));
+                    } else
+                        pluginInstance.getServer().dispatchCommand(pluginInstance.getServer().getConsoleSender(), commandLine.replace("{player}", e.getPlayer().getName()));
                 }
 
                 if (!portal.isCommandsOnly())
                 {
-                    try
-                    {
-                        String particleEffect = pluginInstance.getConfig().getString("teleport-visual-effect")
-                                .toUpperCase().replace(" ", "_").replace("-", "_");
-                        e.getPlayer().getWorld().playSound(e.getPlayer().getLocation(), Sound.valueOf(pluginInstance.getConfig().getString("teleport-sound")
-                                .toUpperCase().replace(" ", "_").replace("-", "_")), 1, 1);
-                        pluginInstance.getManager().getParticleHandler().broadcastParticle(e.getPlayer().getLocation(), 1, 2, 1, 0, particleEffect, 50);
-                    } catch (Exception ignored) {}
+                    String particleEffect = pluginInstance.getConfig().getString("teleport-visual-effect");
+                    if (particleEffect != null && !particleEffect.equalsIgnoreCase(""))
+                        pluginInstance.getManager().getParticleHandler().broadcastParticle(e.getPlayer().getLocation(), 1, 2, 1, 0,
+                                particleEffect.toUpperCase().replace(" ", "_").replace("-", "_"), 50);
+
+                    String sound = pluginInstance.getConfig().getString("teleport-sound");
+                    if (sound != null && !sound.equalsIgnoreCase(""))
+                        e.getPlayer().getWorld().playSound(e.getPlayer().getLocation(), Sound.valueOf(sound.toUpperCase()
+                                .replace(" ", "_").replace("-", "_")), 1, 1);
 
                     if (pluginInstance.getConfig().getBoolean("use-portal-cooldown"))
                         pluginInstance.getManager().updatePlayerPortalCooldown(e.getPlayer());
