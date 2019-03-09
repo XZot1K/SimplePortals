@@ -39,13 +39,14 @@ public class SimplePortals extends JavaPlugin
         if (!(generalTaskDuration <= -1))
             getServer().getScheduler().runTaskTimerAsynchronously(getPluginInstance(), () ->
             {
-                try
-                {
-                    if (updateChecker.checkForUpdates())
-                        getManager().sendConsoleMessage("&cThe version &e" + getDescription().getVersion()
-                                + " &cis doesn't match the latest version!");
-                    else getManager().sendConsoleMessage("&aEverything looks like it is up to date!");
-                } catch (Exception ignored) {}
+                if (getConfig().getBoolean("update-checker"))
+                    try
+                    {
+                        if (updateChecker.checkForUpdates())
+                            getManager().sendConsoleMessage("&cThe version &e" + getDescription().getVersion()
+                                    + " &cis doesn't match the latest version!");
+                        else getManager().sendConsoleMessage("&aEverything looks like it is up to date!");
+                    } catch (Exception ignored) {}
 
                 getManager().savePortals();
                 if (getConfig().getBoolean("reload-plugin-timer"))

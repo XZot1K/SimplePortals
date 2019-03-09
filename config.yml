@@ -27,6 +27,8 @@ invalid-page-message: "&cThe page you entered was invalid. (Page Count: &e{pages
 invalid-material-message: "&cThe material you entered was invalid. Please check spelling and punctuation."
 portal-filled-message: "&aThe portal &e{name} &ahas been successfully filled with the &e{material} &amaterial!"
 
+# If this option is enabled, the plugin will notify via console about any new updates.
+update-checker: true
 # The general task handles things like auto-saving and update checking. This value is the delay in between
 # running these tasks in seconds. (Note: setting this value to -1 will disable the general task entirely.)
 general-task-duration: 300

@@ -46,7 +46,7 @@ public class UpdateChecker
     {
         URLConnection con = checkURL.openConnection();
         this.newVersion = new BufferedReader(new InputStreamReader(con.getInputStream())).readLine();
-        return !pluginInstance.getDescription().getVersion().equals(newVersion);
+        return !pluginInstance.getDescription().getVersion().equalsIgnoreCase(newVersion);
     }
 
 }
