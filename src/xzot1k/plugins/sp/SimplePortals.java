@@ -1,16 +1,28 @@
 package xzot1k.plugins.sp;
 
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import xzot1k.plugins.sp.api.Manager;
 import xzot1k.plugins.sp.core.Commands;
 import xzot1k.plugins.sp.core.Listeners;
 import xzot1k.plugins.sp.core.utils.UpdateChecker;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
+
 public class SimplePortals extends JavaPlugin
 {
     private static SimplePortals pluginInstance;
     private Manager manager;
     private UpdateChecker updateChecker;
+
+    private FileConfiguration portalsConfig;
+    private File portalsFile;
 
     @Override
     public void onEnable()
@@ -19,6 +31,7 @@ public class SimplePortals extends JavaPlugin
         manager = new Manager(getPluginInstance());
         updateChecker = new UpdateChecker(getPluginInstance(), 56772);
         saveDefaultConfig();
+        saveDefaultPortalsConfig();
 
         getCommand("simpleportals").setExecutor(new Commands(getPluginInstance()));
         getServer().getPluginManager().registerEvents(new Listeners(pluginInstance), this);
@@ -72,5 +85,36 @@ public class SimplePortals extends JavaPlugin
     public Manager getManager()
     {
         return manager;
+    }
+
+    public void reloadPortalsConfig()
+    {
+        if (portalsFile == null) portalsFile = new File(getDataFolder(), "portals.yml");
+        portalsConfig = YamlConfiguration.loadConfiguration(portalsFile);
+        Reader defConfigStream = new InputStreamReader(this.getResource("portals.yml"), StandardCharsets.UTF_8);
+        YamlConfiguration defConfig = YamlConfiguration.loadConfiguration(defConfigStream);
+        portalsConfig.setDefaults(defConfig);
+    }
+
+    public FileConfiguration getPortalsConfig()
+    {
+        if (portalsConfig == null) reloadPortalsConfig();
+        return portalsConfig;
+    }
+
+    public void savePortalsConfig()
+    {
+        if (portalsConfig == null || portalsFile == null) return;
+
+        try
+        {
+            getPortalsConfig().save(portalsFile);
+        } catch (IOException ignored) {}
+    }
+
+    public void saveDefaultPortalsConfig()
+    {
+        if (portalsFile == null) portalsFile = new File(getDataFolder(), "portals.yml");
+        if (!portalsFile.exists()) this.saveResource("portals.yml", false);
     }
 }

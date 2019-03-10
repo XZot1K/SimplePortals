@@ -58,15 +58,10 @@ public class Portal
         file.delete();
     }
 
-    public void save()
+    public void save(boolean forceSaveFile)
     {
-        File file = new File(pluginInstance.getDataFolder(), "/portals/" + getPortalId() + ".yml");
-        FileConfiguration yaml = YamlConfiguration.loadConfiguration(file);
-
-        // save region id
-        yaml.set("portal-id", getPortalId());
-        yaml.set("last-fill-material", getLastFillMaterial().name());
-        yaml.set("portal-server", getServerSwitchName());
+        pluginInstance.getPortalsConfig().set(getPortalId() + ".last-fill-material", getLastFillMaterial().name());
+        pluginInstance.getPortalsConfig().set(getPortalId() + ".portal-server", getServerSwitchName());
 
         if (getRegion() != null)
         {
@@ -74,20 +69,20 @@ public class Portal
             SerializableLocation point1 = getRegion().getPoint1();
             if (point1 != null)
             {
-                yaml.set("point-1.world", point1.getWorldName());
-                yaml.set("point-1.x", point1.getX());
-                yaml.set("point-1.y", point1.getY());
-                yaml.set("point-1.z", point1.getZ());
+                pluginInstance.getPortalsConfig().set(getPortalId() + ".point-1.world", point1.getWorldName());
+                pluginInstance.getPortalsConfig().set(getPortalId() + ".point-1.x", point1.getX());
+                pluginInstance.getPortalsConfig().set(getPortalId() + ".point-1.y", point1.getY());
+                pluginInstance.getPortalsConfig().set(getPortalId() + ".point-1.z", point1.getZ());
             }
 
             // save point 2.
             SerializableLocation point2 = getRegion().getPoint2();
             if (point2 != null)
             {
-                yaml.set("point-2.world", point2.getWorldName());
-                yaml.set("point-2.x", point2.getX());
-                yaml.set("point-2.y", point2.getY());
-                yaml.set("point-2.z", point2.getZ());
+                pluginInstance.getPortalsConfig().set(getPortalId() + ".point-2.world", point2.getWorldName());
+                pluginInstance.getPortalsConfig().set(getPortalId() + ".point-2.x", point2.getX());
+                pluginInstance.getPortalsConfig().set(getPortalId() + ".point-2.y", point2.getY());
+                pluginInstance.getPortalsConfig().set(getPortalId() + ".point-2.z", point2.getZ());
             }
         }
 
@@ -95,18 +90,18 @@ public class Portal
         SerializableLocation teleportLocation = getTeleportLocation();
         if (teleportLocation != null)
         {
-            yaml.set("teleport-location.world", teleportLocation.getWorldName());
-            yaml.set("teleport-location.x", teleportLocation.getX());
-            yaml.set("teleport-location.y", teleportLocation.getY());
-            yaml.set("teleport-location.z", teleportLocation.getZ());
-            yaml.set("teleport-location.yaw", teleportLocation.getYaw());
-            yaml.set("teleport-location.pitch", teleportLocation.getPitch());
+            pluginInstance.getPortalsConfig().set(getPortalId() + ".teleport-location.world", teleportLocation.getWorldName());
+            pluginInstance.getPortalsConfig().set(getPortalId() + ".teleport-location.x", teleportLocation.getX());
+            pluginInstance.getPortalsConfig().set(getPortalId() + ".teleport-location.y", teleportLocation.getY());
+            pluginInstance.getPortalsConfig().set(getPortalId() + ".teleport-location.z", teleportLocation.getZ());
+            pluginInstance.getPortalsConfig().set(getPortalId() + ".teleport-location.yaw", teleportLocation.getYaw());
+            pluginInstance.getPortalsConfig().set(getPortalId() + ".teleport-location.pitch", teleportLocation.getPitch());
         }
 
-        yaml.set("commands-only", isCommandsOnly());
-        yaml.set("commands", getCommands());
+        pluginInstance.getPortalsConfig().set(getPortalId() + ".commands-only", isCommandsOnly());
+        pluginInstance.getPortalsConfig().set(getPortalId() + ".commands", getCommands());
 
-        try { yaml.save(file); } catch (IOException e) { e.printStackTrace(); }
+        if (forceSaveFile) pluginInstance.savePortalsConfig();
     }
 
     public void performAction(Player player)
