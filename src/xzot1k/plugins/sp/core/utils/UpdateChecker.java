@@ -42,10 +42,17 @@ public class UpdateChecker
         return "https://www.spigotmc.org/resources/" + projectId;
     }
 
-    public boolean checkForUpdates() throws Exception
+    public boolean checkForUpdates()
     {
-        URLConnection con = checkURL.openConnection();
-        this.newVersion = new BufferedReader(new InputStreamReader(con.getInputStream())).readLine();
+        URLConnection con = null;
+
+        try
+        {
+            con = checkURL.openConnection();
+            this.newVersion = new BufferedReader(new InputStreamReader(con.getInputStream())).readLine();
+        } catch (Exception ignored) {}
+
+        if (con == null || newVersion == null) return false;
         return !pluginInstance.getDescription().getVersion().equalsIgnoreCase(newVersion);
     }
 

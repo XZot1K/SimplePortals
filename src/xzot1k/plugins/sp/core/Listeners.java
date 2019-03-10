@@ -7,6 +7,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import xzot1k.plugins.sp.SimplePortals;
 import xzot1k.plugins.sp.api.enums.PointType;
@@ -131,6 +132,17 @@ public class Listeners implements Listener
                     portal.performAction(e.getPlayer());
                 }
             }
+        }
+    }
+
+    @EventHandler
+    public void onTeleport(PlayerTeleportEvent e)
+    {
+        if (e.getCause() == PlayerTeleportEvent.TeleportCause.NETHER_PORTAL || e.getCause() == PlayerTeleportEvent.TeleportCause.END_PORTAL
+                || e.getCause() == PlayerTeleportEvent.TeleportCause.END_GATEWAY)
+        {
+            Portal portal = pluginInstance.getManager().getPortalAtLocation(e.getFrom());
+            if (portal != null) e.setCancelled(true);
         }
     }
 
