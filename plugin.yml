@@ -1,10 +1,10 @@
 name: SimplePortals
-version: 1.2.5
+version: 1.2.5-B
 api-version: 1.13
 main: xzot1k.plugins.sp.SimplePortals
 author: XZot1K
 description: A simple yet effective way to create portals for your server!
-softdepend: [Multiverse, MultiWorld]
+softdepend: [Multiverse-Core, MultiWorld]
 commands:
   simpleportals:
     default: op
