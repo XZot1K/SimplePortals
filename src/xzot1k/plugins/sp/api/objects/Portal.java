@@ -54,8 +54,8 @@ public class Portal
 
     public void delete()
     {
-        File file = new File(pluginInstance.getDataFolder() + "/portals/" + getPortalId() + ".yml");
-        file.delete();
+        pluginInstance.getPortalsConfig().set(getPortalId(), null);
+        pluginInstance.savePortalsConfig();
     }
 
     public void save(boolean forceSaveFile)
