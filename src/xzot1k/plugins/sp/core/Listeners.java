@@ -6,7 +6,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import xzot1k.plugins.sp.SimplePortals;
@@ -14,6 +16,7 @@ import xzot1k.plugins.sp.api.enums.PointType;
 import xzot1k.plugins.sp.api.events.PortalActionEvent;
 import xzot1k.plugins.sp.api.events.PortalEnterEvent;
 import xzot1k.plugins.sp.api.objects.Portal;
+import xzot1k.plugins.sp.api.objects.SerializableLocation;
 
 public class Listeners implements Listener
 {
@@ -131,8 +134,15 @@ public class Listeners implements Listener
 
                     portal.performAction(e.getPlayer());
                 }
-            }
+            } else
+                pluginInstance.getManager().getSmartTransferMap().put(e.getPlayer().getUniqueId(), new SerializableLocation(pluginInstance, e.getFrom()));
         }
+    }
+
+    @EventHandler
+    public void onQuit(PlayerQuitEvent e)
+    {
+        pluginInstance.getManager().getSmartTransferMap().remove(e.getPlayer().getUniqueId());
     }
 
     @EventHandler

@@ -119,7 +119,16 @@ public class Portal
 
                 pluginInstance.getManager().teleportPlayerWithEntity(player, location);
             }
-        } else pluginInstance.getManager().switchServer(player, getServerSwitchName());
+        } else
+        {
+            if ((!pluginInstance.getManager().getSmartTransferMap().isEmpty() && pluginInstance.getManager().getSmartTransferMap().containsKey(player.getUniqueId())))
+            {
+                SerializableLocation serializableLocation = pluginInstance.getManager().getSmartTransferMap().get(player.getUniqueId());
+                pluginInstance.getManager().teleportPlayerWithEntity(player, serializableLocation.asBukkitLocation());
+            }
+
+            pluginInstance.getManager().switchServer(player, getServerSwitchName());
+        }
 
         try
         {

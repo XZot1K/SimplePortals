@@ -57,6 +57,7 @@ public class Manager
     private HashMap<UUID, Long> playerPortalCooldowns;
     private List<Portal> portals;
     private HashMap<UUID, TaskHolder> visualTasks;
+    private HashMap<UUID, SerializableLocation> smartTransferMap;
 
     private ParticleHandler particleHandler;
     private JSONHandler jsonHandler;
@@ -69,6 +70,7 @@ public class Manager
         playerPortalCooldowns = new HashMap<>();
         visualTasks = new HashMap<>();
         portals = new ArrayList<>();
+        smartTransferMap = new HashMap<>();
 
         serverVersion = pluginInstance.getServer().getClass().getPackage().getName()
                 .replace(".", ",").split(",")[3];
@@ -568,4 +570,10 @@ public class Manager
     {
         this.jsonHandler = jsonHandler;
     }
+
+    public HashMap<UUID, SerializableLocation> getSmartTransferMap()
+    {
+        return smartTransferMap;
+    }
+
 }
