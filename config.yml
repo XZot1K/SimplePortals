@@ -37,6 +37,8 @@ general-task-duration: 300
 reload-plugin-timer: true
 # If this is enabled when the player is teleport they will keep their current Yaw and Pitch.
 keep-teleport-head-axis: true
+# If this is enabled, all players will be able to use all portals.
+bypass-portal-permissions: false
 
 # Should players have a cooldown for portal usage?
 use-portal-cooldown: true

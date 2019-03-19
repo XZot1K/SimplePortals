@@ -89,7 +89,7 @@ public class Listeners implements Listener
                 if (portalEnterEvent.isCancelled()) return;
 
                 if (pluginInstance.getManager().isPlayerOnCooldown(e.getPlayer())) return;
-                if (!e.getPlayer().hasPermission("simpleportals.portal." + portal.getPortalId()) && !e.getPlayer().hasPermission("simpleportals.portals." + portal.getPortalId())
+                if (!pluginInstance.getConfig().getBoolean("bypass-portal-permissions") && !e.getPlayer().hasPermission("simpleportals.portal." + portal.getPortalId()) && !e.getPlayer().hasPermission("simpleportals.portals." + portal.getPortalId())
                         && !e.getPlayer().hasPermission("simpleportals.portal.*") && !e.getPlayer().hasPermission("simpleportals.portals.*"))
                     return;
 
