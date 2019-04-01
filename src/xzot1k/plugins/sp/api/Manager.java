@@ -414,30 +414,36 @@ public class Manager
                 String portalId = portalIds.get(i);
                 if (doesPortalExist(portalId)) return;
 
-                SerializableLocation teleportPoint1 = new SerializableLocation(pluginInstance, pluginInstance.getPortalsConfig().getString(portalId + ".point-1.world"),
-                        pluginInstance.getPortalsConfig().getDouble(portalId + ".point-1.x"), pluginInstance.getPortalsConfig().getDouble(portalId + ".point-1.y"),
-                        pluginInstance.getPortalsConfig().getDouble(portalId + ".point-1.z")), teleportPoint2 = new SerializableLocation(pluginInstance,
-                        pluginInstance.getPortalsConfig().getString(portalId + ".point-2.world"), pluginInstance.getPortalsConfig().getDouble(portalId + ".point-2.x"),
-                        pluginInstance.getPortalsConfig().getDouble(portalId + ".point-2.y"), pluginInstance.getPortalsConfig().getDouble(portalId + ".point-2.z"));
-                Region region = new Region(pluginInstance, teleportPoint1, teleportPoint2);
-                Portal portal = new Portal(pluginInstance, portalId, region);
-
-                SerializableLocation tpLocation = new SerializableLocation(pluginInstance, pluginInstance.getPortalsConfig().getString(portalId + ".teleport-location.world"),
-                        pluginInstance.getPortalsConfig().getDouble(portalId + ".teleport-location.x"), pluginInstance.getPortalsConfig().getDouble(portalId + ".teleport-location.y"),
-                        pluginInstance.getPortalsConfig().getDouble(portalId + ".teleport-location.z"));
-                portal.setTeleportLocation(tpLocation);
-                portal.setServerSwitchName(pluginInstance.getPortalsConfig().getString(portalId + ".portal-server"));
-                portal.setCommandsOnly(pluginInstance.getPortalsConfig().getBoolean(portalId + ".commands-only"));
-                portal.setCommands(pluginInstance.getPortalsConfig().getStringList(portalId + ".commands"));
-
-                String materialName = pluginInstance.getPortalsConfig().getString(portalId + ".last-fill-material");
-                if (materialName != null && !materialName.equalsIgnoreCase(""))
+                try
                 {
-                    Material material = Material.getMaterial(materialName.toUpperCase().replace(" ", "_").replace("-", "_"));
-                    portal.setLastFillMaterial(material == null ? Material.AIR : material);
-                } else portal.setLastFillMaterial(Material.AIR);
+                    SerializableLocation teleportPoint1 = new SerializableLocation(pluginInstance, pluginInstance.getPortalsConfig().getString(portalId + ".point-1.world"),
+                            pluginInstance.getPortalsConfig().getDouble(portalId + ".point-1.x"), pluginInstance.getPortalsConfig().getDouble(portalId + ".point-1.y"),
+                            pluginInstance.getPortalsConfig().getDouble(portalId + ".point-1.z")), teleportPoint2 = new SerializableLocation(pluginInstance,
+                            pluginInstance.getPortalsConfig().getString(portalId + ".point-2.world"), pluginInstance.getPortalsConfig().getDouble(portalId + ".point-2.x"),
+                            pluginInstance.getPortalsConfig().getDouble(portalId + ".point-2.y"), pluginInstance.getPortalsConfig().getDouble(portalId + ".point-2.z"));
+                    Region region = new Region(pluginInstance, teleportPoint1, teleportPoint2);
+                    Portal portal = new Portal(pluginInstance, portalId, region);
 
-                portal.register();
+                    SerializableLocation tpLocation = new SerializableLocation(pluginInstance, pluginInstance.getPortalsConfig().getString(portalId + ".teleport-location.world"),
+                            pluginInstance.getPortalsConfig().getDouble(portalId + ".teleport-location.x"), pluginInstance.getPortalsConfig().getDouble(portalId + ".teleport-location.y"),
+                            pluginInstance.getPortalsConfig().getDouble(portalId + ".teleport-location.z"));
+                    portal.setTeleportLocation(tpLocation);
+                    portal.setServerSwitchName(pluginInstance.getPortalsConfig().getString(portalId + ".portal-server"));
+                    portal.setCommandsOnly(pluginInstance.getPortalsConfig().getBoolean(portalId + ".commands-only"));
+                    portal.setCommands(pluginInstance.getPortalsConfig().getStringList(portalId + ".commands"));
+
+                    String materialName = pluginInstance.getPortalsConfig().getString(portalId + ".last-fill-material");
+                    if (materialName != null && !materialName.equalsIgnoreCase(""))
+                    {
+                        Material material = Material.getMaterial(materialName.toUpperCase().replace(" ", "_").replace("-", "_"));
+                        portal.setLastFillMaterial(material == null ? Material.AIR : material);
+                    } else portal.setLastFillMaterial(Material.AIR);
+
+                    portal.register();
+                } catch (Exception ignored)
+                {
+                    pluginInstance.getManager().sendConsoleMessage("&cThe portal &e" + portalId + " &cwas unable to be loaded. Please check its information in the &eportals.yml&c.");
+                }
             }
 
         File dir = new File(pluginInstance.getDataFolder(), "/portals");
@@ -453,30 +459,36 @@ public class Manager
                 YamlConfiguration yamlConfiguration = YamlConfiguration.loadConfiguration(file);
                 if (doesPortalExist(yamlConfiguration.getString("portal-id"))) return;
 
-                SerializableLocation teleportPoint1 = new SerializableLocation(pluginInstance, yamlConfiguration.getString("point-1.world"), yamlConfiguration.getDouble("point-1.x"),
-                        yamlConfiguration.getDouble("point-1.y"), yamlConfiguration.getDouble("point-1.z")),
-                        teleportPoint2 = new SerializableLocation(pluginInstance, yamlConfiguration.getString("point-2.world"), yamlConfiguration.getDouble("point-2.x"),
-                                yamlConfiguration.getDouble("point-2.y"), yamlConfiguration.getDouble("point-2.z"));
-                Region region = new Region(pluginInstance, teleportPoint1, teleportPoint2);
-                Portal portal = new Portal(pluginInstance, yamlConfiguration.getString("portal-id"), region);
-
-                SerializableLocation tpLocation = new SerializableLocation(pluginInstance, yamlConfiguration.getString("teleport-location.world"), yamlConfiguration.getDouble("teleport-location.x"),
-                        yamlConfiguration.getDouble("teleport-location.y"), yamlConfiguration.getDouble("teleport-location.z"));
-                portal.setTeleportLocation(tpLocation);
-                portal.setServerSwitchName(yamlConfiguration.getString("portal-server"));
-                portal.setCommandsOnly(yamlConfiguration.getBoolean("commands-only"));
-                portal.setCommands(yamlConfiguration.getStringList("commands"));
-
-                String materialName = yamlConfiguration.getString("last-fill-material");
-                if (materialName != null && !materialName.equalsIgnoreCase(""))
+                try
                 {
-                    Material material = Material.getMaterial(materialName.toUpperCase().replace(" ", "_").replace("-", "_"));
-                    portal.setLastFillMaterial(material == null ? Material.AIR : material);
-                } else portal.setLastFillMaterial(Material.AIR);
+                    SerializableLocation teleportPoint1 = new SerializableLocation(pluginInstance, yamlConfiguration.getString("point-1.world"), yamlConfiguration.getDouble("point-1.x"),
+                            yamlConfiguration.getDouble("point-1.y"), yamlConfiguration.getDouble("point-1.z")),
+                            teleportPoint2 = new SerializableLocation(pluginInstance, yamlConfiguration.getString("point-2.world"), yamlConfiguration.getDouble("point-2.x"),
+                                    yamlConfiguration.getDouble("point-2.y"), yamlConfiguration.getDouble("point-2.z"));
+                    Region region = new Region(pluginInstance, teleportPoint1, teleportPoint2);
+                    Portal portal = new Portal(pluginInstance, yamlConfiguration.getString("portal-id"), region);
 
-                portal.register();
-                file.delete();
-                sendConsoleMessage("&aThe portal &e" + portal.getPortalId() + " &ahas been converted over to a &ev1.2.5 &aportal.");
+                    SerializableLocation tpLocation = new SerializableLocation(pluginInstance, yamlConfiguration.getString("teleport-location.world"), yamlConfiguration.getDouble("teleport-location.x"),
+                            yamlConfiguration.getDouble("teleport-location.y"), yamlConfiguration.getDouble("teleport-location.z"));
+                    portal.setTeleportLocation(tpLocation);
+                    portal.setServerSwitchName(yamlConfiguration.getString("portal-server"));
+                    portal.setCommandsOnly(yamlConfiguration.getBoolean("commands-only"));
+                    portal.setCommands(yamlConfiguration.getStringList("commands"));
+
+                    String materialName = yamlConfiguration.getString("last-fill-material");
+                    if (materialName != null && !materialName.equalsIgnoreCase(""))
+                    {
+                        Material material = Material.getMaterial(materialName.toUpperCase().replace(" ", "_").replace("-", "_"));
+                        portal.setLastFillMaterial(material == null ? Material.AIR : material);
+                    } else portal.setLastFillMaterial(Material.AIR);
+
+                    portal.register();
+                    file.delete();
+                    sendConsoleMessage("&aThe portal &e" + portal.getPortalId() + " &ahas been converted over to a &ev1.2.x &aportal.");
+                } catch (Exception ignored)
+                {
+                    sendConsoleMessage("&cThe file &e" + file.getName() + " &cwas unable to be converted. Please make sure this is a &eSimplePortals &cportal.");
+                }
             }
         }
 
