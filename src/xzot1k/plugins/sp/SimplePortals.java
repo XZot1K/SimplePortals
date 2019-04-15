@@ -14,6 +14,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 public class SimplePortals extends JavaPlugin
 {
@@ -33,7 +34,7 @@ public class SimplePortals extends JavaPlugin
         saveDefaultConfig();
         saveDefaultPortalsConfig();
 
-        getCommand("simpleportals").setExecutor(new Commands(getPluginInstance()));
+        Objects.requireNonNull(getCommand("simpleportals")).setExecutor(new Commands(getPluginInstance()));
         getServer().getPluginManager().registerEvents(new Listeners(pluginInstance), this);
 
 

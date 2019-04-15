@@ -46,6 +46,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 public class Manager
@@ -252,8 +253,10 @@ public class Manager
 
     public long getCooldownTimeLeft(Player player)
     {
-        if (!getPlayerPortalCooldowns().isEmpty() && getPlayerPortalCooldowns().containsKey(player.getUniqueId()))
-            return ((getPlayerPortalCooldowns().get(player.getUniqueId()) / 1000) + pluginInstance.getConfig().getInt("portal-cooldown-duration")) - (System.currentTimeMillis() / 1000);
+        int cooldown = pluginInstance.getConfig().getInt("portal-cooldown-duration");
+        if (cooldown >= 0)
+            if (!getPlayerPortalCooldowns().isEmpty() && getPlayerPortalCooldowns().containsKey(player.getUniqueId()))
+                return ((getPlayerPortalCooldowns().get(player.getUniqueId()) / 1000) + cooldown) - (System.currentTimeMillis() / 1000);
         return 0;
     }
 
@@ -314,19 +317,15 @@ public class Manager
             } else
             {
                 Entity ve = player.getVehicle();
-                ve.eject();
-
-                try
+                if (ve != null)
                 {
+                    ve.eject();
+
                     ve.teleport(location, PlayerTeleportEvent.TeleportCause.PLUGIN);
                     player.teleport(location, PlayerTeleportEvent.TeleportCause.PLUGIN);
-                } catch (Exception e)
-                {
-                    ve.teleport(location);
-                    player.teleport(location);
-                }
 
-                pluginInstance.getServer().getScheduler().scheduleSyncDelayedTask(pluginInstance, () -> ve.setPassenger(player), 10);
+                    pluginInstance.getServer().getScheduler().scheduleSyncDelayedTask(pluginInstance, () -> ve.setPassenger(player), 10);
+                }
             }
         } else
         {
@@ -344,7 +343,7 @@ public class Manager
     {
         if (particleHandler == null) return;
 
-        String particleEffect = pluginInstance.getConfig().getString("selection-visual-effect")
+        String particleEffect = Objects.requireNonNull(pluginInstance.getConfig().getString("selection-visual-effect"))
                 .toUpperCase().replace(" ", "_").replace("-", "_");
 
         BukkitTask bukkitTask = new BukkitRunnable()

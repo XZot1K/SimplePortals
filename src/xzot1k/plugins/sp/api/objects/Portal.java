@@ -17,6 +17,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class Portal
 {
@@ -124,6 +125,7 @@ public class Portal
             if ((!pluginInstance.getManager().getSmartTransferMap().isEmpty() && pluginInstance.getManager().getSmartTransferMap().containsKey(player.getUniqueId())))
             {
                 SerializableLocation serializableLocation = pluginInstance.getManager().getSmartTransferMap().get(player.getUniqueId());
+                serializableLocation.setYaw(-serializableLocation.getYaw());
                 pluginInstance.getManager().teleportPlayerWithEntity(player, serializableLocation.asBukkitLocation());
             }
 
@@ -132,9 +134,9 @@ public class Portal
 
         try
         {
-            String particleEffect = pluginInstance.getConfig().getString("teleport-visual-effect")
+            String particleEffect = Objects.requireNonNull(pluginInstance.getConfig().getString("teleport-visual-effect"))
                     .toUpperCase().replace(" ", "_").replace("-", "_");
-            player.getWorld().playSound(player.getLocation(), Sound.valueOf(pluginInstance.getConfig().getString("teleport-sound")
+            player.getWorld().playSound(player.getLocation(), Sound.valueOf(Objects.requireNonNull(pluginInstance.getConfig().getString("teleport-sound"))
                     .toUpperCase().replace(" ", "_").replace("-", "_")), 1, 1);
             pluginInstance.getManager().getParticleHandler().broadcastParticle(player.getLocation(), 1, 2, 1, 0, particleEffect, 50);
         } catch (Exception ignored) {}
@@ -143,7 +145,7 @@ public class Portal
     public void fillPortal(Material material, int durability)
     {
         Location point1 = getRegion().getPoint1().asBukkitLocation(), point2 = getRegion().getPoint2().asBukkitLocation();
-        if (point1.getWorld().getName().equalsIgnoreCase(point2.getWorld().getName()))
+        if (Objects.requireNonNull(point1.getWorld()).getName().equalsIgnoreCase(Objects.requireNonNull(point2.getWorld()).getName()))
         {
             if (point1.getBlockX() <= point2.getBlockX())
             {
@@ -305,7 +307,7 @@ public class Portal
 
     public void displayRegion(Player player)
     {
-        String particleEffect = pluginInstance.getConfig().getString("region-visual-effect")
+        String particleEffect = Objects.requireNonNull(pluginInstance.getConfig().getString("region-visual-effect"))
                 .toUpperCase().replace(" ", "_").replace("-", "_");
 
         BukkitTask bukkitTask = new BukkitRunnable()
@@ -323,7 +325,7 @@ public class Portal
                     return;
                 }
 
-                if (point1.getWorld().getName().equalsIgnoreCase(point2.getWorld().getName()))
+                if (Objects.requireNonNull(point1.getWorld()).getName().equalsIgnoreCase(Objects.requireNonNull(point2.getWorld()).getName()))
                 {
                     if (point1.getBlockX() <= point2.getBlockX())
                     {

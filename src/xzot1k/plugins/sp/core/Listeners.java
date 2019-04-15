@@ -6,7 +6,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
@@ -17,6 +16,8 @@ import xzot1k.plugins.sp.api.events.PortalActionEvent;
 import xzot1k.plugins.sp.api.events.PortalEnterEvent;
 import xzot1k.plugins.sp.api.objects.Portal;
 import xzot1k.plugins.sp.api.objects.SerializableLocation;
+
+import java.util.Objects;
 
 public class Listeners implements Listener
 {
@@ -78,7 +79,7 @@ public class Listeners implements Listener
     @EventHandler
     public void onMove(PlayerMoveEvent e)
     {
-        if (e.getFrom().getBlockX() != e.getTo().getBlockX() || e.getFrom().getBlockY() != e.getTo().getBlockY()
+        if (e.getFrom().getBlockX() != Objects.requireNonNull(e.getTo()).getBlockX() || e.getFrom().getBlockY() != e.getTo().getBlockY()
                 || e.getFrom().getBlockZ() != e.getTo().getBlockZ())
         {
             Portal portal = pluginInstance.getManager().getPortalAtLocation(e.getTo());
@@ -88,7 +89,8 @@ public class Listeners implements Listener
                 pluginInstance.getServer().getPluginManager().callEvent(portalEnterEvent);
                 if (portalEnterEvent.isCancelled()) return;
 
-                if (pluginInstance.getManager().isPlayerOnCooldown(e.getPlayer())) return;
+                if (pluginInstance.getConfig().getBoolean("use-portal-cooldown") && pluginInstance.getManager().isPlayerOnCooldown(e.getPlayer()))
+                    return;
                 if (!pluginInstance.getConfig().getBoolean("bypass-portal-permissions") && !e.getPlayer().hasPermission("simpleportals.portal." + portal.getPortalId()) && !e.getPlayer().hasPermission("simpleportals.portals." + portal.getPortalId())
                         && !e.getPlayer().hasPermission("simpleportals.portal.*") && !e.getPlayer().hasPermission("simpleportals.portals.*"))
                     return;
@@ -128,7 +130,7 @@ public class Listeners implements Listener
                         pluginInstance.getManager().updatePlayerPortalCooldown(e.getPlayer());
 
                     e.getPlayer().sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
-                            + pluginInstance.getConfig().getString("portal-message")
+                            + Objects.requireNonNull(pluginInstance.getConfig().getString("portal-message"))
                             .replace("{name}", portal.getPortalId())
                             .replace("{time}", String.valueOf(pluginInstance.getManager().getCooldownTimeLeft(e.getPlayer())))));
 
