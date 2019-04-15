@@ -1,5 +1,5 @@
 name: SimplePortals
-version: 1.2.6-F
+version: 1.2.7_SNAPSHOT
 api-version: 1.13
 main: xzot1k.plugins.sp.SimplePortals
 author: XZot1K

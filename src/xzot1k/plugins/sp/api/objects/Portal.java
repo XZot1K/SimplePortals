@@ -3,6 +3,7 @@ package xzot1k.plugins.sp.api.objects;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.block.Block;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -125,7 +126,36 @@ public class Portal
             if ((!pluginInstance.getManager().getSmartTransferMap().isEmpty() && pluginInstance.getManager().getSmartTransferMap().containsKey(player.getUniqueId())))
             {
                 SerializableLocation serializableLocation = pluginInstance.getManager().getSmartTransferMap().get(player.getUniqueId());
-                serializableLocation.setYaw(-serializableLocation.getYaw());
+
+                if (pluginInstance.getManager().isFacingPortal(player, this, 5))
+                {
+                    double currentYaw = serializableLocation.getYaw();
+                    String direction = pluginInstance.getManager().getDirection(currentYaw);
+
+                    // Set YAW to opposite directions.
+                    switch (direction.toUpperCase())
+                    {
+                        case "NORTH":
+                            serializableLocation.setYaw(0);
+                            break;
+
+                        case "SOUTH":
+                            serializableLocation.setYaw(180);
+                            break;
+
+                        case "EAST":
+                            serializableLocation.setYaw(90);
+                            break;
+
+                        case "WEST":
+                            serializableLocation.setYaw(-90);
+                            break;
+                        default:
+                            break;
+                    }
+
+                }
+
                 pluginInstance.getManager().teleportPlayerWithEntity(player, serializableLocation.asBukkitLocation());
             }
 

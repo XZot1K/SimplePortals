@@ -1,5 +1,6 @@
 package xzot1k.plugins.sp.core;
 
+import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -137,7 +138,25 @@ public class Listeners implements Listener
                     portal.performAction(e.getPlayer());
                 }
             } else
+            {
+                if (!pluginInstance.getManager().getSmartTransferMap().isEmpty() && pluginInstance.getManager().getSmartTransferMap().containsKey(e.getPlayer().getUniqueId()))
+                {
+                    SerializableLocation serializableLocation = pluginInstance.getManager().getSmartTransferMap().get(e.getPlayer().getUniqueId());
+                    if (serializableLocation != null)
+                    {
+                        Location location = e.getPlayer().getLocation();
+                        serializableLocation.setWorldName(Objects.requireNonNull(location.getWorld()).getName());
+                        serializableLocation.setX(location.getX());
+                        serializableLocation.setY(location.getY());
+                        serializableLocation.setZ(location.getZ());
+                        serializableLocation.setYaw(location.getYaw());
+                        serializableLocation.setPitch(location.getPitch());
+                        return;
+                    }
+                }
+
                 pluginInstance.getManager().getSmartTransferMap().put(e.getPlayer().getUniqueId(), new SerializableLocation(pluginInstance, e.getFrom()));
+            }
         }
     }
 

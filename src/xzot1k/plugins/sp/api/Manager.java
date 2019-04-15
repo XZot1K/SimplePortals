@@ -12,6 +12,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.util.BlockIterator;
 import xzot1k.plugins.sp.SimplePortals;
 import xzot1k.plugins.sp.api.enums.PointType;
 import xzot1k.plugins.sp.api.objects.Portal;
@@ -337,6 +338,35 @@ public class Manager
                 player.teleport(location);
             }
         }
+    }
+
+    public boolean isFacingPortal(Player player, Portal portal, int range)
+    {
+        BlockIterator blockIterator = new BlockIterator(player, range);
+        Block lastBlock = blockIterator.next();
+
+        boolean foundPortal = false;
+        while (blockIterator.hasNext())
+        {
+            lastBlock = blockIterator.next();
+            if (!portal.getRegion().isInRegion(lastBlock.getLocation()))
+                continue;
+
+            foundPortal = true;
+            break;
+        }
+
+        return foundPortal;
+    }
+
+    public String getDirection(double yaw)
+    {
+        if (yaw < 0) yaw += 360;
+        if (yaw >= 315 || yaw < 45) return "SOUTH";
+        else if (yaw < 135) return "WEST";
+        else if (yaw < 225) return "NORTH";
+        else if (yaw < 315) return "EAST";
+        return "NORTH";
     }
 
     public void highlightBlock(Block block, Player player, PointType pointType)
