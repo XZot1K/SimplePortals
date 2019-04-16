@@ -8,6 +8,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerPortalEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -50,8 +51,9 @@ public class Listeners implements Listener
             if (pluginInstance.getManager().updateCurrentSelection(e.getPlayer(), e.getClickedBlock().getLocation(), PointType.POINT_ONE))
             {
                 pluginInstance.getManager().highlightBlock(e.getClickedBlock(), e.getPlayer(), PointType.POINT_ONE);
-                e.getPlayer().sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
-                        + pluginInstance.getConfig().getString("point-1-set-message")));
+                String message = pluginInstance.getConfig().getString("point-1-set-message");
+                if (message != null && !message.equalsIgnoreCase(""))
+                    e.getPlayer().sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix") + message));
             }
         }
 
@@ -71,8 +73,10 @@ public class Listeners implements Listener
             if (pluginInstance.getManager().updateCurrentSelection(e.getPlayer(), e.getClickedBlock().getLocation(), PointType.POINT_TWO))
             {
                 pluginInstance.getManager().highlightBlock(e.getClickedBlock(), e.getPlayer(), PointType.POINT_TWO);
-                e.getPlayer().sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
-                        + pluginInstance.getConfig().getString("point-2-set-message")));
+
+                String message = pluginInstance.getConfig().getString("point-2-set-message");
+                if (message != null && !message.equalsIgnoreCase(""))
+                    e.getPlayer().sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix") + message));
             }
         }
     }
@@ -91,10 +95,32 @@ public class Listeners implements Listener
                 if (portalEnterEvent.isCancelled()) return;
 
                 if (pluginInstance.getConfig().getBoolean("use-portal-cooldown") && pluginInstance.getManager().isPlayerOnCooldown(e.getPlayer()))
+                {
+                    double tv = pluginInstance.getConfig().getDouble("throw-velocity");
+                    if (!(tv <= -1))
+                        e.getPlayer().setVelocity(e.getPlayer().getLocation().getDirection().setY(e.getPlayer().getLocation().getDirection().getY() / 2).multiply(-tv));
+
+                    String message = pluginInstance.getConfig().getString("enter-cooldown-message");
+                    if (message != null && !message.equalsIgnoreCase(""))
+                        e.getPlayer().sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
+                                + message.replace("{time}", String.valueOf(pluginInstance.getManager().getCooldownTimeLeft(e.getPlayer())))));
                     return;
-                if (!pluginInstance.getConfig().getBoolean("bypass-portal-permissions") && !e.getPlayer().hasPermission("simpleportals.portal." + portal.getPortalId()) && !e.getPlayer().hasPermission("simpleportals.portals." + portal.getPortalId())
+                }
+
+
+                if (!pluginInstance.getConfig().getBoolean("bypass-portal-permissions") && !e.getPlayer().hasPermission("simpleportals.portal."
+                        + portal.getPortalId()) && !e.getPlayer().hasPermission("simpleportals.portals." + portal.getPortalId())
                         && !e.getPlayer().hasPermission("simpleportals.portal.*") && !e.getPlayer().hasPermission("simpleportals.portals.*"))
+                {
+                    double tv = pluginInstance.getConfig().getDouble("throw-velocity");
+                    if (!(tv <= -1))
+                        e.getPlayer().setVelocity(e.getPlayer().getLocation().getDirection().setY(e.getPlayer().getLocation().getDirection().getY() / 2).multiply(-tv));
+
+                    String message = pluginInstance.getConfig().getString("enter-no-permission-message");
+                    if (message != null && !message.equalsIgnoreCase(""))
+                        e.getPlayer().sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix") + message));
                     return;
+                }
 
                 PortalActionEvent portalActionEvent = new PortalActionEvent(e.getPlayer(), portal, e.getFrom(), portal.getTeleportLocation().asBukkitLocation());
                 pluginInstance.getServer().getPluginManager().callEvent(portalActionEvent);
@@ -130,10 +156,10 @@ public class Listeners implements Listener
                     if (pluginInstance.getConfig().getBoolean("use-portal-cooldown"))
                         pluginInstance.getManager().updatePlayerPortalCooldown(e.getPlayer());
 
-                    e.getPlayer().sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
-                            + Objects.requireNonNull(pluginInstance.getConfig().getString("portal-message"))
-                            .replace("{name}", portal.getPortalId())
-                            .replace("{time}", String.valueOf(pluginInstance.getManager().getCooldownTimeLeft(e.getPlayer())))));
+                    String message = pluginInstance.getConfig().getString("portal-message");
+                    if (message != null && !message.equalsIgnoreCase(""))
+                        e.getPlayer().sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
+                                + message.replace("{name}", portal.getPortalId()).replace("{time}", String.valueOf(pluginInstance.getManager().getCooldownTimeLeft(e.getPlayer())))));
 
                     portal.performAction(e.getPlayer());
                 }
@@ -167,13 +193,38 @@ public class Listeners implements Listener
     }
 
     @EventHandler
-    public void onTeleport(PlayerTeleportEvent e)
+    public void onTeleport(PlayerPortalEvent e)
     {
         if (e.getCause() == PlayerTeleportEvent.TeleportCause.NETHER_PORTAL || e.getCause() == PlayerTeleportEvent.TeleportCause.END_PORTAL
-                || e.getCause() == PlayerTeleportEvent.TeleportCause.END_GATEWAY)
+                || e.getCause().name().equalsIgnoreCase("END_GATEWAY"))
         {
             Portal portal = pluginInstance.getManager().getPortalAtLocation(e.getFrom());
-            if (portal != null) e.setCancelled(true);
+            if (portal != null)
+            {
+                e.setCancelled(true);
+                return;
+            }
+
+            boolean foundPortal = false;
+            for (int x = (e.getFrom().getBlockX() - 2) - 1; ++x <= e.getFrom().getBlockX() + 2; )
+            {
+                if (foundPortal) break;
+                for (int y = (e.getFrom().getBlockY() - 2) - 1; ++y <= e.getFrom().getBlockY() + 2; )
+                {
+                    if (foundPortal) break;
+                    for (int z = (e.getFrom().getBlockZ() - 2) - 1; ++z <= e.getFrom().getBlockZ() + 2; )
+                    {
+                        Location location = new Location(e.getFrom().getWorld(), x, y, z);
+                        Portal p = pluginInstance.getManager().getPortalAtLocation(location);
+                        if (p != null)
+                        {
+                            e.setCancelled(true);
+                            foundPortal = true;
+                            break;
+                        }
+                    }
+                }
+            }
         }
     }
 

@@ -26,6 +26,8 @@ portal-command-only-toggle-message: "&aCommand only mode has been &e{status} &af
 invalid-page-message: "&cThe page you entered was invalid. (Page Count: &e{pages}&c)"
 invalid-material-message: "&cThe material you entered was invalid. Please check spelling and punctuation."
 portal-filled-message: "&aThe portal &e{name} &ahas been successfully filled with the &e{material} &amaterial!"
+enter-cooldown-message: "&cYou can't enter this portal for another &e{time} &cseconds."
+enter-no-permission-message: "&cYou don't have permission to enter this portal."
 
 # If this option is enabled, the plugin will notify via console about any new updates.
 update-checker: true
@@ -44,6 +46,8 @@ bypass-portal-permissions: false
 use-portal-cooldown: true
 # How long should the player have to wait in between portal usages in seconds?
 portal-cooldown-duration: 5
+# This is the force/multiplier of the portal throw back feature (Set to -1 or lower to disable).
+throw-velocity: 1.35
 
 # This is the sound that is played when the player teleports.
 # You may need to change this based on your minecraft version.

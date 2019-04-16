@@ -436,7 +436,7 @@ public class Manager
     public void loadPortals()
     {
         getPortals().clear();
-        List<String> portalIds = new ArrayList<>(pluginInstance.getPortalsConfig().getConfigurationSection("").getKeys(false));
+        List<String> portalIds = new ArrayList<>(Objects.requireNonNull(pluginInstance.getPortalsConfig().getConfigurationSection("")).getKeys(false));
         if (!portalIds.isEmpty())
             for (int i = -1; ++i < portalIds.size(); )
             {
