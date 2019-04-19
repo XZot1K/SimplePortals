@@ -4,6 +4,8 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import xzot1k.plugins.sp.SimplePortals;
 
+import java.util.Objects;
+
 public class SerializableLocation
 {
 
@@ -20,7 +22,7 @@ public class SerializableLocation
         setZ(location.getZ());
         setYaw(location.getYaw());
         setPitch(location.getPitch());
-        setWorldName(location.getWorld().getName());
+        setWorldName(Objects.requireNonNull(location.getWorld()).getName());
     }
 
     public SerializableLocation(SimplePortals pluginInstance, String worldName, double x, double y, double z)
@@ -29,8 +31,8 @@ public class SerializableLocation
         setX(x);
         setY(y);
         setZ(z);
-        setYaw(0);
-        setPitch(0);
+        setYaw(yaw);
+        setPitch(pitch);
         setWorldName(worldName);
     }
 
