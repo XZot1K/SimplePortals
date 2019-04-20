@@ -62,12 +62,12 @@ public class Listeners implements Listener
         {
             e.setCancelled(true);
 
-            if (pluginInstance.getManager().getServerVersion().toLowerCase().startsWith("v1_13")
-                    || pluginInstance.getManager().getServerVersion().equalsIgnoreCase("v1_12_R1")
-                    || pluginInstance.getManager().getServerVersion().equalsIgnoreCase("v1_11_R1")
-                    || pluginInstance.getManager().getServerVersion().equalsIgnoreCase("v1_10_R1")
-                    || pluginInstance.getManager().getServerVersion().equalsIgnoreCase("v1_9_R2")
-                    || pluginInstance.getManager().getServerVersion().equalsIgnoreCase("v1_9_R1"))
+            if (pluginInstance.getManager().getServerVersion().toLowerCase().startsWith("v1_14")
+                    || pluginInstance.getManager().getServerVersion().toLowerCase().startsWith("v1_13")
+                    || pluginInstance.getManager().getServerVersion().toLowerCase().startsWith("v1_12")
+                    || pluginInstance.getManager().getServerVersion().toLowerCase().startsWith("v1_11")
+                    || pluginInstance.getManager().getServerVersion().toLowerCase().startsWith("v1_10")
+                    || pluginInstance.getManager().getServerVersion().toLowerCase().startsWith("v1_9"))
                 if (e.getHand() != EquipmentSlot.HAND) return;
 
             if (pluginInstance.getManager().updateCurrentSelection(e.getPlayer(), e.getClickedBlock().getLocation(), PointType.POINT_TWO))
@@ -94,7 +94,8 @@ public class Listeners implements Listener
                 pluginInstance.getServer().getPluginManager().callEvent(portalEnterEvent);
                 if (portalEnterEvent.isCancelled()) return;
 
-                if (pluginInstance.getConfig().getBoolean("use-portal-cooldown") && pluginInstance.getManager().isPlayerOnCooldown(e.getPlayer()))
+                if (pluginInstance.getConfig().getBoolean("use-portal-cooldown") && pluginInstance.getManager().isPlayerOnCooldown(e.getPlayer())
+                        && !e.getPlayer().hasPermission("simpleportals.cdbypass"))
                 {
                     double tv = pluginInstance.getConfig().getDouble("throw-velocity");
                     if (!(tv <= -1))
@@ -153,13 +154,14 @@ public class Listeners implements Listener
                         e.getPlayer().getWorld().playSound(e.getPlayer().getLocation(), Sound.valueOf(sound.toUpperCase()
                                 .replace(" ", "_").replace("-", "_")), 1, 1);
 
-                    if (pluginInstance.getConfig().getBoolean("use-portal-cooldown"))
+                    if (pluginInstance.getConfig().getBoolean("use-portal-cooldown") && !e.getPlayer().hasPermission("simpleportals.cdbypass"))
                         pluginInstance.getManager().updatePlayerPortalCooldown(e.getPlayer());
 
                     String message = pluginInstance.getConfig().getString("portal-message");
                     if (message != null && !message.equalsIgnoreCase(""))
                         e.getPlayer().sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
-                                + message.replace("{name}", portal.getPortalId()).replace("{time}", String.valueOf(pluginInstance.getManager().getCooldownTimeLeft(e.getPlayer())))));
+                                + message.replace("{name}", portal.getPortalId()).replace("{time}",
+                                String.valueOf(pluginInstance.getManager().getCooldownTimeLeft(e.getPlayer())))));
 
                     portal.performAction(e.getPlayer());
                 }

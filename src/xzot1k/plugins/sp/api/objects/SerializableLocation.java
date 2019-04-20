@@ -25,14 +25,14 @@ public class SerializableLocation
         setWorldName(Objects.requireNonNull(location.getWorld()).getName());
     }
 
-    public SerializableLocation(SimplePortals pluginInstance, String worldName, double x, double y, double z)
+    public SerializableLocation(SimplePortals pluginInstance, String worldName, double x, double y, double z, double yaw, double pitch)
     {
         this.pluginInstance = pluginInstance;
         setX(x);
         setY(y);
         setZ(z);
-        setYaw(yaw);
-        setPitch(pitch);
+        setYaw((float) yaw);
+        setPitch((float) pitch);
         setWorldName(worldName);
     }
 

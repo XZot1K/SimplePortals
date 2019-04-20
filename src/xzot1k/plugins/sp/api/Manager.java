@@ -248,7 +248,6 @@ public class Manager
     {
         if (!getPlayerPortalCooldowns().isEmpty() && getPlayerPortalCooldowns().containsKey(player.getUniqueId()))
             return getCooldownTimeLeft(player) > 0;
-
         return false;
     }
 
@@ -447,15 +446,18 @@ public class Manager
                 {
                     SerializableLocation teleportPoint1 = new SerializableLocation(pluginInstance, pluginInstance.getPortalsConfig().getString(portalId + ".point-1.world"),
                             pluginInstance.getPortalsConfig().getDouble(portalId + ".point-1.x"), pluginInstance.getPortalsConfig().getDouble(portalId + ".point-1.y"),
-                            pluginInstance.getPortalsConfig().getDouble(portalId + ".point-1.z")), teleportPoint2 = new SerializableLocation(pluginInstance,
+                            pluginInstance.getPortalsConfig().getDouble(portalId + ".point-1.z"), pluginInstance.getPortalsConfig().getDouble(portalId + ".point-1.yaw"),
+                            pluginInstance.getPortalsConfig().getDouble(portalId + ".point-1.pitch")), teleportPoint2 = new SerializableLocation(pluginInstance,
                             pluginInstance.getPortalsConfig().getString(portalId + ".point-2.world"), pluginInstance.getPortalsConfig().getDouble(portalId + ".point-2.x"),
-                            pluginInstance.getPortalsConfig().getDouble(portalId + ".point-2.y"), pluginInstance.getPortalsConfig().getDouble(portalId + ".point-2.z"));
+                            pluginInstance.getPortalsConfig().getDouble(portalId + ".point-2.y"), pluginInstance.getPortalsConfig().getDouble(portalId + ".point-2.z"),
+                            pluginInstance.getPortalsConfig().getDouble(portalId + ".point-2.yaw"), pluginInstance.getPortalsConfig().getDouble(portalId + ".point-2.pitch"));
                     Region region = new Region(pluginInstance, teleportPoint1, teleportPoint2);
                     Portal portal = new Portal(pluginInstance, portalId, region);
 
                     SerializableLocation tpLocation = new SerializableLocation(pluginInstance, pluginInstance.getPortalsConfig().getString(portalId + ".teleport-location.world"),
                             pluginInstance.getPortalsConfig().getDouble(portalId + ".teleport-location.x"), pluginInstance.getPortalsConfig().getDouble(portalId + ".teleport-location.y"),
-                            pluginInstance.getPortalsConfig().getDouble(portalId + ".teleport-location.z"));
+                            pluginInstance.getPortalsConfig().getDouble(portalId + ".teleport-location.z"), pluginInstance.getPortalsConfig().getDouble(portalId + ".teleport-location.yaw"),
+                            pluginInstance.getPortalsConfig().getDouble(portalId + ".teleport-location.pitch"));
                     portal.setTeleportLocation(tpLocation);
                     portal.setServerSwitchName(pluginInstance.getPortalsConfig().getString(portalId + ".portal-server"));
                     portal.setCommandsOnly(pluginInstance.getPortalsConfig().getBoolean(portalId + ".commands-only"));
@@ -491,14 +493,17 @@ public class Manager
                 try
                 {
                     SerializableLocation teleportPoint1 = new SerializableLocation(pluginInstance, yamlConfiguration.getString("point-1.world"), yamlConfiguration.getDouble("point-1.x"),
-                            yamlConfiguration.getDouble("point-1.y"), yamlConfiguration.getDouble("point-1.z")),
+                            yamlConfiguration.getDouble("point-1.y"), yamlConfiguration.getDouble("point-1.z"), yamlConfiguration.getDouble("point-1.yaw"),
+                            yamlConfiguration.getDouble("point-1.pitch")),
                             teleportPoint2 = new SerializableLocation(pluginInstance, yamlConfiguration.getString("point-2.world"), yamlConfiguration.getDouble("point-2.x"),
-                                    yamlConfiguration.getDouble("point-2.y"), yamlConfiguration.getDouble("point-2.z"));
+                                    yamlConfiguration.getDouble("point-2.y"), yamlConfiguration.getDouble("point-2.z"), yamlConfiguration.getDouble("point-2.yaw"),
+                                    yamlConfiguration.getDouble("point-2.pitch"));
                     Region region = new Region(pluginInstance, teleportPoint1, teleportPoint2);
                     Portal portal = new Portal(pluginInstance, yamlConfiguration.getString("portal-id"), region);
 
                     SerializableLocation tpLocation = new SerializableLocation(pluginInstance, yamlConfiguration.getString("teleport-location.world"), yamlConfiguration.getDouble("teleport-location.x"),
-                            yamlConfiguration.getDouble("teleport-location.y"), yamlConfiguration.getDouble("teleport-location.z"));
+                            yamlConfiguration.getDouble("teleport-location.y"), yamlConfiguration.getDouble("teleport-location.z"), yamlConfiguration.getDouble("point-1.yaw"),
+                            yamlConfiguration.getDouble("point-1.pitch"));
                     portal.setTeleportLocation(tpLocation);
                     portal.setServerSwitchName(yamlConfiguration.getString("portal-server"));
                     portal.setCommandsOnly(yamlConfiguration.getBoolean("commands-only"));
