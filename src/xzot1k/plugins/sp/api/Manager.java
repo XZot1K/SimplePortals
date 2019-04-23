@@ -25,6 +25,7 @@ import xzot1k.plugins.sp.core.packets.jsonmsgs.versions.JSONHandler1_11R1;
 import xzot1k.plugins.sp.core.packets.jsonmsgs.versions.JSONHandler1_12R1;
 import xzot1k.plugins.sp.core.packets.jsonmsgs.versions.JSONHandler1_13R1;
 import xzot1k.plugins.sp.core.packets.jsonmsgs.versions.JSONHandler1_13R2;
+import xzot1k.plugins.sp.core.packets.jsonmsgs.versions.JSONHandler1_14R1;
 import xzot1k.plugins.sp.core.packets.jsonmsgs.versions.JSONHandler1_8R1;
 import xzot1k.plugins.sp.core.packets.jsonmsgs.versions.JSONHandler1_8R2;
 import xzot1k.plugins.sp.core.packets.jsonmsgs.versions.JSONHandler1_8R3;
@@ -85,6 +86,11 @@ public class Manager
         boolean success = false;
         switch (serverVersion)
         {
+            case "v1_14_R1":
+                particleHandler = new PH_Latest(pluginInstance);
+                setJSONHandler(new JSONHandler1_14R1());
+                success = true;
+                break;
             case "v1_13_R2":
                 particleHandler = new PH_Latest(pluginInstance);
                 setJSONHandler(new JSONHandler1_13R2());

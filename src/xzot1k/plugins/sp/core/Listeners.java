@@ -208,13 +208,13 @@ public class Listeners implements Listener
             }
 
             boolean foundPortal = false;
-            for (int x = (e.getFrom().getBlockX() - 2) - 1; ++x <= e.getFrom().getBlockX() + 2; )
+            for (int x = (e.getFrom().getBlockX() - 3) - 1; ++x <= e.getFrom().getBlockX() + 3; )
             {
                 if (foundPortal) break;
-                for (int y = (e.getFrom().getBlockY() - 2) - 1; ++y <= e.getFrom().getBlockY() + 2; )
+                for (int y = (e.getFrom().getBlockY() - 3) - 1; ++y <= e.getFrom().getBlockY() + 3; )
                 {
                     if (foundPortal) break;
-                    for (int z = (e.getFrom().getBlockZ() - 2) - 1; ++z <= e.getFrom().getBlockZ() + 2; )
+                    for (int z = (e.getFrom().getBlockZ() - 3) - 1; ++z <= e.getFrom().getBlockZ() + 3; )
                     {
                         Location location = new Location(e.getFrom().getWorld(), x, y, z);
                         Portal p = pluginInstance.getManager().getPortalAtLocation(location);
