@@ -184,7 +184,7 @@ public class Portal
                                     if (location.getBlock().getType() == Material.AIR || location.getBlock().getType() == getLastFillMaterial())
                                     {
                                         location.getBlock().setType(material);
-                                        if (!pluginInstance.getManager().getServerVersion().toLowerCase().startsWith("v1_13"))
+                                        if (pluginInstance.getServerVersion().toLowerCase().startsWith("v1_14") && !pluginInstance.getServerVersion().toLowerCase().startsWith("v1_13"))
                                         {
                                             try
                                             {
@@ -201,7 +201,7 @@ public class Portal
                                 if (location.getBlock().getType() == Material.AIR || location.getBlock().getType() == getLastFillMaterial())
                                 {
                                     location.getBlock().setType(material);
-                                    if (!pluginInstance.getManager().getServerVersion().toLowerCase().startsWith("v1_13"))
+                                    if (pluginInstance.getServerVersion().toLowerCase().startsWith("v1_14") && !pluginInstance.getServerVersion().toLowerCase().startsWith("v1_13"))
                                         try
                                         {
                                             Method closeMethod = location.getBlock().getClass().getMethod("setData", Short.class);
@@ -218,7 +218,7 @@ public class Portal
                                 if (location.getBlock().getType() == Material.AIR || location.getBlock().getType() == getLastFillMaterial())
                                 {
                                     location.getBlock().setType(material);
-                                    if (!pluginInstance.getManager().getServerVersion().toLowerCase().startsWith("v1_13"))
+                                    if (pluginInstance.getServerVersion().toLowerCase().startsWith("v1_14") && !pluginInstance.getServerVersion().toLowerCase().startsWith("v1_13"))
                                     {
                                         try
                                         {
@@ -235,7 +235,7 @@ public class Portal
                             if (location.getBlock().getType() == Material.AIR || location.getBlock().getType() == getLastFillMaterial())
                             {
                                 location.getBlock().setType(material);
-                                if (!pluginInstance.getManager().getServerVersion().toLowerCase().startsWith("v1_13"))
+                                if (pluginInstance.getServerVersion().toLowerCase().startsWith("v1_14") && !pluginInstance.getServerVersion().toLowerCase().startsWith("v1_13"))
                                 {
                                     try
                                     {
@@ -258,7 +258,7 @@ public class Portal
                                     if (location.getBlock().getType() == Material.AIR || location.getBlock().getType() == getLastFillMaterial())
                                     {
                                         location.getBlock().setType(material);
-                                        if (!pluginInstance.getManager().getServerVersion().toLowerCase().startsWith("v1_13"))
+                                        if (pluginInstance.getServerVersion().toLowerCase().startsWith("v1_14") && !pluginInstance.getServerVersion().toLowerCase().startsWith("v1_13"))
                                         {
                                             try
                                             {
@@ -275,7 +275,7 @@ public class Portal
                                 if (location.getBlock().getType() == Material.AIR || location.getBlock().getType() == getLastFillMaterial())
                                 {
                                     location.getBlock().setType(material);
-                                    if (!pluginInstance.getManager().getServerVersion().toLowerCase().startsWith("v1_13"))
+                                    if (pluginInstance.getServerVersion().toLowerCase().startsWith("v1_14") && !pluginInstance.getServerVersion().toLowerCase().startsWith("v1_13"))
                                     {
                                         try
                                         {
@@ -295,7 +295,7 @@ public class Portal
                                 if (location.getBlock().getType() == Material.AIR || location.getBlock().getType() == getLastFillMaterial())
                                 {
                                     location.getBlock().setType(material);
-                                    if (!pluginInstance.getManager().getServerVersion().toLowerCase().startsWith("v1_13"))
+                                    if (pluginInstance.getServerVersion().toLowerCase().startsWith("v1_14") && !pluginInstance.getServerVersion().toLowerCase().startsWith("v1_13"))
                                     {
                                         try
                                         {
@@ -312,7 +312,7 @@ public class Portal
                             if (location.getBlock().getType() == Material.AIR || location.getBlock().getType() == getLastFillMaterial())
                             {
                                 location.getBlock().setType(material);
-                                if (!pluginInstance.getManager().getServerVersion().toLowerCase().startsWith("v1_13"))
+                                if (pluginInstance.getServerVersion().toLowerCase().startsWith("v1_14") && !pluginInstance.getServerVersion().toLowerCase().startsWith("v1_13"))
                                 {
                                     try
                                     {

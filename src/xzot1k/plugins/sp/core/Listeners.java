@@ -62,12 +62,9 @@ public class Listeners implements Listener
         {
             e.setCancelled(true);
 
-            if (pluginInstance.getManager().getServerVersion().toLowerCase().startsWith("v1_14")
-                    || pluginInstance.getManager().getServerVersion().toLowerCase().startsWith("v1_13")
-                    || pluginInstance.getManager().getServerVersion().toLowerCase().startsWith("v1_12")
-                    || pluginInstance.getManager().getServerVersion().toLowerCase().startsWith("v1_11")
-                    || pluginInstance.getManager().getServerVersion().toLowerCase().startsWith("v1_10")
-                    || pluginInstance.getManager().getServerVersion().toLowerCase().startsWith("v1_9"))
+            if (pluginInstance.getServerVersion().toLowerCase().startsWith("v1_14") || pluginInstance.getServerVersion().toLowerCase().startsWith("v1_13")
+                    || pluginInstance.getServerVersion().toLowerCase().startsWith("v1_12") || pluginInstance.getServerVersion().toLowerCase().startsWith("v1_11")
+                    || pluginInstance.getServerVersion().toLowerCase().startsWith("v1_10") || pluginInstance.getServerVersion().toLowerCase().startsWith("v1_9"))
                 if (e.getHand() != EquipmentSlot.HAND) return;
 
             if (pluginInstance.getManager().updateCurrentSelection(e.getPlayer(), e.getClickedBlock().getLocation(), PointType.POINT_TWO))

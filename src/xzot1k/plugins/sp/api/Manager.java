@@ -50,10 +50,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.logging.Level;
 
 public class Manager
 {
-    private String serverVersion;
     private SimplePortals pluginInstance;
     private HashMap<UUID, Region> currentSelections;
     private HashMap<UUID, Boolean> selectionMode;
@@ -75,16 +75,13 @@ public class Manager
         portals = new ArrayList<>();
         smartTransferMap = new HashMap<>();
 
-        serverVersion = pluginInstance.getServer().getClass().getPackage().getName()
-                .replace(".", ",").split(",")[3];
-
         setupPackets();
     }
 
     private void setupPackets()
     {
         boolean success = false;
-        switch (serverVersion)
+        switch (pluginInstance.getServerVersion())
         {
             case "v1_14_R1":
                 particleHandler = new PH_Latest(pluginInstance);
@@ -146,10 +143,9 @@ public class Manager
         }
 
         if (success)
-            sendConsoleMessage("&aAll packets have been successfully setup for &e" + serverVersion + "&a!");
+            pluginInstance.log(Level.INFO, "All packets have been successfully setup for " + pluginInstance.getServerVersion() + "!");
         else
-            sendConsoleMessage("&cYour server version (&e" + serverVersion + "&c) is not yet supported. " +
-                    "Most packet features will be disabled until official release.");
+            pluginInstance.log(Level.WARNING, "Your server version (" + pluginInstance.getServerVersion() + ") is not supported. Most packet features will be disabled.");
 
     }
 
@@ -159,11 +155,6 @@ public class Manager
     }
 
     public String colorText(String text) {return ChatColor.translateAlternateColorCodes('&', text);}
-
-    public void sendConsoleMessage(String text)
-    {
-        pluginInstance.getServer().getConsoleSender().sendMessage(colorText(pluginInstance.getConfig().getString("prefix") + text));
-    }
 
     public boolean updateCurrentSelection(Player player, Location location, PointType pointType)
     {
@@ -479,7 +470,7 @@ public class Manager
                     portal.register();
                 } catch (Exception ignored)
                 {
-                    pluginInstance.getManager().sendConsoleMessage("&cThe portal &e" + portalId + " &cwas unable to be loaded. Please check its information in the &eportals.yml&c.");
+                    pluginInstance.log(Level.WARNING, "The portal " + portalId + " was unable to be loaded. Please check its information in the portals.yml.");
                 }
             }
 
@@ -524,16 +515,16 @@ public class Manager
 
                     portal.register();
                     file.delete();
-                    sendConsoleMessage("&aThe portal &e" + portal.getPortalId() + " &ahas been converted over to a &ev1.2.x &aportal.");
+                    pluginInstance.log(Level.INFO, "The portal " + portal.getPortalId() + " has been converted over to a v1.2.x portal.");
                 } catch (Exception ignored)
                 {
-                    sendConsoleMessage("&cThe file &e" + file.getName() + " &cwas unable to be converted. Please make sure this is a &eSimplePortals &cportal.");
+                    pluginInstance.log(Level.WARNING, "The file " + file.getName() + " was unable to be converted. Please make sure this is a SimplePortals portal.");
                 }
             }
         }
 
         dir.delete();
-        sendConsoleMessage("&aAll old portal files have been removed (All portals are located in the &eportals.yml&a).");
+        pluginInstance.log(Level.INFO, "All old portal files have been removed (All portals are located in the portals.yml).");
         savePortals();
     }
 
@@ -573,7 +564,7 @@ public class Manager
         } catch (Exception ex)
         {
             ex.printStackTrace();
-            sendConsoleMessage("&cThere seems to have been a issue when switching the player to the &e" + serverName + " &cserver.");
+            pluginInstance.log(Level.WARNING, "There seems to have been a issue when switching the player to the " + serverName + " server.");
             return false;
         }
     }
@@ -606,11 +597,6 @@ public class Manager
     public HashMap<UUID, TaskHolder> getVisualTasks()
     {
         return visualTasks;
-    }
-
-    public String getServerVersion()
-    {
-        return serverVersion;
     }
 
     public JSONHandler getJSONHandler()

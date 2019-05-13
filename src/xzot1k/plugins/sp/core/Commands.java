@@ -37,6 +37,12 @@ public class Commands implements CommandExecutor
         if (command.getName().equalsIgnoreCase("simpleportals"))
         {
 
+            if (args.length >= 3 && (args[0].equalsIgnoreCase("addcommand") || args[0].equalsIgnoreCase("addcmd")))
+            {
+                addCommand(sender, args);
+                return true;
+            }
+
             switch (args.length)
             {
                 case 1:
@@ -63,6 +69,10 @@ public class Commands implements CommandExecutor
                     if (args[0].equalsIgnoreCase("create"))
                     {
                         initiatePortalCreation(sender, args[1]);
+                        return true;
+                    } else if (args[0].equalsIgnoreCase("commands") || args[0].equalsIgnoreCase("cmds"))
+                    {
+                        sendPortalCommands(sender, args[1]);
                         return true;
                     } else if (args[0].equalsIgnoreCase("delete"))
                     {
@@ -104,10 +114,6 @@ public class Commands implements CommandExecutor
                     {
                         initiateFill(sender, args[1], args[2]);
                         return true;
-                    } else if (args[0].equalsIgnoreCase("addcommand") || args[0].equalsIgnoreCase("addcmd"))
-                    {
-                        addCommand(sender, args[1], args[2]);
-                        return true;
                     }
 
                     break;
@@ -120,6 +126,28 @@ public class Commands implements CommandExecutor
         }
 
         return false;
+    }
+
+    private void sendPortalCommands(CommandSender sender, String portalName)
+    {
+        if (!sender.hasPermission("simpleportals.viewcommands"))
+        {
+            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
+                    + pluginInstance.getConfig().getString("no-permission-message")));
+            return;
+        }
+
+        Portal portal = pluginInstance.getManager().getPortalById(portalName);
+        if (portal == null)
+        {
+            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
+                    + Objects.requireNonNull(pluginInstance.getConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
+            return;
+        }
+
+        sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
+                + Objects.requireNonNull(pluginInstance.getConfig().getString("portal-commands-message"))
+                .replace("{commands}", portal.getCommands().toString()).replace("{name}", portalName)));
     }
 
     private void initiateFill(CommandSender sender, String portalName, String materialString)
@@ -169,7 +197,7 @@ public class Commands implements CommandExecutor
                 + Objects.requireNonNull(pluginInstance.getConfig().getString("portal-filled-message")).replace("{name}", portal.getPortalId()).replace("{material}", material.name())));
     }
 
-    private void addCommand(CommandSender sender, String portalName, String commandString)
+    private void addCommand(CommandSender sender, String[] args)
     {
         if (sender instanceof Player)
         {
@@ -181,17 +209,20 @@ public class Commands implements CommandExecutor
                 return;
             }
 
-            Portal portal = pluginInstance.getManager().getPortalById(portalName);
+            Portal portal = pluginInstance.getManager().getPortalById(args[1]);
             if (portal != null)
             {
-                portal.getCommands().add(commandString.replace("_", " "));
+                StringBuilder enteredCommand = new StringBuilder(args[2]);
+                if (args.length > 3) for (int i = 2; ++i < args.length; ) enteredCommand.append(" ").append(args[i]);
+
+                portal.getCommands().add(enteredCommand.toString().replace("_", " "));
                 player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
                         + Objects.requireNonNull(pluginInstance.getConfig().getString("portal-command-added-message"))
-                        .replace("{command}", commandString.replace("_", " "))
+                        .replace("{command}", enteredCommand.toString().replace("_", " "))
                         .replace("{name}", portal.getPortalId())));
             } else
                 player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
-                        + Objects.requireNonNull(pluginInstance.getConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
+                        + Objects.requireNonNull(pluginInstance.getConfig().getString("portal-invalid-message")).replace("{name}", args[1])));
         } else sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
                 + pluginInstance.getConfig().getString("must-be-player-message")));
     }
@@ -507,7 +538,7 @@ public class Commands implements CommandExecutor
     private void setupHelpPageMap()
     {
         if (!getHelpPageMap().isEmpty()) getHelpPageMap().clear();
-        List<String> page1Lines = new ArrayList<>(), page2Lines = new ArrayList<>();
+        List<String> page1Lines = new ArrayList<>(), page2Lines = new ArrayList<>(), page3Lines = new ArrayList<>();
 
         page1Lines.add("&e/portals <selectionmode/sm> &7- toggles selection mode.");
         page1Lines.add("&e/portals reload &7- reloads the configuration files.");
@@ -526,6 +557,9 @@ public class Commands implements CommandExecutor
         page2Lines.add("&e/portals <clearcommands/clearcmds> <name> &7- clears all commands from the specified portal.");
         page2Lines.add("&e/portals <togglecommandonly/tco> <name> &7- toggles command only mode for a portal.");
         getHelpPageMap().put(2, page2Lines);
+
+        page3Lines.add("&e/portals <commands/cmds> <name> &7- provides a list of all commands on the defined warp in the order they were added.");
+        getHelpPageMap().put(3, page2Lines);
     }
 
     private void sendHelpPage(CommandSender commandSender, String pageString)

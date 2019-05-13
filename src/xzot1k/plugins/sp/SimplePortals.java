@@ -12,15 +12,16 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
+import java.util.logging.Level;
 
 public class SimplePortals extends JavaPlugin
 {
     private static SimplePortals pluginInstance;
     private Manager manager;
     private UpdateChecker updateChecker;
+    private String serverVersion;
 
     private FileConfiguration portalsConfig;
     private File portalsFile;
@@ -29,6 +30,10 @@ public class SimplePortals extends JavaPlugin
     public void onEnable()
     {
         pluginInstance = this;
+        setServerVersion(pluginInstance.getServer().getClass().getPackage().getName()
+                .replace(".", ",").split(",")[3]);
+        saveDefaultVersionConfig();
+
         manager = new Manager(getPluginInstance());
         updateChecker = new UpdateChecker(getPluginInstance(), 56772);
         saveDefaultConfig();
@@ -39,14 +44,13 @@ public class SimplePortals extends JavaPlugin
 
 
         getManager().loadPortals();
-        getManager().sendConsoleMessage("&aThe plugin has enabled successfully!");
+        log(Level.INFO, "The plugin has enabled successfully!");
 
         try
         {
             if (updateChecker.checkForUpdates())
-                getManager().sendConsoleMessage("&cThe version &e" + getDescription().getVersion()
-                        + " &cis doesn't match the latest version!");
-            else getManager().sendConsoleMessage("&aEverything looks like it is up to date!");
+                log(Level.INFO, "The version " + getDescription().getVersion() + " is doesn't match the latest version!");
+            else log(Level.INFO, "Everything looks like it is up to date!");
         } catch (Exception ignored) {}
 
         int generalTaskDuration = getConfig().getInt("general-task-duration");
@@ -55,9 +59,8 @@ public class SimplePortals extends JavaPlugin
             {
                 if (getConfig().getBoolean("update-checker"))
                     if (updateChecker.checkForUpdates())
-                        getManager().sendConsoleMessage("&cThe version &e" + getDescription().getVersion()
-                                + " &cis doesn't match the latest version!");
-                    else getManager().sendConsoleMessage("&aEverything looks like it is up to date!");
+                        log(Level.INFO, "The version " + getDescription().getVersion() + " is doesn't match the latest version!");
+                    else log(Level.INFO, "Everything looks like it is up to date!");
 
                 getManager().savePortals();
                 if (getConfig().getBoolean("reload-plugin-timer"))
@@ -66,7 +69,7 @@ public class SimplePortals extends JavaPlugin
                     getManager().loadPortals();
                 }
 
-                getManager().sendConsoleMessage("&aAll portals have been saved!");
+                log(Level.INFO, "All portals have been saved!");
             }, 20 * generalTaskDuration, 20 * generalTaskDuration);
     }
 
@@ -74,8 +77,33 @@ public class SimplePortals extends JavaPlugin
     public void onDisable()
     {
         getManager().savePortals();
-        getManager().sendConsoleMessage("&aAll portals have been saved!");
-        getManager().sendConsoleMessage("&cThe plugin has been disabled.");
+        log(Level.INFO, "All portals have been saved!");
+        log(Level.INFO, "The plugin has been disabled.");
+    }
+
+    private void saveDefaultVersionConfig()
+    {
+        if (new File(getDataFolder(), "config.yml").exists()) return;
+
+        if (getServerVersion().startsWith("v1_14") || getServerVersion().startsWith("v1_13") || getServerVersion().startsWith("v1_12")
+                || getServerVersion().startsWith("v1_11") || getServerVersion().startsWith("v1_10") || getServerVersion().startsWith("v1_9"))
+        {
+            saveResource("config (1.9-1.14).yml", false);
+            File file = new File(getDataFolder(), "config (1.9-1.14).yml");
+            file.renameTo(new File(getDataFolder(), "config.yml"));
+        } else
+        {
+            saveResource("config (Legacy).yml", false);
+            File file = new File(getDataFolder(), "config (Legacy).yml");
+            file.renameTo(new File(getDataFolder(), "config.yml"));
+        }
+
+        log(Level.INFO, getServerVersion() + " has been detected. Configuration created!");
+    }
+
+    public void log(Level level, String text)
+    {
+        getServer().getLogger().log(level, "[" + getDescription().getName() + "] " + text);
     }
 
     public static SimplePortals getPluginInstance()
@@ -92,7 +120,7 @@ public class SimplePortals extends JavaPlugin
     {
         if (portalsFile == null) portalsFile = new File(getDataFolder(), "portals.yml");
         portalsConfig = YamlConfiguration.loadConfiguration(portalsFile);
-        Reader defConfigStream = new InputStreamReader(this.getResource("portals.yml"), StandardCharsets.UTF_8);
+        Reader defConfigStream = new InputStreamReader(Objects.requireNonNull(this.getResource("portals.yml")), StandardCharsets.UTF_8);
         YamlConfiguration defConfig = YamlConfiguration.loadConfiguration(defConfigStream);
         portalsConfig.setDefaults(defConfig);
     }
@@ -113,9 +141,19 @@ public class SimplePortals extends JavaPlugin
         } catch (IOException ignored) {}
     }
 
-    public void saveDefaultPortalsConfig()
+    private void saveDefaultPortalsConfig()
     {
         if (portalsFile == null) portalsFile = new File(getDataFolder(), "portals.yml");
         if (!portalsFile.exists()) this.saveResource("portals.yml", false);
+    }
+
+    public String getServerVersion()
+    {
+        return serverVersion;
+    }
+
+    private void setServerVersion(String serverVersion)
+    {
+        this.serverVersion = serverVersion;
     }
 }

@@ -1,3 +1,7 @@
+# =================================== #
+# This config was made for 1.9-1.14.x #
+# =================================== #
+
 # NOTE: the permission "simpleportals.portal.*" and "simpleportals.portal.<name>" allows players to use specific or all portals.
 
 prefix: "&d[&bSP&d]&r "
@@ -28,6 +32,7 @@ invalid-material-message: "&cThe material you entered was invalid. Please check 
 portal-filled-message: "&aThe portal &e{name} &ahas been successfully filled with the &e{material} &amaterial!"
 enter-cooldown-message: "&cYou can't enter this portal for another &e{time} &cseconds."
 enter-no-permission-message: "&cYou don't have permission to enter this portal."
+portal-commands-message: "&aThe commands on the portal &e{name} &aare: &e{commands}"
 
 # If this option is enabled, the plugin will notify via console about any new updates.
 update-checker: true
