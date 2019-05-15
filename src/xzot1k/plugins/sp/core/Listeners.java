@@ -3,6 +3,7 @@ package xzot1k.plugins.sp.core;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockFromToEvent;
@@ -32,14 +33,14 @@ public class Listeners implements Listener
         this.pluginInstance = pluginInstance;
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockPhysics(BlockPhysicsEvent e)
     {
         Portal portalFrom = pluginInstance.getManager().getPortalAtLocation(e.getSourceBlock().getLocation());
         if (portalFrom != null) e.setCancelled(true);
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockFromTo(BlockFromToEvent e)
     {
         Portal portalFrom = pluginInstance.getManager().getPortalAtLocation(e.getBlock().getLocation());
