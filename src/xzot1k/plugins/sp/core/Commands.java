@@ -559,7 +559,7 @@ public class Commands implements CommandExecutor
         getHelpPageMap().put(2, page2Lines);
 
         page3Lines.add("&e/portals <commands/cmds> <name> &7- provides a list of all commands on the defined warp in the order they were added.");
-        getHelpPageMap().put(3, page2Lines);
+        getHelpPageMap().put(3, page3Lines);
     }
 
     private void sendHelpPage(CommandSender commandSender, String pageString)

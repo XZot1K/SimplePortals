@@ -6,6 +6,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockFromToEvent;
+import org.bukkit.event.block.BlockPhysicsEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerPortalEvent;
@@ -32,12 +33,29 @@ public class Listeners implements Listener
     }
 
     @EventHandler
+    public void onBlockPhysics(BlockPhysicsEvent e)
+    {
+        if (e.getSourceBlock().isLiquid())
+        {
+            Portal portalFrom = pluginInstance.getManager().getPortalAtLocation(e.getSourceBlock().getLocation());
+            if (portalFrom != null) e.setCancelled(true);
+        }
+    }
+
+    @EventHandler
     public void onBlockFromTo(BlockFromToEvent e)
     {
         if (e.getBlock().isLiquid())
         {
-            Portal portal = pluginInstance.getManager().getPortalAtLocation(e.getBlock().getLocation());
-            if (portal != null) e.setCancelled(true);
+            Portal portalFrom = pluginInstance.getManager().getPortalAtLocation(e.getBlock().getLocation());
+            if (portalFrom != null)
+            {
+                e.setCancelled(true);
+                return;
+            }
+
+            Portal portalTo = pluginInstance.getManager().getPortalAtLocation(e.getToBlock().getLocation());
+            if (portalTo != null) e.setCancelled(true);
         }
     }
 
