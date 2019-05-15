@@ -35,28 +35,22 @@ public class Listeners implements Listener
     @EventHandler
     public void onBlockPhysics(BlockPhysicsEvent e)
     {
-        if (e.getSourceBlock().isLiquid())
-        {
-            Portal portalFrom = pluginInstance.getManager().getPortalAtLocation(e.getSourceBlock().getLocation());
-            if (portalFrom != null) e.setCancelled(true);
-        }
+        Portal portalFrom = pluginInstance.getManager().getPortalAtLocation(e.getSourceBlock().getLocation());
+        if (portalFrom != null) e.setCancelled(true);
     }
 
     @EventHandler
     public void onBlockFromTo(BlockFromToEvent e)
     {
-        if (e.getBlock().isLiquid())
+        Portal portalFrom = pluginInstance.getManager().getPortalAtLocation(e.getBlock().getLocation());
+        if (portalFrom != null)
         {
-            Portal portalFrom = pluginInstance.getManager().getPortalAtLocation(e.getBlock().getLocation());
-            if (portalFrom != null)
-            {
-                e.setCancelled(true);
-                return;
-            }
-
-            Portal portalTo = pluginInstance.getManager().getPortalAtLocation(e.getToBlock().getLocation());
-            if (portalTo != null) e.setCancelled(true);
+            e.setCancelled(true);
+            return;
         }
+
+        Portal portalTo = pluginInstance.getManager().getPortalAtLocation(e.getToBlock().getLocation());
+        if (portalTo != null) e.setCancelled(true);
     }
 
     @EventHandler
