@@ -47,7 +47,7 @@ public class Listeners implements Listener
         if (portalTo != null) e.setCancelled(true);
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onClick(PlayerInteractEvent e)
     {
         if (e.getAction() == Action.LEFT_CLICK_BLOCK && e.getClickedBlock() != null
@@ -84,7 +84,7 @@ public class Listeners implements Listener
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onMove(PlayerMoveEvent e)
     {
         if (e.getFrom().getBlockX() != Objects.requireNonNull(e.getTo()).getBlockX() || e.getFrom().getBlockY() != e.getTo().getBlockY()
@@ -191,13 +191,13 @@ public class Listeners implements Listener
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onQuit(PlayerQuitEvent e)
     {
         pluginInstance.getManager().getSmartTransferMap().remove(e.getPlayer().getUniqueId());
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onTeleport(PlayerPortalEvent e)
     {
         if (e.getCause() == PlayerTeleportEvent.TeleportCause.NETHER_PORTAL || e.getCause() == PlayerTeleportEvent.TeleportCause.END_PORTAL
@@ -211,13 +211,13 @@ public class Listeners implements Listener
             }
 
             boolean foundPortal = false;
-            for (int x = (e.getFrom().getBlockX() - 3) - 1; ++x <= e.getFrom().getBlockX() + 3; )
+            for (int x = (e.getFrom().getBlockX() - 5) - 1; ++x <= e.getFrom().getBlockX() + 5; )
             {
                 if (foundPortal) break;
-                for (int y = (e.getFrom().getBlockY() - 3) - 1; ++y <= e.getFrom().getBlockY() + 3; )
+                for (int y = (e.getFrom().getBlockY() - 5) - 1; ++y <= e.getFrom().getBlockY() + 5; )
                 {
                     if (foundPortal) break;
-                    for (int z = (e.getFrom().getBlockZ() - 3) - 1; ++z <= e.getFrom().getBlockZ() + 3; )
+                    for (int z = (e.getFrom().getBlockZ() - 5) - 1; ++z <= e.getFrom().getBlockZ() + 5; )
                     {
                         Location location = new Location(e.getFrom().getWorld(), x, y, z);
                         Portal p = pluginInstance.getManager().getPortalAtLocation(location);
