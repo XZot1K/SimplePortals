@@ -34,13 +34,6 @@ public class Listeners implements Listener
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onBlockPhysics(BlockPhysicsEvent e)
-    {
-        Portal portalFrom = pluginInstance.getManager().getPortalAtLocation(e.getSourceBlock().getLocation());
-        if (portalFrom != null) e.setCancelled(true);
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST)
     public void onBlockFromTo(BlockFromToEvent e)
     {
         Portal portalFrom = pluginInstance.getManager().getPortalAtLocation(e.getBlock().getLocation());
@@ -119,9 +112,9 @@ public class Listeners implements Listener
                 }
 
 
-                if (!pluginInstance.getConfig().getBoolean("bypass-portal-permissions") && !e.getPlayer().hasPermission("simpleportals.portal."
-                        + portal.getPortalId()) && !e.getPlayer().hasPermission("simpleportals.portals." + portal.getPortalId())
-                        && !e.getPlayer().hasPermission("simpleportals.portal.*") && !e.getPlayer().hasPermission("simpleportals.portals.*"))
+                if (!pluginInstance.getConfig().getBoolean("bypass-portal-permissions") && !e.getPlayer().hasPermission("simpleportals.portal." + portal.getPortalId())
+                        && !e.getPlayer().hasPermission("simpleportals.portals." + portal.getPortalId()) && !e.getPlayer().hasPermission("simpleportals.portal.*")
+                        && !e.getPlayer().hasPermission("simpleportals.portals.*"))
                 {
                     double tv = pluginInstance.getConfig().getDouble("throw-velocity");
                     if (!(tv <= -1))
