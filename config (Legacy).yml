@@ -46,6 +46,8 @@ reload-plugin-timer: true
 keep-teleport-head-axis: true
 # If this is enabled, all players will be able to use all portals.
 bypass-portal-permissions: false
+# If this is enabled, the player can teleport through portals with vehicles, such as Horses and Boats.
+vehicle-teleportation: true
 
 # Should players have a cooldown for portal usage?
 use-portal-cooldown: true

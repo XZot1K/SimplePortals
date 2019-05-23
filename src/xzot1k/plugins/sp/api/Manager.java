@@ -292,48 +292,27 @@ public class Manager
 
     public void teleportPlayerWithEntity(Player player, Location location)
     {
-        if (player.isInsideVehicle())
+        if (player.getVehicle() != null && pluginInstance.getConfig().getBoolean("vehicle-teleportation"))
         {
-            if (player.getVehicle() instanceof Horse)
+            Entity entity = player.getVehicle();
+            if (pluginInstance.getServerVersion().startsWith("v1_11") || pluginInstance.getServerVersion().startsWith("v1_12")
+                    || pluginInstance.getServerVersion().startsWith("v1_13") || pluginInstance.getServerVersion().startsWith("v1_14"))
+                entity.removePassenger(player);
+            else entity.setPassenger(null);
+            if (entity.getPassengers().contains(player)) entity.eject();
+
+            player.teleport(location);
+            new BukkitRunnable()
             {
-                Horse horse = (Horse) player.getVehicle();
-                horse.eject();
-                horse.setOwner(player);
-
-                try
+                @Override
+                public void run()
                 {
-                    horse.teleport(location, PlayerTeleportEvent.TeleportCause.PLUGIN);
-                    player.teleport(location, PlayerTeleportEvent.TeleportCause.PLUGIN);
-                } catch (Exception e)
-                {
-                    horse.teleport(location);
-                    player.teleport(location);
+                    entity.teleport(player.getLocation());
+                    entity.addPassenger(player);
                 }
-
-                pluginInstance.getServer().getScheduler().scheduleSyncDelayedTask(pluginInstance, () -> horse.setPassenger(player), 10);
-            } else
-            {
-                Entity ve = player.getVehicle();
-                if (ve != null)
-                {
-                    ve.eject();
-
-                    ve.teleport(location, PlayerTeleportEvent.TeleportCause.PLUGIN);
-                    player.teleport(location, PlayerTeleportEvent.TeleportCause.PLUGIN);
-
-                    pluginInstance.getServer().getScheduler().scheduleSyncDelayedTask(pluginInstance, () -> ve.setPassenger(player), 10);
-                }
-            }
+            }.runTaskLater(pluginInstance, 1);
         } else
-        {
-            try
-            {
-                player.teleport(location, PlayerTeleportEvent.TeleportCause.PLUGIN);
-            } catch (Exception e)
-            {
-                player.teleport(location);
-            }
-        }
+            player.teleport(location);
     }
 
     public boolean isFacingPortal(Player player, Portal portal, int range)

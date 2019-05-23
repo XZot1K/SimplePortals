@@ -6,6 +6,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import xzot1k.plugins.sp.api.Manager;
 import xzot1k.plugins.sp.core.Commands;
 import xzot1k.plugins.sp.core.Listeners;
+import xzot1k.plugins.sp.core.utils.Metrics;
 import xzot1k.plugins.sp.core.utils.UpdateChecker;
 
 import java.io.File;
@@ -13,6 +14,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.logging.Level;
 
@@ -30,9 +33,9 @@ public class SimplePortals extends JavaPlugin
     public void onEnable()
     {
         pluginInstance = this;
-        setServerVersion(pluginInstance.getServer().getClass().getPackage().getName()
-                .replace(".", ",").split(",")[3]);
+        setServerVersion(pluginInstance.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3]);
         saveDefaultVersionConfig();
+        updateConfig();
 
         manager = new Manager(getPluginInstance());
         updateChecker = new UpdateChecker(getPluginInstance(), 56772);
@@ -71,6 +74,8 @@ public class SimplePortals extends JavaPlugin
 
                 log(Level.INFO, "All portals have been saved!");
             }, 20 * generalTaskDuration, 20 * generalTaskDuration);
+
+        new Metrics(this);
     }
 
     @Override
@@ -99,6 +104,58 @@ public class SimplePortals extends JavaPlugin
         }
 
         log(Level.INFO, getServerVersion() + " has been detected. Configuration created!");
+    }
+
+    private void updateConfig()
+    {
+        int updateCount = 0;
+        File latestConfigFile;
+
+        if (getServerVersion().startsWith("v1_14") || getServerVersion().startsWith("v1_13") || getServerVersion().startsWith("v1_12")
+                || getServerVersion().startsWith("v1_11") || getServerVersion().startsWith("v1_10") || getServerVersion().startsWith("v1_9"))
+        {
+            saveResource("config (1.9-1.14).yml", true);
+            latestConfigFile = new File(getDataFolder(), "config (1.9-1.14).yml");
+        } else
+        {
+            saveResource("config (Legacy).yml", true);
+            latestConfigFile = new File(getDataFolder(), "config (Legacy).yml");
+        }
+
+        FileConfiguration updatedYaml = YamlConfiguration.loadConfiguration(latestConfigFile);
+        List<String> currentKeys = new ArrayList<>(Objects.requireNonNull(getConfig().getConfigurationSection("")).getKeys(true)),
+                updatedKeys = new ArrayList<>(Objects.requireNonNull(updatedYaml.getConfigurationSection("")).getKeys(true));
+        for (int i = -1; ++i < updatedKeys.size(); )
+        {
+            String updatedKey = updatedKeys.get(i);
+            if (!currentKeys.contains(updatedKey))
+            {
+                getConfig().set(updatedKey, updatedYaml.get(updatedKey));
+                updateCount += 1;
+                log(Level.INFO, "Updated the '" + updatedKey + "' key within the configuration since it wasn't found.");
+            }
+        }
+
+        for (int i = -1; ++i < currentKeys.size(); )
+        {
+            String currentKey = currentKeys.get(i);
+            if (!updatedKeys.contains(currentKey))
+            {
+                getConfig().set(currentKey, null);
+                updateCount += 1;
+                log(Level.INFO, "Removed the '" + currentKey + "' key within the configuration since it was invalid.");
+            }
+        }
+
+        if (updateCount > 0)
+        {
+            saveConfig();
+            log(Level.INFO, "The configuration has been updated using the " + latestConfigFile.getName() + " file.");
+            log(Level.WARNING, "Please go check out the configuration and customize these newly generated options to your liking. " +
+                    "Messages and similar values may not appear the same as they did in the default configuration " +
+                    "(P.S. Configuration comments have more than likely been removed to ensure proper syntax).");
+        } else log(Level.INFO, "Everything inside the configuration seems to be up to date.");
+        latestConfigFile.delete();
     }
 
     public void log(Level level, String text)
