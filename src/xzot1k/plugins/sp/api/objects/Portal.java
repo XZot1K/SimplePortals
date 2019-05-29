@@ -14,6 +14,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Level;
 
 public class Portal
 {
@@ -57,48 +58,54 @@ public class Portal
 
     public void save(boolean forceSaveFile)
     {
-        pluginInstance.getPortalsConfig().set(getPortalId() + ".last-fill-material", getLastFillMaterial().name());
-        pluginInstance.getPortalsConfig().set(getPortalId() + ".portal-server", getServerSwitchName());
-
-        if (getRegion() != null)
+        try
         {
-            // save point 1.
-            SerializableLocation point1 = getRegion().getPoint1();
-            if (point1 != null)
+            pluginInstance.getPortalsConfig().set(getPortalId() + ".last-fill-material", getLastFillMaterial().name());
+            pluginInstance.getPortalsConfig().set(getPortalId() + ".portal-server", getServerSwitchName());
+
+            if (getRegion() != null)
             {
-                pluginInstance.getPortalsConfig().set(getPortalId() + ".point-1.world", point1.getWorldName());
-                pluginInstance.getPortalsConfig().set(getPortalId() + ".point-1.x", point1.getX());
-                pluginInstance.getPortalsConfig().set(getPortalId() + ".point-1.y", point1.getY());
-                pluginInstance.getPortalsConfig().set(getPortalId() + ".point-1.z", point1.getZ());
+                // save point 1.
+                SerializableLocation point1 = getRegion().getPoint1();
+                if (point1 != null)
+                {
+                    pluginInstance.getPortalsConfig().set(getPortalId() + ".point-1.world", point1.getWorldName());
+                    pluginInstance.getPortalsConfig().set(getPortalId() + ".point-1.x", point1.getX());
+                    pluginInstance.getPortalsConfig().set(getPortalId() + ".point-1.y", point1.getY());
+                    pluginInstance.getPortalsConfig().set(getPortalId() + ".point-1.z", point1.getZ());
+                }
+
+                // save point 2.
+                SerializableLocation point2 = getRegion().getPoint2();
+                if (point2 != null)
+                {
+                    pluginInstance.getPortalsConfig().set(getPortalId() + ".point-2.world", point2.getWorldName());
+                    pluginInstance.getPortalsConfig().set(getPortalId() + ".point-2.x", point2.getX());
+                    pluginInstance.getPortalsConfig().set(getPortalId() + ".point-2.y", point2.getY());
+                    pluginInstance.getPortalsConfig().set(getPortalId() + ".point-2.z", point2.getZ());
+                }
             }
 
-            // save point 2.
-            SerializableLocation point2 = getRegion().getPoint2();
-            if (point2 != null)
+            // save teleport location.
+            SerializableLocation teleportLocation = getTeleportLocation();
+            if (teleportLocation != null)
             {
-                pluginInstance.getPortalsConfig().set(getPortalId() + ".point-2.world", point2.getWorldName());
-                pluginInstance.getPortalsConfig().set(getPortalId() + ".point-2.x", point2.getX());
-                pluginInstance.getPortalsConfig().set(getPortalId() + ".point-2.y", point2.getY());
-                pluginInstance.getPortalsConfig().set(getPortalId() + ".point-2.z", point2.getZ());
+                pluginInstance.getPortalsConfig().set(getPortalId() + ".teleport-location.world", teleportLocation.getWorldName());
+                pluginInstance.getPortalsConfig().set(getPortalId() + ".teleport-location.x", teleportLocation.getX());
+                pluginInstance.getPortalsConfig().set(getPortalId() + ".teleport-location.y", teleportLocation.getY());
+                pluginInstance.getPortalsConfig().set(getPortalId() + ".teleport-location.z", teleportLocation.getZ());
+                pluginInstance.getPortalsConfig().set(getPortalId() + ".teleport-location.yaw", teleportLocation.getYaw());
+                pluginInstance.getPortalsConfig().set(getPortalId() + ".teleport-location.pitch", teleportLocation.getPitch());
             }
-        }
 
-        // save teleport location.
-        SerializableLocation teleportLocation = getTeleportLocation();
-        if (teleportLocation != null)
+            pluginInstance.getPortalsConfig().set(getPortalId() + ".commands-only", isCommandsOnly());
+            pluginInstance.getPortalsConfig().set(getPortalId() + ".commands", getCommands());
+
+            if (forceSaveFile) pluginInstance.savePortalsConfig();
+        } catch (Exception ignored)
         {
-            pluginInstance.getPortalsConfig().set(getPortalId() + ".teleport-location.world", teleportLocation.getWorldName());
-            pluginInstance.getPortalsConfig().set(getPortalId() + ".teleport-location.x", teleportLocation.getX());
-            pluginInstance.getPortalsConfig().set(getPortalId() + ".teleport-location.y", teleportLocation.getY());
-            pluginInstance.getPortalsConfig().set(getPortalId() + ".teleport-location.z", teleportLocation.getZ());
-            pluginInstance.getPortalsConfig().set(getPortalId() + ".teleport-location.yaw", teleportLocation.getYaw());
-            pluginInstance.getPortalsConfig().set(getPortalId() + ".teleport-location.pitch", teleportLocation.getPitch());
+            pluginInstance.log(Level.WARNING, "The portal '" + getPortalId() + "' ran into an issue when saving; therefore, it was skipped.");
         }
-
-        pluginInstance.getPortalsConfig().set(getPortalId() + ".commands-only", isCommandsOnly());
-        pluginInstance.getPortalsConfig().set(getPortalId() + ".commands", getCommands());
-
-        if (forceSaveFile) pluginInstance.savePortalsConfig();
     }
 
     public void performAction(Player player)

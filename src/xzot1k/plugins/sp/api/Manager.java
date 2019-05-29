@@ -420,20 +420,30 @@ public class Manager
 
                 try
                 {
-                    SerializableLocation teleportPoint1 = new SerializableLocation(pluginInstance, pluginInstance.getPortalsConfig().getString(portalId + ".point-1.world"),
-                            pluginInstance.getPortalsConfig().getDouble(portalId + ".point-1.x"), pluginInstance.getPortalsConfig().getDouble(portalId + ".point-1.y"),
-                            pluginInstance.getPortalsConfig().getDouble(portalId + ".point-1.z"), pluginInstance.getPortalsConfig().getDouble(portalId + ".point-1.yaw"),
-                            pluginInstance.getPortalsConfig().getDouble(portalId + ".point-1.pitch")), teleportPoint2 = new SerializableLocation(pluginInstance,
-                            pluginInstance.getPortalsConfig().getString(portalId + ".point-2.world"), pluginInstance.getPortalsConfig().getDouble(portalId + ".point-2.x"),
-                            pluginInstance.getPortalsConfig().getDouble(portalId + ".point-2.y"), pluginInstance.getPortalsConfig().getDouble(portalId + ".point-2.z"),
-                            pluginInstance.getPortalsConfig().getDouble(portalId + ".point-2.yaw"), pluginInstance.getPortalsConfig().getDouble(portalId + ".point-2.pitch"));
+                    String pointOneWorld = pluginInstance.getPortalsConfig().getString(portalId + ".point-1.world"),
+                            pointTwoWorld = pluginInstance.getPortalsConfig().getString(portalId + ".point-2.world"),
+                            teleportWorld = pluginInstance.getPortalsConfig().getString(portalId + ".teleport-location.world");
+
+                    if (pluginInstance.getServer().getWorld(pointOneWorld) == null || pluginInstance.getServer().getWorld(pointTwoWorld) == null
+                            || pluginInstance.getServer().getWorld(teleportWorld) == null)
+                    {
+                        pluginInstance.log(Level.WARNING, "The portal '" + portalId + "' was skipped and not loaded due to a invalid or missing world.");
+                        continue;
+                    }
+
+                    SerializableLocation teleportPoint1 = new SerializableLocation(pluginInstance, pointOneWorld, pluginInstance.getPortalsConfig().getDouble(portalId + ".point-1.x"),
+                            pluginInstance.getPortalsConfig().getDouble(portalId + ".point-1.y"), pluginInstance.getPortalsConfig().getDouble(portalId + ".point-1.z"),
+                            pluginInstance.getPortalsConfig().getDouble(portalId + ".point-1.yaw"), pluginInstance.getPortalsConfig().getDouble(portalId + ".point-1.pitch")),
+
+                            teleportPoint2 = new SerializableLocation(pluginInstance, pointTwoWorld, pluginInstance.getPortalsConfig().getDouble(portalId + ".point-2.x"),
+                                    pluginInstance.getPortalsConfig().getDouble(portalId + ".point-2.y"), pluginInstance.getPortalsConfig().getDouble(portalId + ".point-2.z"),
+                                    pluginInstance.getPortalsConfig().getDouble(portalId + ".point-2.yaw"), pluginInstance.getPortalsConfig().getDouble(portalId + ".point-2.pitch"));
                     Region region = new Region(pluginInstance, teleportPoint1, teleportPoint2);
                     Portal portal = new Portal(pluginInstance, portalId, region);
 
-                    SerializableLocation tpLocation = new SerializableLocation(pluginInstance, pluginInstance.getPortalsConfig().getString(portalId + ".teleport-location.world"),
-                            pluginInstance.getPortalsConfig().getDouble(portalId + ".teleport-location.x"), pluginInstance.getPortalsConfig().getDouble(portalId + ".teleport-location.y"),
-                            pluginInstance.getPortalsConfig().getDouble(portalId + ".teleport-location.z"), pluginInstance.getPortalsConfig().getDouble(portalId + ".teleport-location.yaw"),
-                            pluginInstance.getPortalsConfig().getDouble(portalId + ".teleport-location.pitch"));
+                    SerializableLocation tpLocation = new SerializableLocation(pluginInstance, teleportWorld, pluginInstance.getPortalsConfig().getDouble(portalId + ".teleport-location.x"),
+                            pluginInstance.getPortalsConfig().getDouble(portalId + ".teleport-location.y"), pluginInstance.getPortalsConfig().getDouble(portalId + ".teleport-location.z"),
+                            pluginInstance.getPortalsConfig().getDouble(portalId + ".teleport-location.yaw"), pluginInstance.getPortalsConfig().getDouble(portalId + ".teleport-location.pitch"));
                     portal.setTeleportLocation(tpLocation);
                     portal.setServerSwitchName(pluginInstance.getPortalsConfig().getString(portalId + ".portal-server"));
                     portal.setCommandsOnly(pluginInstance.getPortalsConfig().getBoolean(portalId + ".commands-only"));
@@ -449,7 +459,8 @@ public class Manager
                     portal.register();
                 } catch (Exception ignored)
                 {
-                    pluginInstance.log(Level.WARNING, "The portal " + portalId + " was unable to be loaded. Please check its information in the portals.yml.");
+                    pluginInstance.log(Level.WARNING, "The portal " + portalId + " was unable to be loaded. Please check its information in the portals.yml. " +
+                            "This could be something as simple as a missing or invalid world.");
                 }
             }
 
