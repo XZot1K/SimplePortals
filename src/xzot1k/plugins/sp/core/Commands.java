@@ -180,12 +180,11 @@ public class Commands implements CommandExecutor {
             if (portal != null) {
                 StringBuilder enteredCommand = new StringBuilder(args[2]);
                 if (args.length > 3) for (int i = 2; ++i < args.length; ) enteredCommand.append(" ").append(args[i]);
-                portal.getCommands().add(enteredCommand.toString().replace("_", " "));
+                portal.getCommands().add(enteredCommand.toString());
                 String fixedCommand = enteredCommand.toString().replaceAll("(?i):PLAYER", "").replaceAll("(?i):CONSOLE", "");
                 player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
                         + Objects.requireNonNull(pluginInstance.getConfig().getString("portal-command-added-message"))
-                        .replace("{command}", fixedCommand.replace("_", " "))
-                        .replace("{name}", portal.getPortalId())));
+                        .replace("{command}", fixedCommand).replace("{name}", portal.getPortalId())));
             } else
                 player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getConfig().getString("prefix")
                         + Objects.requireNonNull(pluginInstance.getConfig().getString("portal-invalid-message")).replace("{name}", args[1])));
