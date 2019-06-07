@@ -7,12 +7,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockFromToEvent;
-import org.bukkit.event.block.BlockPhysicsEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerPortalEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.inventory.EquipmentSlot;
 import xzot1k.plugins.sp.SimplePortals;
 import xzot1k.plugins.sp.api.enums.PointType;
@@ -23,22 +18,18 @@ import xzot1k.plugins.sp.api.objects.SerializableLocation;
 
 import java.util.Objects;
 
-public class Listeners implements Listener
-{
+public class Listeners implements Listener {
 
     private SimplePortals pluginInstance;
 
-    public Listeners(SimplePortals pluginInstance)
-    {
+    public Listeners(SimplePortals pluginInstance) {
         this.pluginInstance = pluginInstance;
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onBlockFromTo(BlockFromToEvent e)
-    {
+    public void onBlockFromTo(BlockFromToEvent e) {
         Portal portalFrom = pluginInstance.getManager().getPortalAtLocation(e.getBlock().getLocation());
-        if (portalFrom != null)
-        {
+        if (portalFrom != null) {
             e.setCancelled(true);
             return;
         }
@@ -48,14 +39,11 @@ public class Listeners implements Listener
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onClick(PlayerInteractEvent e)
-    {
+    public void onClick(PlayerInteractEvent e) {
         if (e.getAction() == Action.LEFT_CLICK_BLOCK && e.getClickedBlock() != null
-                && pluginInstance.getManager().isInSelectionMode(e.getPlayer()))
-        {
+                && pluginInstance.getManager().isInSelectionMode(e.getPlayer())) {
             e.setCancelled(true);
-            if (pluginInstance.getManager().updateCurrentSelection(e.getPlayer(), e.getClickedBlock().getLocation(), PointType.POINT_ONE))
-            {
+            if (pluginInstance.getManager().updateCurrentSelection(e.getPlayer(), e.getClickedBlock().getLocation(), PointType.POINT_ONE)) {
                 pluginInstance.getManager().highlightBlock(e.getClickedBlock(), e.getPlayer(), PointType.POINT_ONE);
                 String message = pluginInstance.getConfig().getString("point-1-set-message");
                 if (message != null && !message.equalsIgnoreCase(""))
@@ -64,8 +52,7 @@ public class Listeners implements Listener
         }
 
         if (e.getAction() == Action.RIGHT_CLICK_BLOCK && e.getClickedBlock() != null
-                && pluginInstance.getManager().isInSelectionMode(e.getPlayer()))
-        {
+                && pluginInstance.getManager().isInSelectionMode(e.getPlayer())) {
             e.setCancelled(true);
 
             if (pluginInstance.getServerVersion().toLowerCase().startsWith("v1_14") || pluginInstance.getServerVersion().toLowerCase().startsWith("v1_13")
@@ -73,8 +60,7 @@ public class Listeners implements Listener
                     || pluginInstance.getServerVersion().toLowerCase().startsWith("v1_10") || pluginInstance.getServerVersion().toLowerCase().startsWith("v1_9"))
                 if (e.getHand() != EquipmentSlot.HAND) return;
 
-            if (pluginInstance.getManager().updateCurrentSelection(e.getPlayer(), e.getClickedBlock().getLocation(), PointType.POINT_TWO))
-            {
+            if (pluginInstance.getManager().updateCurrentSelection(e.getPlayer(), e.getClickedBlock().getLocation(), PointType.POINT_TWO)) {
                 pluginInstance.getManager().highlightBlock(e.getClickedBlock(), e.getPlayer(), PointType.POINT_TWO);
 
                 String message = pluginInstance.getConfig().getString("point-2-set-message");
@@ -85,21 +71,17 @@ public class Listeners implements Listener
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onMove(PlayerMoveEvent e)
-    {
+    public void onMove(PlayerMoveEvent e) {
         if (e.getFrom().getBlockX() != Objects.requireNonNull(e.getTo()).getBlockX() || e.getFrom().getBlockY() != e.getTo().getBlockY()
-                || e.getFrom().getBlockZ() != e.getTo().getBlockZ())
-        {
+                || e.getFrom().getBlockZ() != e.getTo().getBlockZ()) {
             Portal portal = pluginInstance.getManager().getPortalAtLocation(e.getTo());
-            if (portal != null)
-            {
+            if (portal != null) {
                 PortalEnterEvent portalEnterEvent = new PortalEnterEvent(e.getPlayer(), portal);
                 pluginInstance.getServer().getPluginManager().callEvent(portalEnterEvent);
                 if (portalEnterEvent.isCancelled()) return;
 
                 if (pluginInstance.getConfig().getBoolean("use-portal-cooldown") && pluginInstance.getManager().isPlayerOnCooldown(e.getPlayer())
-                        && !e.getPlayer().hasPermission("simpleportals.cdbypass"))
-                {
+                        && !e.getPlayer().hasPermission("simpleportals.cdbypass")) {
                     double tv = pluginInstance.getConfig().getDouble("throw-velocity");
                     if (!(tv <= -1))
                         e.getPlayer().setVelocity(e.getPlayer().getLocation().getDirection().setY(e.getPlayer().getLocation().getDirection().getY() / 2).multiply(-tv));
@@ -114,8 +96,7 @@ public class Listeners implements Listener
 
                 if (!pluginInstance.getConfig().getBoolean("bypass-portal-permissions") && !e.getPlayer().hasPermission("simpleportals.portal." + portal.getPortalId())
                         && !e.getPlayer().hasPermission("simpleportals.portals." + portal.getPortalId()) && !e.getPlayer().hasPermission("simpleportals.portal.*")
-                        && !e.getPlayer().hasPermission("simpleportals.portals.*"))
-                {
+                        && !e.getPlayer().hasPermission("simpleportals.portals.*")) {
                     double tv = pluginInstance.getConfig().getDouble("throw-velocity");
                     if (!(tv <= -1))
                         e.getPlayer().setVelocity(e.getPlayer().getLocation().getDirection().setY(e.getPlayer().getLocation().getDirection().getY() / 2).multiply(-tv));
@@ -130,23 +111,18 @@ public class Listeners implements Listener
                 pluginInstance.getServer().getPluginManager().callEvent(portalActionEvent);
                 if (portalActionEvent.isCancelled()) return;
 
-                for (int i = -1; ++i < portal.getCommands().size(); )
-                {
+                for (int i = -1; ++i < portal.getCommands().size(); ) {
                     String commandLine = portal.getCommands().get(i);
-                    if (commandLine.contains(":"))
-                    {
-                        String[] commandLineArgs = commandLine.split(":");
-                        String command = commandLineArgs[0], type = commandLineArgs[1];
-                        if (type.equalsIgnoreCase("PLAYER"))
-                            pluginInstance.getServer().dispatchCommand(e.getPlayer(), command.replace("{player}", e.getPlayer().getName()));
-                        else
-                            pluginInstance.getServer().dispatchCommand(pluginInstance.getServer().getConsoleSender(), command.replace("{player}", e.getPlayer().getName()));
-                    } else
+                    if (commandLine.toUpperCase().endsWith(":PLAYER")) {
+                        commandLine = commandLine.replaceAll("(?i):PLAYER", "").replaceAll("(?i):CONSOLE", "");
+                        pluginInstance.getServer().dispatchCommand(e.getPlayer(), commandLine.replace("{player}", e.getPlayer().getName()));
+                    } else {
+                        commandLine = commandLine.replaceAll("(?i):PLAYER", "").replaceAll("(?i):CONSOLE", "");
                         pluginInstance.getServer().dispatchCommand(pluginInstance.getServer().getConsoleSender(), commandLine.replace("{player}", e.getPlayer().getName()));
+                    }
                 }
 
-                if (!portal.isCommandsOnly())
-                {
+                if (!portal.isCommandsOnly()) {
                     String particleEffect = pluginInstance.getConfig().getString("teleport-visual-effect");
                     if (particleEffect != null && !particleEffect.equalsIgnoreCase(""))
                         pluginInstance.getManager().getParticleHandler().broadcastParticle(e.getPlayer().getLocation(), 1, 2, 1, 0,
@@ -168,13 +144,10 @@ public class Listeners implements Listener
 
                     portal.performAction(e.getPlayer());
                 }
-            } else
-            {
-                if (!pluginInstance.getManager().getSmartTransferMap().isEmpty() && pluginInstance.getManager().getSmartTransferMap().containsKey(e.getPlayer().getUniqueId()))
-                {
+            } else {
+                if (!pluginInstance.getManager().getSmartTransferMap().isEmpty() && pluginInstance.getManager().getSmartTransferMap().containsKey(e.getPlayer().getUniqueId())) {
                     SerializableLocation serializableLocation = pluginInstance.getManager().getSmartTransferMap().get(e.getPlayer().getUniqueId());
-                    if (serializableLocation != null)
-                    {
+                    if (serializableLocation != null) {
                         Location location = e.getPlayer().getLocation();
                         serializableLocation.setWorldName(Objects.requireNonNull(location.getWorld()).getName());
                         serializableLocation.setX(location.getX());
@@ -192,37 +165,29 @@ public class Listeners implements Listener
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onQuit(PlayerQuitEvent e)
-    {
+    public void onQuit(PlayerQuitEvent e) {
         pluginInstance.getManager().getSmartTransferMap().remove(e.getPlayer().getUniqueId());
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onTeleport(PlayerPortalEvent e)
-    {
+    public void onTeleport(PlayerPortalEvent e) {
         if (e.getCause() == PlayerTeleportEvent.TeleportCause.NETHER_PORTAL || e.getCause() == PlayerTeleportEvent.TeleportCause.END_PORTAL
-                || e.getCause().name().equalsIgnoreCase("END_GATEWAY"))
-        {
+                || e.getCause().name().equalsIgnoreCase("END_GATEWAY")) {
             Portal portal = pluginInstance.getManager().getPortalAtLocation(e.getFrom());
-            if (portal != null)
-            {
+            if (portal != null) {
                 e.setCancelled(true);
                 return;
             }
 
             boolean foundPortal = false;
-            for (int x = (e.getFrom().getBlockX() - 5) - 1; ++x <= e.getFrom().getBlockX() + 5; )
-            {
+            for (int x = (e.getFrom().getBlockX() - 5) - 1; ++x <= e.getFrom().getBlockX() + 5; ) {
                 if (foundPortal) break;
-                for (int y = (e.getFrom().getBlockY() - 5) - 1; ++y <= e.getFrom().getBlockY() + 5; )
-                {
+                for (int y = (e.getFrom().getBlockY() - 5) - 1; ++y <= e.getFrom().getBlockY() + 5; ) {
                     if (foundPortal) break;
-                    for (int z = (e.getFrom().getBlockZ() - 5) - 1; ++z <= e.getFrom().getBlockZ() + 5; )
-                    {
+                    for (int z = (e.getFrom().getBlockZ() - 5) - 1; ++z <= e.getFrom().getBlockZ() + 5; ) {
                         Location location = new Location(e.getFrom().getWorld(), x, y, z);
                         Portal p = pluginInstance.getManager().getPortalAtLocation(location);
-                        if (p != null)
-                        {
+                        if (p != null) {
                             e.setCancelled(true);
                             foundPortal = true;
                             break;

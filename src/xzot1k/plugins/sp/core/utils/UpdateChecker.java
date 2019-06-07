@@ -8,49 +8,43 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
-public class UpdateChecker
-{
+public class UpdateChecker {
 
     private SimplePortals pluginInstance;
     private int projectId;
     private URL checkURL;
     private String newVersion;
 
-    public UpdateChecker(SimplePortals pluginInstance, int projectId)
-    {
+    public UpdateChecker(SimplePortals pluginInstance, int projectId) {
         this.pluginInstance = pluginInstance;
         this.newVersion = pluginInstance.getDescription().getVersion();
         this.projectId = projectId;
-        try
-        {
+        try {
             this.checkURL = new URL("https://api.spigotmc.org/legacy/update.php?resource=" + projectId);
-        } catch (MalformedURLException ignored) {}
+        } catch (MalformedURLException ignored) {
+        }
     }
 
-    public int getProjectId()
-    {
+    public int getProjectId() {
         return projectId;
     }
 
-    public String getLatestVersion()
-    {
+    public String getLatestVersion() {
         return newVersion;
     }
 
-    public String getResourceURL()
-    {
+    public String getResourceURL() {
         return "https://www.spigotmc.org/resources/" + projectId;
     }
 
-    public boolean checkForUpdates()
-    {
+    public boolean checkForUpdates() {
         URLConnection con = null;
 
-        try
-        {
+        try {
             con = checkURL.openConnection();
             this.newVersion = new BufferedReader(new InputStreamReader(con.getInputStream())).readLine();
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         if (con == null || newVersion == null) return false;
         return !pluginInstance.getDescription().getVersion().equalsIgnoreCase(newVersion);
