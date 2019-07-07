@@ -40,6 +40,13 @@ public class SimplePortals extends JavaPlugin {
         saveDefaultConfig();
         saveDefaultPortalsConfig();
 
+        log(Level.INFO,
+                "\n===============================================================================\n" +
+                        "        Need a server host? Try PebbleHost! Plans starting at $1/GB!\n" +
+                        "                  Use promo code \"zotdev\" for 5% off!\n" +
+                        "                            www.pebblehost.com\n" +
+                        "===============================================================================");
+
         Objects.requireNonNull(getCommand("simpleportals")).setExecutor(new Commands(getPluginInstance()));
         getServer().getPluginManager().registerEvents(new Listeners(pluginInstance), this);
 
