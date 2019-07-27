@@ -26,7 +26,7 @@ public class Listeners implements Listener {
         this.pluginInstance = pluginInstance;
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onBlockFromTo(BlockFromToEvent e) {
         Portal portalFrom = pluginInstance.getManager().getPortalAtLocation(e.getBlock().getLocation());
         if (portalFrom != null) {
@@ -38,7 +38,7 @@ public class Listeners implements Listener {
         if (portalTo != null) e.setCancelled(true);
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onClick(PlayerInteractEvent e) {
         if (e.getAction() == Action.LEFT_CLICK_BLOCK && e.getClickedBlock() != null
                 && pluginInstance.getManager().isInSelectionMode(e.getPlayer())) {
@@ -70,7 +70,7 @@ public class Listeners implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onMove(PlayerMoveEvent e) {
         if (e.getFrom().getBlockX() != Objects.requireNonNull(e.getTo()).getBlockX() || e.getFrom().getBlockY() != e.getTo().getBlockY()
                 || e.getFrom().getBlockZ() != e.getTo().getBlockZ()) {
@@ -164,12 +164,12 @@ public class Listeners implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onQuit(PlayerQuitEvent e) {
         pluginInstance.getManager().getSmartTransferMap().remove(e.getPlayer().getUniqueId());
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onTeleport(PlayerPortalEvent e) {
         if (e.getCause() == PlayerTeleportEvent.TeleportCause.NETHER_PORTAL || e.getCause() == PlayerTeleportEvent.TeleportCause.END_PORTAL
                 || e.getCause().name().equalsIgnoreCase("END_GATEWAY")) {
