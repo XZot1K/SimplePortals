@@ -7,6 +7,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockFromToEvent;
+import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.EquipmentSlot;
 import xzot1k.plugins.sp.SimplePortals;
@@ -26,7 +27,7 @@ public class Listeners implements Listener {
         this.pluginInstance = pluginInstance;
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBlockFromTo(BlockFromToEvent e) {
         Portal portalFrom = pluginInstance.getManager().getPortalAtLocation(e.getBlock().getLocation());
         if (portalFrom != null) {
@@ -38,7 +39,7 @@ public class Listeners implements Listener {
         if (portalTo != null) e.setCancelled(true);
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onClick(PlayerInteractEvent e) {
         if (e.getAction() == Action.LEFT_CLICK_BLOCK && e.getClickedBlock() != null
                 && pluginInstance.getManager().isInSelectionMode(e.getPlayer())) {
@@ -70,7 +71,7 @@ public class Listeners implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onMove(PlayerMoveEvent e) {
         if (e.getFrom().getBlockX() != Objects.requireNonNull(e.getTo()).getBlockX() || e.getFrom().getBlockY() != e.getTo().getBlockY()
                 || e.getFrom().getBlockZ() != e.getTo().getBlockZ()) {
@@ -114,11 +115,14 @@ public class Listeners implements Listener {
                 for (int i = -1; ++i < portal.getCommands().size(); ) {
                     String commandLine = portal.getCommands().get(i);
                     if (commandLine.toUpperCase().endsWith(":PLAYER")) {
-                        commandLine = commandLine.replaceAll("(?i):PLAYER", "").replaceAll("(?i):CONSOLE", "");
+                        commandLine = commandLine.replaceAll("(?i):PLAYER", "").replaceAll("(?i):CONSOLE", "").replaceAll("(?i):CHAT", "");
                         pluginInstance.getServer().dispatchCommand(e.getPlayer(), commandLine.replace("{player}", e.getPlayer().getName()));
-                    } else {
-                        commandLine = commandLine.replaceAll("(?i):PLAYER", "").replaceAll("(?i):CONSOLE", "");
+                    } else if (commandLine.toUpperCase().endsWith(":CONSOLE")) {
+                        commandLine = commandLine.replaceAll("(?i):PLAYER", "").replaceAll("(?i):CONSOLE", "").replaceAll("(?i):CHAT", "");
                         pluginInstance.getServer().dispatchCommand(pluginInstance.getServer().getConsoleSender(), commandLine.replace("{player}", e.getPlayer().getName()));
+                    } else if (commandLine.toUpperCase().endsWith(":CHAT")) {
+                        commandLine = commandLine.replaceAll("(?i):PLAYER", "").replaceAll("(?i):CONSOLE", "").replaceAll("(?i):CHAT", "");
+                        e.getPlayer().chat(commandLine.replace("{player}", e.getPlayer().getName()));
                     }
                 }
 
@@ -164,12 +168,12 @@ public class Listeners implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onQuit(PlayerQuitEvent e) {
         pluginInstance.getManager().getSmartTransferMap().remove(e.getPlayer().getUniqueId());
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onTeleport(PlayerPortalEvent e) {
         if (e.getCause() == PlayerTeleportEvent.TeleportCause.NETHER_PORTAL || e.getCause() == PlayerTeleportEvent.TeleportCause.END_PORTAL
                 || e.getCause().name().equalsIgnoreCase("END_GATEWAY")) {
@@ -196,6 +200,12 @@ public class Listeners implements Listener {
                 }
             }
         }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onSpawn(CreatureSpawnEvent e) {
+        if (pluginInstance.getManager().getPortalAtLocation(e.getLocation()) != null)
+            e.setCancelled(true);
     }
 
 }
