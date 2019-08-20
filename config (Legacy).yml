@@ -49,6 +49,12 @@ bypass-portal-permissions: false
 # If this is enabled, the player can teleport through portals with vehicles, such as Horses and Boats.
 vehicle-teleportation: true
 
+# The creatures in the list below will be blocked from spawning inside portal regions.
+creature-spawning-blacklist:
+ - "PUFFERFISH"
+ - "TROPICAL_FISH"
+ - "DOLPHIN"
+
 # Should players have a cooldown for portal usage?
 use-portal-cooldown: true
 # How long should the player have to wait in between portal usages in seconds?
@@ -58,7 +64,7 @@ throw-velocity: 1.35
 
 # This is the sound that is played when the player teleports.
 # You may need to change this based on your minecraft version.
-teleport-sound: "GHAST_FIREBALL"
+teleport-sound: "ENTITY_GHAST_SHOOT"
 # This is the effect that is used for your teleportation visual.
 # You can find a complete particle list here: https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Particle.html
 teleport-visual-effect: "CLOUD"

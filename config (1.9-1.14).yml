@@ -49,6 +49,12 @@ bypass-portal-permissions: false
 # If this is enabled, the player can teleport through portals with vehicles, such as Horses and Boats.
 vehicle-teleportation: true
 
+# The creatures in the list below will be blocked from spawning inside portal regions.
+creature-spawning-blacklist:
+ - "PUFFERFISH"
+ - "TROPICAL_FISH"
+ - "DOLPHIN"
+
 # Should players have a cooldown for portal usage?
 use-portal-cooldown: true
 # How long should the player have to wait in between portal usages in seconds?
