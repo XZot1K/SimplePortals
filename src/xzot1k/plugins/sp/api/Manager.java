@@ -1,15 +1,5 @@
 package xzot1k.plugins.sp.api;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
-import java.util.logging.Level;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -21,7 +11,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.BlockIterator;
-
 import xzot1k.plugins.sp.SimplePortals;
 import xzot1k.plugins.sp.api.enums.PointType;
 import xzot1k.plugins.sp.api.objects.Portal;
@@ -29,27 +18,15 @@ import xzot1k.plugins.sp.api.objects.Region;
 import xzot1k.plugins.sp.api.objects.SerializableLocation;
 import xzot1k.plugins.sp.core.objects.TaskHolder;
 import xzot1k.plugins.sp.core.packets.jsonmsgs.JSONHandler;
-import xzot1k.plugins.sp.core.packets.jsonmsgs.versions.JSONHandler1_10R1;
-import xzot1k.plugins.sp.core.packets.jsonmsgs.versions.JSONHandler1_11R1;
-import xzot1k.plugins.sp.core.packets.jsonmsgs.versions.JSONHandler1_12R1;
-import xzot1k.plugins.sp.core.packets.jsonmsgs.versions.JSONHandler1_13R1;
-import xzot1k.plugins.sp.core.packets.jsonmsgs.versions.JSONHandler1_13R2;
-import xzot1k.plugins.sp.core.packets.jsonmsgs.versions.JSONHandler1_14R1;
-import xzot1k.plugins.sp.core.packets.jsonmsgs.versions.JSONHandler1_8R1;
-import xzot1k.plugins.sp.core.packets.jsonmsgs.versions.JSONHandler1_8R2;
-import xzot1k.plugins.sp.core.packets.jsonmsgs.versions.JSONHandler1_8R3;
-import xzot1k.plugins.sp.core.packets.jsonmsgs.versions.JSONHandler1_9R1;
-import xzot1k.plugins.sp.core.packets.jsonmsgs.versions.JSONHandler1_9R2;
+import xzot1k.plugins.sp.core.packets.jsonmsgs.versions.*;
 import xzot1k.plugins.sp.core.packets.particles.ParticleHandler;
-import xzot1k.plugins.sp.core.packets.particles.versions.PH1_10R1;
-import xzot1k.plugins.sp.core.packets.particles.versions.PH1_11R1;
-import xzot1k.plugins.sp.core.packets.particles.versions.PH1_12R1;
-import xzot1k.plugins.sp.core.packets.particles.versions.PH1_8R1;
-import xzot1k.plugins.sp.core.packets.particles.versions.PH1_8R2;
-import xzot1k.plugins.sp.core.packets.particles.versions.PH1_8R3;
-import xzot1k.plugins.sp.core.packets.particles.versions.PH1_9R1;
-import xzot1k.plugins.sp.core.packets.particles.versions.PH1_9R2;
-import xzot1k.plugins.sp.core.packets.particles.versions.PH_Latest;
+import xzot1k.plugins.sp.core.packets.particles.versions.*;
+
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.util.*;
+import java.util.logging.Level;
 
 public class Manager {
 	private SimplePortals pluginInstance;
@@ -78,63 +55,63 @@ public class Manager {
 	private void setupPackets() {
 		boolean success = false;
 		switch (pluginInstance.getServerVersion()) {
-		case "v1_14_R1":
-			particleHandler = new PH_Latest();
-			setJSONHandler(new JSONHandler1_14R1());
-			success = true;
-			break;
-		case "v1_13_R2":
-			particleHandler = new PH_Latest();
-			setJSONHandler(new JSONHandler1_13R2());
-			success = true;
-			break;
-		case "v1_13_R1":
-			particleHandler = new PH_Latest();
-			setJSONHandler(new JSONHandler1_13R1());
-			success = true;
-			break;
-		case "v1_12_R1":
-			particleHandler = new PH1_12R1(pluginInstance);
-			setJSONHandler(new JSONHandler1_12R1());
-			success = true;
-			break;
-		case "v1_11_R1":
-			particleHandler = new PH1_11R1(pluginInstance);
-			setJSONHandler(new JSONHandler1_11R1());
-			success = true;
-			break;
-		case "v1_10_R1":
-			particleHandler = new PH1_10R1(pluginInstance);
-			setJSONHandler(new JSONHandler1_10R1());
-			success = true;
-			break;
-		case "v1_9_R2":
-			particleHandler = new PH1_9R2(pluginInstance);
-			setJSONHandler(new JSONHandler1_9R2());
-			success = true;
-			break;
-		case "v1_9_R1":
-			particleHandler = new PH1_9R1(pluginInstance);
-			setJSONHandler(new JSONHandler1_9R1());
-			success = true;
-			break;
-		case "v1_8_R3":
-			particleHandler = new PH1_8R3(pluginInstance);
-			setJSONHandler(new JSONHandler1_8R3());
-			success = true;
-			break;
-		case "v1_8_R2":
-			particleHandler = new PH1_8R2(pluginInstance);
-			setJSONHandler(new JSONHandler1_8R2());
-			success = true;
-			break;
-		case "v1_8_R1":
-			particleHandler = new PH1_8R1(pluginInstance);
-			setJSONHandler(new JSONHandler1_8R1());
-			success = true;
-			break;
-		default:
-			break;
+			case "v1_14_R1":
+				particleHandler = new PH_Latest();
+				setJSONHandler(new JSONHandler1_14R1());
+				success = true;
+				break;
+			case "v1_13_R2":
+				particleHandler = new PH_Latest();
+				setJSONHandler(new JSONHandler1_13R2());
+				success = true;
+				break;
+			case "v1_13_R1":
+				particleHandler = new PH_Latest();
+				setJSONHandler(new JSONHandler1_13R1());
+				success = true;
+				break;
+			case "v1_12_R1":
+				particleHandler = new PH1_12R1(pluginInstance);
+				setJSONHandler(new JSONHandler1_12R1());
+				success = true;
+				break;
+			case "v1_11_R1":
+				particleHandler = new PH1_11R1(pluginInstance);
+				setJSONHandler(new JSONHandler1_11R1());
+				success = true;
+				break;
+			case "v1_10_R1":
+				particleHandler = new PH1_10R1(pluginInstance);
+				setJSONHandler(new JSONHandler1_10R1());
+				success = true;
+				break;
+			case "v1_9_R2":
+				particleHandler = new PH1_9R2(pluginInstance);
+				setJSONHandler(new JSONHandler1_9R2());
+				success = true;
+				break;
+			case "v1_9_R1":
+				particleHandler = new PH1_9R1(pluginInstance);
+				setJSONHandler(new JSONHandler1_9R1());
+				success = true;
+				break;
+			case "v1_8_R3":
+				particleHandler = new PH1_8R3(pluginInstance);
+				setJSONHandler(new JSONHandler1_8R3());
+				success = true;
+				break;
+			case "v1_8_R2":
+				particleHandler = new PH1_8R2(pluginInstance);
+				setJSONHandler(new JSONHandler1_8R2());
+				success = true;
+				break;
+			case "v1_8_R1":
+				particleHandler = new PH1_8R1(pluginInstance);
+				setJSONHandler(new JSONHandler1_8R1());
+				success = true;
+				break;
+			default:
+				break;
 		}
 
 		if (success)
@@ -159,14 +136,14 @@ public class Manager {
 			Region region = getCurrentSelections().get(player.getUniqueId());
 			if (region != null) {
 				switch (pointType) {
-				case POINT_ONE:
-					region.setPoint1(location);
-					break;
-				case POINT_TWO:
-					region.setPoint2(location);
-					break;
-				default:
-					break;
+					case POINT_ONE:
+						region.setPoint1(location);
+						break;
+					case POINT_TWO:
+						region.setPoint2(location);
+						break;
+					default:
+						break;
 				}
 
 				if (!region.getPoint1().getWorldName().equalsIgnoreCase(region.getPoint2().getWorldName())) {
@@ -183,14 +160,12 @@ public class Manager {
 
 		Region region = null;
 		switch (pointType) {
-		case POINT_ONE:
-			region = new Region(pluginInstance, location, location);
-			break;
-		case POINT_TWO:
-			region = new Region(pluginInstance, location, location);
-			break;
-		default:
-			break;
+			case POINT_ONE:
+			case POINT_TWO:
+				region = new Region(pluginInstance, location, location);
+				break;
+			default:
+				break;
 		}
 
 		if (!region.getPoint1().getWorldName().equalsIgnoreCase(region.getPoint2().getWorldName())) {
@@ -244,7 +219,7 @@ public class Manager {
 	}
 
 	public Portal getPortalAtLocation(Location location) {
-		for (int i = -1; ++i < getPortals().size();) {
+		for (int i = -1; ++i < getPortals().size(); ) {
 			Portal portal = getPortals().get(i);
 			if (portal.getRegion().isInRegion(location))
 				return portal;
@@ -254,7 +229,7 @@ public class Manager {
 	}
 
 	public Portal getPortalById(String portalName) {
-		for (int i = -1; ++i < getPortals().size();) {
+		for (int i = -1; ++i < getPortals().size(); ) {
 			Portal portal = getPortals().get(i);
 			if (portal.getPortalId().equalsIgnoreCase(portalName))
 				return portal;
@@ -264,7 +239,7 @@ public class Manager {
 	}
 
 	public boolean doesPortalExist(String portalName) {
-		for (int i = -1; ++i < getPortals().size();) {
+		for (int i = -1; ++i < getPortals().size(); ) {
 			Portal portal = getPortals().get(i);
 			if (portal.getPortalId().equalsIgnoreCase(portalName))
 				return true;
@@ -301,7 +276,7 @@ public class Manager {
 
 	public boolean isFacingPortal(Player player, Portal portal, int range) {
 		BlockIterator blockIterator = new BlockIterator(player, range);
-		Block lastBlock = blockIterator.next();
+		Block lastBlock;
 
 		boolean foundPortal = false;
 		while (blockIterator.hasNext()) {
@@ -349,10 +324,10 @@ public class Manager {
 					return;
 				}
 
-				for (double y = blockLocation.getBlockY() - 0.2; (y += 0.2) < (blockLocation.getBlockY() + 1.1);)
-					for (double x = blockLocation.getBlockX() - 0.2; (x += 0.2) < (blockLocation.getBlockX() + 1.1);)
+				for (double y = blockLocation.getBlockY() - 0.2; (y += 0.2) < (blockLocation.getBlockY() + 1.1); )
+					for (double x = blockLocation.getBlockX() - 0.2; (x += 0.2) < (blockLocation.getBlockX() + 1.1); )
 						for (double z = blockLocation.getBlockZ() - 0.2; (z += 0.2) < (blockLocation.getBlockZ()
-								+ 1.1);) {
+								+ 1.1); ) {
 							Location location = new Location(blockLocation.getWorld(), x, y, z);
 
 							if ((y < (blockLocation.getBlockY() + 0.2) || y > (blockLocation.getBlockY() + 0.9))
@@ -398,7 +373,7 @@ public class Manager {
 		List<String> portalIds = new ArrayList<>(
 				Objects.requireNonNull(pluginInstance.getPortalsConfig().getConfigurationSection("")).getKeys(false));
 		if (!portalIds.isEmpty())
-			for (int i = -1; ++i < portalIds.size();) {
+			for (int i = -1; ++i < portalIds.size(); ) {
 				String portalId = portalIds.get(i);
 				if (doesPortalExist(portalId))
 					return;
@@ -469,7 +444,7 @@ public class Manager {
 		if (files == null || files.length <= 0)
 			return;
 
-		for (int i = -1; ++i < files.length;) {
+		for (int i = -1; ++i < files.length; ) {
 			File file = files[i];
 			if (file != null && file.getName().toLowerCase().endsWith(".yml")) {
 				YamlConfiguration yamlConfiguration = YamlConfiguration.loadConfiguration(file);
@@ -527,7 +502,7 @@ public class Manager {
 	}
 
 	public void savePortals() {
-		for (int i = -1; ++i < getPortals().size();) {
+		for (int i = -1; ++i < getPortals().size(); ) {
 			Portal portal = getPortals().get(i);
 			portal.save(false);
 		}

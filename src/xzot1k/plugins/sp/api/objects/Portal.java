@@ -3,6 +3,7 @@ package xzot1k.plugins.sp.api.objects;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
@@ -124,23 +125,23 @@ public class Portal {
 
 					// Set YAW to opposite directions.
 					switch (direction.toUpperCase()) {
-					case "NORTH":
-						serializableLocation.setYaw(0);
-						break;
+						case "NORTH":
+							serializableLocation.setYaw(0);
+							break;
 
-					case "SOUTH":
-						serializableLocation.setYaw(180);
-						break;
+						case "SOUTH":
+							serializableLocation.setYaw(180);
+							break;
 
-					case "EAST":
-						serializableLocation.setYaw(90);
-						break;
+						case "EAST":
+							serializableLocation.setYaw(90);
+							break;
 
-					case "WEST":
-						serializableLocation.setYaw(-90);
-						break;
-					default:
-						break;
+						case "WEST":
+							serializableLocation.setYaw(-90);
+							break;
+						default:
+							break;
 					}
 
 				}
@@ -171,188 +172,65 @@ public class Portal {
 		if (Objects.requireNonNull(point1.getWorld()).getName()
 				.equalsIgnoreCase(Objects.requireNonNull(point2.getWorld()).getName())) {
 			if (point1.getBlockX() <= point2.getBlockX()) {
-				for (int pos_x = point1.getBlockX() - 1; ++pos_x <= point2.getBlockX();)
+				for (int pos_x = point1.getBlockX() - 1; ++pos_x <= point2.getBlockX(); )
 					if (point1.getBlockZ() <= point2.getBlockZ())
-						for (int pos_z = point1.getBlockZ() - 1; ++pos_z <= point2.getBlockZ();)
-							if (point1.getBlockY() <= point2.getBlockY())
-								for (int pos_y = point1.getBlockY() - 1; ++pos_y <= point2.getBlockY();) {
-									Location location = new Location(point1.getWorld(), pos_x, pos_y, pos_z);
-									if (location.getBlock().getType() == Material.AIR
-											|| location.getBlock().getType() == getLastFillMaterial()) {
-										location.getBlock().setType(material);
-										if (pluginInstance.getServerVersion().toLowerCase().startsWith("v1_14")
-												&& !pluginInstance.getServerVersion().toLowerCase()
-														.startsWith("v1_13")) {
-											try {
-												Method closeMethod = location.getBlock().getClass().getMethod("setData",
-														Short.class);
-												if (closeMethod != null)
-													closeMethod.invoke(location.getBlock().getClass(),
-															(short) durability);
-											} catch (NoSuchMethodException | IllegalAccessException
-													| InvocationTargetException ignored) {
-											}
-										}
-									}
-								}
-							else
-								for (int pos_y = point2.getBlockY() - 1; ++pos_y <= point1.getBlockY();) {
-									Location location = new Location(point1.getWorld(), pos_x, pos_y, pos_z);
-									if (location.getBlock().getType() == Material.AIR
-											|| location.getBlock().getType() == getLastFillMaterial()) {
-										location.getBlock().setType(material);
-										if (pluginInstance.getServerVersion().toLowerCase().startsWith("v1_14")
-												&& !pluginInstance.getServerVersion().toLowerCase().startsWith("v1_13"))
-											try {
-												Method closeMethod = location.getBlock().getClass().getMethod("setData",
-														Short.class);
-												if (closeMethod != null)
-													closeMethod.invoke(location.getBlock().getClass(),
-															(short) durability);
-											} catch (NoSuchMethodException | IllegalAccessException
-													| InvocationTargetException ignored) {
-											}
-									}
-								}
+						fillHelper(material, (short) durability, point1, point2, pos_x, point1.getBlockY(), point2.getBlockY(), point1.getWorld());
 					else
-						for (int pos_z = point2.getBlockZ() - 1; ++pos_z <= point1.getBlockZ();)
-							if (point1.getBlockY() <= point2.getBlockY())
-								for (int pos_y = point1.getBlockY() - 1; ++pos_y <= point2.getBlockY();) {
-									Location location = new Location(point1.getWorld(), pos_x, pos_y, pos_z);
-									if (location.getBlock().getType() == Material.AIR
-											|| location.getBlock().getType() == getLastFillMaterial()) {
-										location.getBlock().setType(material);
-										if (pluginInstance.getServerVersion().toLowerCase().startsWith("v1_14")
-												&& !pluginInstance.getServerVersion().toLowerCase()
-														.startsWith("v1_13")) {
-											try {
-												Method closeMethod = location.getBlock().getClass().getMethod("setData",
-														Short.class);
-												if (closeMethod != null)
-													closeMethod.invoke(location.getBlock().getClass(),
-															(short) durability);
-											} catch (NoSuchMethodException | IllegalAccessException
-													| InvocationTargetException ignored) {
-											}
-										}
-									}
-								}
-							else
-								for (int pos_y = point2.getBlockY() - 1; ++pos_y <= point1.getBlockY();) {
-									Location location = new Location(point1.getWorld(), pos_x, pos_y, pos_z);
-									if (location.getBlock().getType() == Material.AIR
-											|| location.getBlock().getType() == getLastFillMaterial()) {
-										location.getBlock().setType(material);
-										if (pluginInstance.getServerVersion().toLowerCase().startsWith("v1_14")
-												&& !pluginInstance.getServerVersion().toLowerCase()
-														.startsWith("v1_13")) {
-											try {
-												Method closeMethod = location.getBlock().getClass().getMethod("setData",
-														Short.class);
-												if (closeMethod != null)
-													closeMethod.invoke(location.getBlock().getClass(),
-															(short) durability);
-											} catch (NoSuchMethodException | IllegalAccessException
-													| InvocationTargetException ignored) {
-											}
-										}
-									}
-								}
+						fillHelper(material, (short) durability, point2, point1, pos_x, point1.getBlockY(), point2.getBlockY(), point1.getWorld());
 			} else {
 				for (int pos_x = point2.getBlockX(); pos_x <= point1.getBlockX(); pos_x++)
 					if (point1.getBlockZ() <= point2.getBlockZ())
-						for (int pos_z = point1.getBlockZ(); pos_z <= point2.getBlockZ(); pos_z++)
-							if (point1.getBlockY() <= point2.getBlockY())
-								for (int pos_y = point1.getBlockY(); pos_y <= point2.getBlockY(); pos_y++) {
-									Location location = new Location(point1.getWorld(), pos_x, pos_y, pos_z);
-									if (location.getBlock().getType() == Material.AIR
-											|| location.getBlock().getType() == getLastFillMaterial()) {
-										location.getBlock().setType(material);
-										if (pluginInstance.getServerVersion().toLowerCase().startsWith("v1_14")
-												&& !pluginInstance.getServerVersion().toLowerCase()
-														.startsWith("v1_13")) {
-											try {
-												Method closeMethod = location.getBlock().getClass().getMethod("setData",
-														Short.class);
-												if (closeMethod != null)
-													closeMethod.invoke(location.getBlock().getClass(),
-															(short) durability);
-											} catch (NoSuchMethodException | IllegalAccessException
-													| InvocationTargetException ignored) {
-											}
-										}
-									}
-								}
-							else
-								for (int pos_y = point2.getBlockY(); pos_y <= point1.getBlockY(); pos_y++) {
-									Location location = new Location(point1.getWorld(), pos_x, pos_y, pos_z);
-									if (location.getBlock().getType() == Material.AIR
-											|| location.getBlock().getType() == getLastFillMaterial()) {
-										location.getBlock().setType(material);
-										if (pluginInstance.getServerVersion().toLowerCase().startsWith("v1_14")
-												&& !pluginInstance.getServerVersion().toLowerCase()
-														.startsWith("v1_13")) {
-											try {
-												Method closeMethod = location.getBlock().getClass().getMethod("setData",
-														Short.class);
-												if (closeMethod != null)
-													closeMethod.invoke(location.getBlock().getClass(),
-															(short) durability);
-											} catch (NoSuchMethodException | IllegalAccessException
-													| InvocationTargetException ignored) {
-											}
-										}
-									}
-								}
+						fillHelperTwo(material, (short) durability, point1, point2, pos_x, point1.getBlockY(), point2.getBlockY(), point1.getWorld());
 					else
-						for (int pos_z = point2.getBlockZ(); pos_z <= point1.getBlockZ(); pos_z++) {
-							if (point1.getBlockY() <= point2.getBlockY())
-								for (int pos_y = point1.getBlockY(); pos_y <= point2.getBlockY(); pos_y++) {
-									Location location = new Location(point1.getWorld(), pos_x, pos_y, pos_z);
-									if (location.getBlock().getType() == Material.AIR
-											|| location.getBlock().getType() == getLastFillMaterial()) {
-										location.getBlock().setType(material);
-										if (pluginInstance.getServerVersion().toLowerCase().startsWith("v1_14")
-												&& !pluginInstance.getServerVersion().toLowerCase()
-														.startsWith("v1_13")) {
-											try {
-												Method closeMethod = location.getBlock().getClass().getMethod("setData",
-														Short.class);
-												if (closeMethod != null)
-													closeMethod.invoke(location.getBlock().getClass(),
-															(short) durability);
-											} catch (NoSuchMethodException | IllegalAccessException
-													| InvocationTargetException ignored) {
-											}
-										}
-									}
-								}
-							else
-								for (int pos_y = point2.getBlockY(); pos_y <= point1.getBlockY(); pos_y++) {
-									Location location = new Location(point1.getWorld(), pos_x, pos_y, pos_z);
-									if (location.getBlock().getType() == Material.AIR
-											|| location.getBlock().getType() == getLastFillMaterial()) {
-										location.getBlock().setType(material);
-										if (pluginInstance.getServerVersion().toLowerCase().startsWith("v1_14")
-												&& !pluginInstance.getServerVersion().toLowerCase()
-														.startsWith("v1_13")) {
-											try {
-												Method closeMethod = location.getBlock().getClass().getMethod("setData",
-														Short.class);
-												if (closeMethod != null)
-													closeMethod.invoke(location.getBlock().getClass(),
-															(short) durability);
-											} catch (NoSuchMethodException | IllegalAccessException
-													| InvocationTargetException ignored) {
-											}
-										}
-									}
-								}
-						}
+						fillHelperTwo(material, (short) durability, point2, point1, pos_x, point1.getBlockY(), point2.getBlockY(), point1.getWorld());
 			}
 		}
 
 		setLastFillMaterial(material);
+	}
+
+	private void fillHelperTwo(Material material, short durability, Location point1, Location point2, int pos_x, int blockY, int blockY2, World world) {
+		for (int pos_z = point1.getBlockZ(); pos_z <= point2.getBlockZ(); pos_z++)
+			if (blockY <= blockY2) fillHelperInner(material, durability, pos_x, blockY, blockY2, world, pos_z);
+			else fillHelperInner(material, durability, pos_x, blockY2, blockY, world, pos_z);
+	}
+
+	private void fillHelperInner(Material material, short durability, int pos_x, int blockY, int blockY2, World world, int pos_z) {
+		for (int pos_y = blockY; pos_y <= blockY2; pos_y++)
+			fillHelperInnerTwo(material, durability, pos_x, world, pos_z, pos_y);
+	}
+
+	private void fillHelperInnerTwo(Material material, short durability, int pos_x, World world, int pos_z, int pos_y) {
+		Location location = new Location(world, pos_x, pos_y, pos_z);
+		if (location.getBlock().getType() == Material.AIR
+				|| location.getBlock().getType() == getLastFillMaterial()) {
+			location.getBlock().setType(material);
+			if (pluginInstance.getServerVersion().toLowerCase().startsWith("v1_14")
+					&& !pluginInstance.getServerVersion().toLowerCase()
+					.startsWith("v1_13")) {
+				try {
+					Method closeMethod = location.getBlock().getClass().getMethod("setData",
+							Short.class);
+					if (closeMethod != null)
+						closeMethod.invoke(location.getBlock().getClass(),
+								durability);
+				} catch (NoSuchMethodException | IllegalAccessException
+						| InvocationTargetException ignored) {
+				}
+			}
+		}
+	}
+
+	private void fillHelper(Material material, short durability, Location point1, Location point2, int pos_x, int blockY, int blockY2, World world) {
+		for (int pos_z = point1.getBlockZ() - 1; ++pos_z <= point2.getBlockZ(); )
+			if (blockY <= blockY2)
+				for (int pos_y = blockY - 1; ++pos_y <= blockY2; ) {
+					fillHelperInnerTwo(material, durability, pos_x, world, pos_z, pos_y);
+				}
+			else
+				for (int pos_y = blockY2 - 1; ++pos_y <= blockY; ) {
+					fillHelperInnerTwo(material, durability, pos_x, world, pos_z, pos_y);
+				}
 	}
 
 	public void displayRegion(Player player) {
@@ -375,11 +253,11 @@ public class Portal {
 				if (Objects.requireNonNull(point1.getWorld()).getName()
 						.equalsIgnoreCase(Objects.requireNonNull(point2.getWorld()).getName())) {
 					if (point1.getBlockX() <= point2.getBlockX()) {
-						for (int pos_x = point1.getBlockX() - 1; ++pos_x <= point2.getBlockX();) {
+						for (int pos_x = point1.getBlockX() - 1; ++pos_x <= point2.getBlockX(); ) {
 							if (point1.getBlockZ() <= point2.getBlockZ()) {
-								for (int pos_z = point1.getBlockZ() - 1; ++pos_z <= point2.getBlockZ();) {
+								for (int pos_z = point1.getBlockZ() - 1; ++pos_z <= point2.getBlockZ(); ) {
 									if (point1.getBlockY() <= point2.getBlockY()) {
-										for (int pos_y = point1.getBlockY() - 1; ++pos_y <= point2.getBlockY();) {
+										for (int pos_y = point1.getBlockY() - 1; ++pos_y <= point2.getBlockY(); ) {
 											Location location = new Location(point1.getWorld(), pos_x, pos_y, pos_z);
 											if (location.getX() == point1.getX() || location.getX() == point2.getX()
 													|| location.getY() == point1.getY()
@@ -390,7 +268,7 @@ public class Portal {
 														location.add(0.5, 0.5, 0.5), 0, 0, 0, 0, particleEffect, 1);
 										}
 									} else {
-										for (int pos_y = point2.getBlockY() - 1; ++pos_y <= point1.getBlockY();) {
+										for (int pos_y = point2.getBlockY() - 1; ++pos_y <= point1.getBlockY(); ) {
 											Location location = new Location(point1.getWorld(), pos_x, pos_y, pos_z);
 											if (location.getX() == point1.getX() || location.getX() == point2.getX()
 													|| location.getY() == point1.getY()
@@ -403,9 +281,9 @@ public class Portal {
 									}
 								}
 							} else {
-								for (int pos_z = point2.getBlockZ() - 1; ++pos_z <= point1.getBlockZ();) {
+								for (int pos_z = point2.getBlockZ() - 1; ++pos_z <= point1.getBlockZ(); ) {
 									if (point1.getBlockY() <= point2.getBlockY()) {
-										for (int pos_y = point1.getBlockY() - 1; ++pos_y <= point2.getBlockY();) {
+										for (int pos_y = point1.getBlockY() - 1; ++pos_y <= point2.getBlockY(); ) {
 											Location location = new Location(point1.getWorld(), pos_x, pos_y, pos_z);
 											if (location.getX() == point1.getX() || location.getX() == point2.getX()
 													|| location.getY() == point1.getY()
@@ -416,7 +294,7 @@ public class Portal {
 														location.add(0.5, 0.5, 0.5), 0, 0, 0, 0, particleEffect, 1);
 										}
 									} else {
-										for (int pos_y = point2.getBlockY() - 1; ++pos_y <= point1.getBlockY();) {
+										for (int pos_y = point2.getBlockY() - 1; ++pos_y <= point1.getBlockY(); ) {
 											Location location = new Location(point1.getWorld(), pos_x, pos_y, pos_z);
 											if (location.getX() == point1.getX() || location.getX() == point2.getX()
 													|| location.getY() == point1.getY()

@@ -37,6 +37,10 @@ public class PortalActionEvent extends Event implements Cancellable {
         return handlers;
     }
 
+    public static HandlerList getHandlerList() {
+        return handlers;
+    }
+
     public Portal getPortal() {
         return portal;
     }

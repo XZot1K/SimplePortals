@@ -1,8 +1,5 @@
 package xzot1k.plugins.sp.core;
 
-import java.util.List;
-import java.util.Objects;
-
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.event.EventHandler;
@@ -11,19 +8,17 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
-import org.bukkit.event.player.PlayerPortalEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.inventory.EquipmentSlot;
-
 import xzot1k.plugins.sp.SimplePortals;
 import xzot1k.plugins.sp.api.enums.PointType;
 import xzot1k.plugins.sp.api.events.PortalActionEvent;
 import xzot1k.plugins.sp.api.events.PortalEnterEvent;
 import xzot1k.plugins.sp.api.objects.Portal;
 import xzot1k.plugins.sp.api.objects.SerializableLocation;
+
+import java.util.List;
+import java.util.Objects;
 
 public class Listeners implements Listener {
 
@@ -65,7 +60,8 @@ public class Listeners implements Listener {
 				&& pluginInstance.getManager().isInSelectionMode(e.getPlayer())) {
 			e.setCancelled(true);
 
-			if (pluginInstance.getServerVersion().toLowerCase().startsWith("v1_14")
+			if (pluginInstance.getServerVersion().toLowerCase().startsWith("v1_15")
+					|| pluginInstance.getServerVersion().toLowerCase().startsWith("v1_14")
 					|| pluginInstance.getServerVersion().toLowerCase().startsWith("v1_13")
 					|| pluginInstance.getServerVersion().toLowerCase().startsWith("v1_12")
 					|| pluginInstance.getServerVersion().toLowerCase().startsWith("v1_11")
@@ -137,7 +133,7 @@ public class Listeners implements Listener {
 				if (portalActionEvent.isCancelled())
 					return;
 
-				for (int i = -1; ++i < portal.getCommands().size();) {
+				for (int i = -1; ++i < portal.getCommands().size(); ) {
 					String commandLine = portal.getCommands().get(i);
 					if (commandLine.toUpperCase().endsWith(":PLAYER")) {
 						commandLine = commandLine.replaceAll("(?i):PLAYER", "").replaceAll("(?i):CONSOLE", "")
@@ -220,13 +216,13 @@ public class Listeners implements Listener {
 			}
 
 			boolean foundPortal = false;
-			for (int x = (e.getFrom().getBlockX() - 5) - 1; ++x <= e.getFrom().getBlockX() + 5;) {
+			for (int x = (e.getFrom().getBlockX() - 5) - 1; ++x <= e.getFrom().getBlockX() + 5; ) {
 				if (foundPortal)
 					break;
-				for (int y = (e.getFrom().getBlockY() - 5) - 1; ++y <= e.getFrom().getBlockY() + 5;) {
+				for (int y = (e.getFrom().getBlockY() - 5) - 1; ++y <= e.getFrom().getBlockY() + 5; ) {
 					if (foundPortal)
 						break;
-					for (int z = (e.getFrom().getBlockZ() - 5) - 1; ++z <= e.getFrom().getBlockZ() + 5;) {
+					for (int z = (e.getFrom().getBlockZ() - 5) - 1; ++z <= e.getFrom().getBlockZ() + 5; ) {
 						Location location = new Location(e.getFrom().getWorld(), x, y, z);
 						Portal p = pluginInstance.getManager().getPortalAtLocation(location);
 						if (p != null) {
@@ -243,7 +239,7 @@ public class Listeners implements Listener {
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onSpawn(CreatureSpawnEvent e) {
 		List<String> blockedMobs = pluginInstance.getConfig().getStringList("creature-spawning-blacklist");
-		for (int i = -1; ++i < blockedMobs.size();) {
+		for (int i = -1; ++i < blockedMobs.size(); ) {
 			String blockedMob = blockedMobs.get(i);
 			if (blockedMob.replace(" ", "_").replace("-", "_").equalsIgnoreCase(e.getEntity().getType().name())) {
 				if (pluginInstance.getManager().getPortalAtLocation(e.getLocation()) != null)
