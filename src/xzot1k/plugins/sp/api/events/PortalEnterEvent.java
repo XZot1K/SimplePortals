@@ -9,7 +9,7 @@ import xzot1k.plugins.sp.api.objects.Portal;
 public class PortalEnterEvent extends Event implements Cancellable
 {
 
-    private final HandlerList handlers = new HandlerList();
+    private static final HandlerList handlers = new HandlerList();
     private boolean cancelled;
     private Player player;
     private Portal portal;
