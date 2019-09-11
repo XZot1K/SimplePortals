@@ -1,5 +1,6 @@
 package xzot1k.plugins.sp;
 
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -14,9 +15,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.logging.Level;
 
 public class SimplePortals extends JavaPlugin {
@@ -93,8 +93,8 @@ public class SimplePortals extends JavaPlugin {
 		if (getServerVersion().startsWith("v1_14") || getServerVersion().startsWith("v1_13")
 				|| getServerVersion().startsWith("v1_12") || getServerVersion().startsWith("v1_11")
 				|| getServerVersion().startsWith("v1_10") || getServerVersion().startsWith("v1_9")) {
-			saveResource("config (1.9-1.14).yml", false);
-			File file = new File(getDataFolder(), "config (1.9-1.14).yml");
+			saveResource("config.yml", false);
+			File file = new File(getDataFolder(), "config.yml");
 			file.renameTo(new File(getDataFolder(), "config.yml"));
 		} else {
 			saveResource("config (Legacy).yml", false);
@@ -106,52 +106,58 @@ public class SimplePortals extends JavaPlugin {
 	}
 
 	private void updateConfig() {
+		long startTime = System.currentTimeMillis();
 		int updateCount = 0;
-		File latestConfigFile;
+		saveResource("latest-config.yml", true);
+		File file = new File(getDataFolder(), "/latest-config.yml");
+		FileConfiguration yaml = YamlConfiguration.loadConfiguration(file);
 
-		if (getServerVersion().startsWith("v1_14") || getServerVersion().startsWith("v1_13")
-				|| getServerVersion().startsWith("v1_12") || getServerVersion().startsWith("v1_11")
-				|| getServerVersion().startsWith("v1_10") || getServerVersion().startsWith("v1_9")) {
-			saveResource("config (1.9-1.14).yml", true);
-			latestConfigFile = new File(getDataFolder(), "config (1.9-1.14).yml");
-		} else {
-			saveResource("config (Legacy).yml", true);
-			latestConfigFile = new File(getDataFolder(), "config (Legacy).yml");
-		}
+		ConfigurationSection currentConfigurationSection = getConfig().getConfigurationSection(""),
+				latestConfigurationSection = yaml.getConfigurationSection("");
+		if (currentConfigurationSection != null && latestConfigurationSection != null) {
+			Set<String> newKeys = latestConfigurationSection.getKeys(true),
+					currentKeys = currentConfigurationSection.getKeys(true);
+			for (String updatedKey : newKeys) {
+				if (!currentKeys.contains(updatedKey)) {
+					getConfig().set(updatedKey, yaml.get(updatedKey));
+					updateCount++;
+				}
+			}
 
-		FileConfiguration updatedYaml = YamlConfiguration.loadConfiguration(latestConfigFile);
-		List<String> currentKeys = new ArrayList<>(
-				Objects.requireNonNull(getConfig().getConfigurationSection("")).getKeys(true)),
-				updatedKeys = new ArrayList<>(
-						Objects.requireNonNull(updatedYaml.getConfigurationSection("")).getKeys(true));
-		for (int i = -1; ++i < updatedKeys.size();) {
-			String updatedKey = updatedKeys.get(i);
-			if (!currentKeys.contains(updatedKey)) {
-				getConfig().set(updatedKey, updatedYaml.get(updatedKey));
-				updateCount += 1;
-				log(Level.INFO, "Updated the '" + updatedKey + "' key within the configuration since it wasn't found.");
+			for (String currentKey : currentKeys) {
+				if (!newKeys.contains(currentKey)) {
+					getConfig().set(currentKey, null);
+					updateCount++;
+				}
 			}
 		}
 
-		for (int i = -1; ++i < currentKeys.size();) {
-			String currentKey = currentKeys.get(i);
-			if (!updatedKeys.contains(currentKey)) {
-				getConfig().set(currentKey, null);
-				updateCount += 1;
-				log(Level.INFO, "Removed the '" + currentKey + "' key within the configuration since it was invalid.");
+		if (!getServerVersion().startsWith("v1_9") && !getServerVersion().startsWith("v1_10") && !getServerVersion().startsWith("v1_11")
+				&& !getServerVersion().startsWith("v1_12") && !getServerVersion().startsWith("v1_13") && !getServerVersion().startsWith("v1_14")
+				&& !getServerVersion().startsWith("v1_15")) {
+			String createSound = getConfig().getString("teleport-sound");
+			if (createSound != null && createSound.equalsIgnoreCase("ENTITY_GHAST_SHOOT")) {
+				getConfig().set("teleport-sound", "GHAST_CHARGE");
+				updateCount++;
+			}
+		} else {
+			String createSound = getConfig().getString("teleport-sound");
+			if (createSound != null && createSound.equalsIgnoreCase("GHAST_CHARGE")) {
+				getConfig().set("teleport-sound", "ENTITY_GHAST_SHOOT");
+				updateCount++;
 			}
 		}
 
 		if (updateCount > 0) {
 			saveConfig();
-			log(Level.INFO, "The configuration has been updated using the " + latestConfigFile.getName() + " file.");
-			log(Level.WARNING,
-					"Please go check out the configuration and customize these newly generated options to your liking. "
-							+ "Messages and similar values may not appear the same as they did in the default configuration "
-							+ "(P.S. Configuration comments have more than likely been removed to ensure proper syntax).");
+			reloadConfig();
+			log(Level.INFO, updateCount + " things were fixed, updated, or removed in the configuration " + "using the " + file.getName() + " file.");
+			log(Level.WARNING, "Please go check out the configuration and customize these newly generated options to your liking. Messages and similar " +
+					"values may not appear the same as they did in the default configuration (P.S. Configuration comments have more than likely been removed to ensure proper syntax).");
 		} else
 			log(Level.INFO, "Everything inside the configuration seems to be up to date.");
-		latestConfigFile.delete();
+		file.delete();
+		log(Level.INFO, "The configuration update checker process took " + (System.currentTimeMillis() - startTime) + "ms to complete.");
 	}
 
 	public void log(Level level, String text) {
