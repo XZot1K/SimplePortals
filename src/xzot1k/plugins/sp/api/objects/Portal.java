@@ -417,7 +417,7 @@ public class Portal {
 		this.teleportLocation = teleportLocation;
 	}
 
-	private String getServerSwitchName() {
+	public String getServerSwitchName() {
 		return serverSwitchName;
 	}
 
