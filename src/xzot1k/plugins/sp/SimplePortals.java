@@ -32,7 +32,7 @@ public class SimplePortals extends JavaPlugin {
 	public void onEnable() {
 		pluginInstance = this;
 		setServerVersion(pluginInstance.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3]);
-		saveDefaultVersionConfig();
+		saveDefaultConfig();
 		updateConfig();
 
 		manager = new Manager(getPluginInstance());
@@ -72,8 +72,6 @@ public class SimplePortals extends JavaPlugin {
 					getManager().getPortals().clear();
 					getManager().loadPortals();
 				}
-
-				log(Level.INFO, "All portals have been saved!");
 			}, 20 * generalTaskDuration, 20 * generalTaskDuration);
 
 		new Metrics(this);
@@ -84,25 +82,6 @@ public class SimplePortals extends JavaPlugin {
 		getManager().savePortals();
 		log(Level.INFO, "All portals have been saved!");
 		log(Level.INFO, "The plugin has been disabled.");
-	}
-
-	private void saveDefaultVersionConfig() {
-		if (new File(getDataFolder(), "config.yml").exists())
-			return;
-
-		if (getServerVersion().startsWith("v1_14") || getServerVersion().startsWith("v1_13")
-				|| getServerVersion().startsWith("v1_12") || getServerVersion().startsWith("v1_11")
-				|| getServerVersion().startsWith("v1_10") || getServerVersion().startsWith("v1_9")) {
-			saveResource("config.yml", false);
-			File file = new File(getDataFolder(), "config.yml");
-			file.renameTo(new File(getDataFolder(), "config.yml"));
-		} else {
-			saveResource("config (Legacy).yml", false);
-			File file = new File(getDataFolder(), "config (Legacy).yml");
-			file.renameTo(new File(getDataFolder(), "config.yml"));
-		}
-
-		log(Level.INFO, getServerVersion() + " has been detected. Configuration created!");
 	}
 
 	private void updateConfig() {
