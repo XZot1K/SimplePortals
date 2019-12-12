@@ -55,6 +55,11 @@ public class Manager {
 	private void setupPackets() {
 		boolean success = false;
 		switch (pluginInstance.getServerVersion()) {
+			case "v1_15_R1":
+				particleHandler = new PH_Latest();
+				setJSONHandler(new JSONHandler1_15R1());
+				success = true;
+				break;
 			case "v1_14_R1":
 				particleHandler = new PH_Latest();
 				setJSONHandler(new JSONHandler1_14R1());
@@ -255,7 +260,8 @@ public class Manager {
 			if (pluginInstance.getServerVersion().startsWith("v1_11")
 					|| pluginInstance.getServerVersion().startsWith("v1_12")
 					|| pluginInstance.getServerVersion().startsWith("v1_13")
-					|| pluginInstance.getServerVersion().startsWith("v1_14"))
+					|| pluginInstance.getServerVersion().startsWith("v1_14")
+					|| pluginInstance.getServerVersion().startsWith("v1_15"))
 				entity.removePassenger(player);
 			else
 				entity.setPassenger(null);

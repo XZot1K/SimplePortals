@@ -205,7 +205,7 @@ public class Portal {
 		if (location.getBlock().getType() == Material.AIR
 				|| location.getBlock().getType() == getLastFillMaterial()) {
 			location.getBlock().setType(material);
-			if (pluginInstance.getServerVersion().toLowerCase().startsWith("v1_14")
+			if ((pluginInstance.getServerVersion().toLowerCase().startsWith("v1_14") || pluginInstance.getServerVersion().toLowerCase().startsWith("v1_15"))
 					&& !pluginInstance.getServerVersion().toLowerCase()
 					.startsWith("v1_13")) {
 				try {
