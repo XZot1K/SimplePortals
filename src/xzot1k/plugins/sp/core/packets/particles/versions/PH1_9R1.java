@@ -11,27 +11,23 @@ import xzot1k.plugins.sp.core.packets.particles.ParticleHandler;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PH1_9R1 implements ParticleHandler
-{
+public class PH1_9R1 implements ParticleHandler {
 
     private SimplePortals pluginInstance;
 
-    public PH1_9R1(SimplePortals pluginInstance)
-    {
+    public PH1_9R1(SimplePortals pluginInstance) {
         this.pluginInstance = pluginInstance;
     }
 
     @Override
-    public void displayParticle(Player player, Location location, float offsetX, float offsetY, float offsetZ, int speed, String enumParticle, int amount)
-    {
+    public void displayParticle(Player player, Location location, float offsetX, float offsetY, float offsetZ, int speed, String enumParticle, int amount) {
         PacketPlayOutWorldParticles packet = new PacketPlayOutWorldParticles(EnumParticle.valueOf(enumParticle), false,
                 (float) location.getX(), (float) location.getY(), (float) location.getZ(), offsetX, offsetY, offsetZ, speed, amount);
         ((CraftPlayer) player).getHandle().playerConnection.sendPacket(packet);
     }
 
     @Override
-    public void broadcastParticle(Location location, float offsetX, float offsetY, float offsetZ, int speed, String enumParticle, int amount)
-    {
+    public void broadcastParticle(Location location, float offsetX, float offsetY, float offsetZ, int speed, String enumParticle, int amount) {
         PacketPlayOutWorldParticles packet = new PacketPlayOutWorldParticles(EnumParticle.valueOf(enumParticle), false,
                 (float) location.getX(), (float) location.getY(), (float) location.getZ(), offsetX, offsetY, offsetZ, speed, amount);
 

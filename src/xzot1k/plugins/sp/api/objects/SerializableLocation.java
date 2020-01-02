@@ -6,16 +6,14 @@ import xzot1k.plugins.sp.SimplePortals;
 
 import java.util.Objects;
 
-public class SerializableLocation
-{
+public class SerializableLocation {
 
     private SimplePortals pluginInstance;
     private double x, y, z;
     private float yaw, pitch;
     private String worldName;
 
-    public SerializableLocation(SimplePortals pluginInstance, Location location)
-    {
+    public SerializableLocation(SimplePortals pluginInstance, Location location) {
         this.pluginInstance = pluginInstance;
         setX(location.getX());
         setY(location.getY());
@@ -25,8 +23,7 @@ public class SerializableLocation
         setWorldName(Objects.requireNonNull(location.getWorld()).getName());
     }
 
-    public SerializableLocation(SimplePortals pluginInstance, String worldName, double x, double y, double z, double yaw, double pitch)
-    {
+    public SerializableLocation(SimplePortals pluginInstance, String worldName, double x, double y, double z, double yaw, double pitch) {
         this.pluginInstance = pluginInstance;
         setX(x);
         setY(y);
@@ -36,70 +33,57 @@ public class SerializableLocation
         setWorldName(worldName);
     }
 
-    public Location asBukkitLocation()
-    {
+    public Location asBukkitLocation() {
         World world = pluginInstance.getServer().getWorld(getWorldName());
         if (getYaw() == 0 && getPitch() == 0) return new Location(world, getX(), getY(), getZ());
         else return new Location(world, getX(), getY(), getZ(), getYaw(), getPitch());
     }
 
-    public String getWorldName()
-    {
+    public String getWorldName() {
         return worldName;
     }
 
-    public void setWorldName(String worldName)
-    {
+    public void setWorldName(String worldName) {
         this.worldName = worldName;
     }
 
-    public float getPitch()
-    {
+    public float getPitch() {
         return pitch;
     }
 
-    public void setPitch(float pitch)
-    {
+    public void setPitch(float pitch) {
         this.pitch = pitch;
     }
 
-    public float getYaw()
-    {
+    public float getYaw() {
         return yaw;
     }
 
-    public void setYaw(float yaw)
-    {
+    public void setYaw(float yaw) {
         this.yaw = yaw;
     }
 
-    public double getX()
-    {
+    public double getX() {
         return x;
     }
 
-    public void setX(double x)
-    {
+    public void setX(double x) {
         this.x = x;
     }
 
-    public double getY()
-    {
+    public double getY() {
         return y;
     }
 
-    public void setY(double y)
-    {
+    public void setY(double y) {
         this.y = y;
     }
 
-    public double getZ()
-    {
+    public double getZ() {
         return z;
     }
 
-    public void setZ(double z)
-    {
+    public void setZ(double z) {
         this.z = z;
     }
 

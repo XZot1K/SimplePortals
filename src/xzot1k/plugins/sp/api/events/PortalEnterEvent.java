@@ -6,35 +6,30 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import xzot1k.plugins.sp.api.objects.Portal;
 
-public class PortalEnterEvent extends Event implements Cancellable
-{
+public class PortalEnterEvent extends Event implements Cancellable {
 
     private static final HandlerList handlers = new HandlerList();
     private boolean cancelled;
     private Player player;
     private Portal portal;
 
-    public PortalEnterEvent(Player player, Portal portal)
-    {
+    public PortalEnterEvent(Player player, Portal portal) {
         this.player = player;
         this.portal = portal;
     }
 
     @Override
-    public boolean isCancelled()
-    {
+    public boolean isCancelled() {
         return cancelled;
     }
 
     @Override
-    public void setCancelled(boolean cancelled)
-    {
+    public void setCancelled(boolean cancelled) {
         this.cancelled = cancelled;
     }
 
     @Override
-    public HandlerList getHandlers()
-    {
+    public HandlerList getHandlers() {
         return handlers;
     }
 
@@ -42,13 +37,11 @@ public class PortalEnterEvent extends Event implements Cancellable
         return handlers;
     }
 
-    public Portal getPortal()
-    {
+    public Portal getPortal() {
         return portal;
     }
 
-    public Player getPlayer()
-    {
+    public Player getPlayer() {
         return player;
     }
 }
