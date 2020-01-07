@@ -28,3 +28,4 @@ portal-filled-message: "&aThe portal &e{name} &ahas been successfully filled wit
 enter-cooldown-message: "&cYou can't enter this portal for another &e{time} &cseconds."
 enter-no-permission-message: "&cYou don't have permission to enter this portal."
 portal-commands-message: "&aThe commands on the portal &e{name} &aare: &e{commands}"
+portal-toggle-message: "&aThe portal &e{name} &ahas been &e{status}&a."

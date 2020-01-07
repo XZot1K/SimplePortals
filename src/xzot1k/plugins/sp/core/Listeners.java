@@ -95,7 +95,10 @@ public class Listeners implements Listener {
                 if (portalEnterEvent.isCancelled())
                     return;
 
-                if (pluginInstance.getConfig().getBoolean("use-portal-cooldown") && pluginInstance.getManager().isPlayerOnCooldown(e.getPlayer())
+                if (pluginInstance.getConfig().getBoolean("use-portal-cooldown")
+                        && (pluginInstance.getManager().isPlayerOnCooldown(e.getPlayer(), "normal", -1)
+                        || pluginInstance.getManager().isPlayerOnCooldown(e.getPlayer(), "join-protection",
+                        pluginInstance.getConfig().getInt("join-protection-cooldown")))
                         && !e.getPlayer().hasPermission("simpleportals.cdbypass")) {
                     double tv = pluginInstance.getConfig().getDouble("throw-velocity");
                     if (!(tv <= -1))
@@ -106,7 +109,7 @@ public class Listeners implements Listener {
                     if (message != null && !message.equalsIgnoreCase(""))
                         e.getPlayer().sendMessage(pluginInstance.getManager().colorText(
                                 pluginInstance.getLangConfig().getString("prefix") + message.replace("{time}", String
-                                        .valueOf(pluginInstance.getManager().getCooldownTimeLeft(e.getPlayer())))));
+                                        .valueOf(pluginInstance.getManager().getCooldownTimeLeft(e.getPlayer(), "normal", -1)))));
                     return;
                 }
 
@@ -136,18 +139,18 @@ public class Listeners implements Listener {
                 for (int i = -1; ++i < portal.getCommands().size(); ) {
                     String commandLine = portal.getCommands().get(i);
                     if (commandLine.toUpperCase().endsWith(":PLAYER")) {
-                        commandLine = commandLine.replace("(?i):player", "").replace("(?i):console", "")
-                                .replace("(?i):chat", "");
+                        commandLine = commandLine.replaceAll("(?i):player", "").replaceAll("(?i):console", "")
+                                .replaceAll("(?i):chat", "");
                         pluginInstance.getServer().dispatchCommand(e.getPlayer(),
                                 commandLine.replace("{player}", e.getPlayer().getName()));
                     } else if (commandLine.toUpperCase().endsWith(":CONSOLE")) {
-                        commandLine = commandLine.replace("(?i):player", "").replace("(?i):console", "")
-                                .replace("(?i):chat", "");
+                        commandLine = commandLine.replaceAll("(?i):player", "").replaceAll("(?i):console", "")
+                                .replaceAll("(?i):chat", "");
                         pluginInstance.getServer().dispatchCommand(pluginInstance.getServer().getConsoleSender(),
                                 commandLine.replace("{player}", e.getPlayer().getName()));
                     } else if (commandLine.toUpperCase().endsWith(":CHAT")) {
-                        commandLine = commandLine.replace("(?i):player", "").replace("(?i):console", "")
-                                .replace("(?i):chat", "");
+                        commandLine = commandLine.replaceAll("(?i):player", "").replaceAll("(?i):console", "")
+                                .replaceAll("(?i):chat", "");
                         e.getPlayer().chat(commandLine.replace("{player}", e.getPlayer().getName()));
                     } else pluginInstance.getServer().dispatchCommand(pluginInstance.getServer().getConsoleSender(),
                             commandLine.replace("{player}", e.getPlayer().getName()));
@@ -166,14 +169,14 @@ public class Listeners implements Listener {
 
                     if (pluginInstance.getConfig().getBoolean("use-portal-cooldown")
                             && !e.getPlayer().hasPermission("simpleportals.cdbypass"))
-                        pluginInstance.getManager().updatePlayerPortalCooldown(e.getPlayer());
+                        pluginInstance.getManager().updatePlayerPortalCooldown(e.getPlayer(), "normal");
 
                     String message = pluginInstance.getLangConfig().getString("portal-message");
                     if (message != null && !message.equalsIgnoreCase(""))
                         e.getPlayer().sendMessage(pluginInstance.getManager()
                                 .colorText(pluginInstance.getLangConfig().getString("prefix") + message
                                         .replace("{name}", portal.getPortalId()).replace("{time}", String.valueOf(
-                                                pluginInstance.getManager().getCooldownTimeLeft(e.getPlayer())))));
+                                                pluginInstance.getManager().getCooldownTimeLeft(e.getPlayer(), "normal", -1)))));
 
                     portal.performAction(e.getPlayer());
                 }
@@ -208,7 +211,7 @@ public class Listeners implements Listener {
             Portal portal = pluginInstance.getManager().getPortalAtLocation(e.getPlayer().getLocation());
             if (portal == null || portal.isDisabled()) return;
 
-            pluginInstance.getManager().updatePlayerPortalCooldown(e.getPlayer());
+            pluginInstance.getManager().updatePlayerPortalCooldown(e.getPlayer(), "join-protection");
             double tv = pluginInstance.getConfig().getDouble("throw-velocity");
             if (!(tv <= -1)) e.getPlayer().setVelocity(e.getPlayer().getLocation().getDirection()
                     .setY(e.getPlayer().getLocation().getDirection().getY() / 2).multiply(-tv));

@@ -34,7 +34,7 @@ public class Manager {
     private SimplePortals pluginInstance;
     private HashMap<UUID, Region> currentSelections;
     private HashMap<UUID, Boolean> selectionMode;
-    private HashMap<UUID, Long> playerPortalCooldowns;
+    private HashMap<UUID, HashMap<String, Long>> playerPortalCooldowns;
     private List<Portal> portals;
     private HashMap<UUID, TaskHolder> visualTasks;
     private HashMap<UUID, SerializableLocation> smartTransferMap;
@@ -202,23 +202,37 @@ public class Manager {
         return false;
     }
 
-    public void updatePlayerPortalCooldown(Player player) {
-        getPlayerPortalCooldowns().put(player.getUniqueId(), System.currentTimeMillis());
+    public void updatePlayerPortalCooldown(Player player, String cooldownId) {
+        if (getPlayerPortalCooldowns().containsKey(player.getUniqueId())) {
+            HashMap<String, Long> cooldownIds = getPlayerPortalCooldowns().get(player.getUniqueId());
+            if (cooldownIds != null) {
+                cooldownIds.put(cooldownId, System.currentTimeMillis());
+                return;
+            }
+        }
+
+        HashMap<String, Long> cooldownIds = new HashMap<>();
+        cooldownIds.put(cooldownId, System.currentTimeMillis());
+        getPlayerPortalCooldowns().put(player.getUniqueId(), cooldownIds);
     }
 
-    public boolean isPlayerOnCooldown(Player player) {
+    public boolean isPlayerOnCooldown(Player player, String cooldownId, int cooldown) {
         if (!getPlayerPortalCooldowns().isEmpty() && getPlayerPortalCooldowns().containsKey(player.getUniqueId()))
-            return getCooldownTimeLeft(player) > 0;
+            return getCooldownTimeLeft(player, cooldownId, cooldown) > 0;
         return false;
     }
 
-    public long getCooldownTimeLeft(Player player) {
-        int cooldown = pluginInstance.getConfig().getInt("portal-cooldown-duration");
-        if (cooldown >= 0)
+    public long getCooldownTimeLeft(Player player, String cooldownId, int cooldown) {
+        long cd = (cooldown < 0) ? pluginInstance.getConfig().getInt("portal-cooldown-duration") : cooldown;
+        if (cd >= 0)
             if (!getPlayerPortalCooldowns().isEmpty() && getPlayerPortalCooldowns().containsKey(player.getUniqueId()))
-                return ((getPlayerPortalCooldowns().get(player.getUniqueId()) / 1000) + cooldown)
-                        - (System.currentTimeMillis() / 1000);
-        return 0;
+                if (getPlayerPortalCooldowns().containsKey(player.getUniqueId())) {
+                    HashMap<String, Long> cooldownIds = getPlayerPortalCooldowns().get(player.getUniqueId());
+                    if (cooldownIds != null && cooldownIds.containsKey(cooldownId))
+                        cd = cooldownIds.get(cooldownId);
+                }
+
+        return ((cd / 1000) + cooldown) - (System.currentTimeMillis() / 1000);
     }
 
     public Portal getPortalAtLocation(Location location) {
@@ -550,7 +564,7 @@ public class Manager {
         return selectionMode;
     }
 
-    private HashMap<UUID, Long> getPlayerPortalCooldowns() {
+    private HashMap<UUID, HashMap<String, Long>> getPlayerPortalCooldowns() {
         return playerPortalCooldowns;
     }
 

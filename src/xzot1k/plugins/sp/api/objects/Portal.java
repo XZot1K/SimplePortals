@@ -213,20 +213,14 @@ public class Portal {
 
     private void fillHelperInnerTwo(Material material, short durability, int pos_x, World world, int pos_z, int pos_y) {
         Location location = new Location(world, pos_x, pos_y, pos_z);
-        if (location.getBlock().getType() == Material.AIR
-                || location.getBlock().getType() == getLastFillMaterial()) {
+        if (location.getBlock().getType() == Material.AIR || location.getBlock().getType() == getLastFillMaterial()) {
             location.getBlock().setType(material);
             if ((pluginInstance.getServerVersion().toLowerCase().startsWith("v1_14") || pluginInstance.getServerVersion().toLowerCase().startsWith("v1_15"))
-                    && !pluginInstance.getServerVersion().toLowerCase()
-                    .startsWith("v1_13")) {
+                    && !pluginInstance.getServerVersion().toLowerCase().startsWith("v1_13")) {
                 try {
-                    Method closeMethod = location.getBlock().getClass().getMethod("setData",
-                            Short.class);
-                    if (closeMethod != null)
-                        closeMethod.invoke(location.getBlock().getClass(),
-                                durability);
-                } catch (NoSuchMethodException | IllegalAccessException
-                        | InvocationTargetException ignored) {
+                    Method closeMethod = location.getBlock().getClass().getMethod("setData", Short.class);
+                    if (closeMethod != null) closeMethod.invoke(location.getBlock().getClass(), durability);
+                } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {
                 }
             }
         }

@@ -1,4 +1,5 @@
 # If this option is enabled, the plugin will notify via console about any new updates.
+# (Note: The plugin will still check for updates on plugin enable regardless)
 update-checker: true
 # The general task handles things like auto-saving and update checking. This value is the delay in between
 # running these tasks in seconds. (Note: setting this value to -1 will disable the general task entirely.)
@@ -26,6 +27,8 @@ use-portal-cooldown: true
 # If this option is enabled, players who join the server will automatically be placed on portal cooldown
 # and thrown out of the portal region (if within a portal region).
 join-protection: true
+# This is the duration of the join protection cooldown.
+join-protection-cooldown: 5
 # How long should the player have to wait in between portal usages in seconds?
 portal-cooldown-duration: 5
 # This is the force/multiplier of the portal throw back feature (Set to -1 or lower to disable).

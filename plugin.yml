@@ -1,5 +1,5 @@
 name: SimplePortals
-version: 1.4.2
+version: 1.4.3-SNAPSHOT
 api-version: 1.13
 main: xzot1k.plugins.sp.SimplePortals
 author: XZot1K
@@ -29,6 +29,7 @@ permissions:
       simpleportals.togglecommandonly: true
       simpleportals.fill: true
       simpleportals.viewcommands: true
+      simpleportals.toggle: true
   simpleportals.showregion:
     default: op
     description: Allows the player to view a portal's region.
@@ -74,3 +75,6 @@ permissions:
   simpleportals.viewcommands:
     default: op
     description: Allows the player to view the commands of a portal.
+  simpleportals.toggle:
+    default: op
+    description: Allows the player to toggle a portal entirely.
