@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) XZot1K $year. All rights reserved.
+ */
+
 package xzot1k.plugins.sp.api;
 
 import org.bukkit.Bukkit;
@@ -223,16 +227,15 @@ public class Manager {
     }
 
     public long getCooldownTimeLeft(Player player, String cooldownId, int cooldown) {
-        long cd = (cooldown < 0) ? pluginInstance.getConfig().getInt("portal-cooldown-duration") : cooldown;
+        long cd = Math.max(cooldown, 0);
         if (cd >= 0)
-            if (!getPlayerPortalCooldowns().isEmpty() && getPlayerPortalCooldowns().containsKey(player.getUniqueId()))
-                if (getPlayerPortalCooldowns().containsKey(player.getUniqueId())) {
-                    HashMap<String, Long> cooldownIds = getPlayerPortalCooldowns().get(player.getUniqueId());
-                    if (cooldownIds != null && cooldownIds.containsKey(cooldownId))
-                        cd = cooldownIds.get(cooldownId);
-                }
+            if (!getPlayerPortalCooldowns().isEmpty() && getPlayerPortalCooldowns().containsKey(player.getUniqueId())) {
+                HashMap<String, Long> cooldownIds = getPlayerPortalCooldowns().get(player.getUniqueId());
+                if (cooldownIds != null && cooldownIds.containsKey(cooldownId))
+                    cd = cooldownIds.get(cooldownId);
+            }
 
-        return ((cd / 1000) + cooldown) - (System.currentTimeMillis() / 1000);
+        return (cd > 0) ? ((cd / 1000) + cooldown) - (System.currentTimeMillis() / 1000) : 0;
     }
 
     public Portal getPortalAtLocation(Location location) {
@@ -271,7 +274,7 @@ public class Manager {
             Entity entity = player.getVehicle();
             if (pluginInstance.getServerVersion().startsWith("v1_11") || pluginInstance.getServerVersion().startsWith("v1_12")
                     || pluginInstance.getServerVersion().startsWith("v1_13") || pluginInstance.getServerVersion().startsWith("v1_14")
-                    || pluginInstance.getServerVersion().startsWith("v1_15"))
+                    || pluginInstance.getServerVersion().startsWith("v1_15") || pluginInstance.getServerVersion().startsWith("v1_16"))
                 entity.removePassenger(player);
             else entity.setPassenger(null);
 
@@ -385,20 +388,25 @@ public class Manager {
     }
 
     public void loadPortals() {
-        getPortals().clear();
+        if (!getPortals().isEmpty()) getPortals().clear();
         File portalFile = new File(pluginInstance.getDataFolder(), "/portals.yml");
         if (!portalFile.exists()) return;
         FileConfiguration yaml = YamlConfiguration.loadConfiguration(portalFile);
 
-        ConfigurationSection cs = yaml.getConfigurationSection("");
+        final ConfigurationSection cs = yaml.getConfigurationSection("");
         if (cs == null) return;
 
-        Collection<String> portalIds = cs.getKeys(false);
+        final List<String> portalIds = new ArrayList<>(cs.getKeys(false));
         if (portalIds.isEmpty()) return;
 
-        for (String portalId : portalIds) {
-            if (doesPortalExist(portalId))
+        for (int i = -1; ++i < portalIds.size(); ) {
+            final String portalId = portalIds.get(i);
+
+            if (doesPortalExist(portalId)) {
+                pluginInstance.log(Level.WARNING, "The portal '" + portalId + "' was unable to be loaded due to a " +
+                        "portal with a similar ID/Name already loaded.");
                 return;
+            }
 
             try {
                 String pointOneWorld = yaml.getString(portalId + ".point-1.world"),
@@ -446,66 +454,10 @@ public class Manager {
                 if (keys.contains("disabled")) portal.setDisabled(yaml.getBoolean(portalId + ".disabled"));
             } catch (Exception ignored) {
                 pluginInstance.log(Level.WARNING,
-                        "The portal " + portalId
-                                + " was unable to be loaded. Please check its information in the portals.yml. "
+                        "The portal " + portalId + " was unable to be loaded. Please check its information in the portals.yml. "
                                 + "This could be something as simple as a missing or invalid world.");
             }
         }
-
-        File dir = new File(pluginInstance.getDataFolder(), "/portals");
-        if (!dir.exists())
-            return;
-        File[] files = dir.listFiles();
-        if (files == null || files.length <= 0)
-            return;
-
-        for (int i = -1; ++i < files.length; ) {
-            File file = files[i];
-            if (file != null && file.getName().toLowerCase().endsWith(".yml")) {
-                YamlConfiguration yamlConfiguration = YamlConfiguration.loadConfiguration(file);
-                if (doesPortalExist(yamlConfiguration.getString("portal-id")))
-                    return;
-
-                try {
-                    SerializableLocation teleportPoint1 = new SerializableLocation(pluginInstance,
-                            yamlConfiguration.getString("point-1.world"), yamlConfiguration.getDouble("point-1.x"),
-                            yamlConfiguration.getDouble("point-1.y"), yamlConfiguration.getDouble("point-1.z"),
-                            yamlConfiguration.getDouble("point-1.yaw"), yamlConfiguration.getDouble("point-1.pitch")),
-                            teleportPoint2 = new SerializableLocation(pluginInstance,
-                                    yamlConfiguration.getString("point-2.world"),
-                                    yamlConfiguration.getDouble("point-2.x"), yamlConfiguration.getDouble("point-2.y"),
-                                    yamlConfiguration.getDouble("point-2.z"),
-                                    yamlConfiguration.getDouble("point-2.yaw"),
-                                    yamlConfiguration.getDouble("point-2.pitch"));
-                    Region region = new Region(pluginInstance, teleportPoint1, teleportPoint2);
-                    Portal portal = new Portal(pluginInstance, yamlConfiguration.getString("portal-id"), region);
-
-                    SerializableLocation tpLocation = new SerializableLocation(pluginInstance,
-                            yamlConfiguration.getString("teleport-location.world"),
-                            yamlConfiguration.getDouble("teleport-location.x"),
-                            yamlConfiguration.getDouble("teleport-location.y"),
-                            yamlConfiguration.getDouble("teleport-location.z"),
-                            yamlConfiguration.getDouble("point-1.yaw"), yamlConfiguration.getDouble("point-1.pitch"));
-                    portal.setTeleportLocation(tpLocation);
-                    portal.setServerSwitchName(yamlConfiguration.getString("portal-server"));
-                    portal.setCommandsOnly(yamlConfiguration.getBoolean("commands-only"));
-                    portal.setCommands(yamlConfiguration.getStringList("commands"));
-
-                    String materialName = yamlConfiguration.getString("last-fill-material");
-                    portalMaterialCheckHelper(portal, materialName);
-                    file.delete();
-                    pluginInstance.log(Level.INFO,
-                            "The portal " + portal.getPortalId() + " has been converted over to a v1.2.x portal.");
-                } catch (Exception ignored) {
-                    pluginInstance.log(Level.WARNING, "The file " + file.getName()
-                            + " was unable to be converted. Please make sure this is a SimplePortals portal.");
-                }
-            }
-        }
-
-        dir.delete();
-        pluginInstance.log(Level.INFO, "All old portal files have been removed (All portals are located in the portals.yml).");
-        savePortals();
     }
 
     private void portalMaterialCheckHelper(Portal portal, String materialName) {

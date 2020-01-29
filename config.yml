@@ -1,6 +1,3 @@
-# If this option is enabled, the plugin will notify via console about any new updates.
-# (Note: The plugin will still check for updates on plugin enable regardless)
-update-checker: true
 # The general task handles things like auto-saving and update checking. This value is the delay in between
 # running these tasks in seconds. (Note: setting this value to -1 will disable the general task entirely.)
 general-task-duration: 300

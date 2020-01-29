@@ -1,5 +1,10 @@
+/*
+ * Copyright (c) XZot1K $year. All rights reserved.
+ */
+
 package xzot1k.plugins.sp.api.events;
 
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
@@ -12,10 +17,13 @@ public class PortalEnterEvent extends Event implements Cancellable {
     private boolean cancelled;
     private Player player;
     private Portal portal;
+    private Location targetLocation, initialLocation;
 
-    public PortalEnterEvent(Player player, Portal portal) {
+    public PortalEnterEvent(Player player, Portal portal, Location initialLocation, Location targetLocation) {
         this.player = player;
         this.portal = portal;
+        setTargetLocation(targetLocation);
+        setInitialLocation(initialLocation);
     }
 
     @Override
@@ -43,5 +51,21 @@ public class PortalEnterEvent extends Event implements Cancellable {
 
     public Player getPlayer() {
         return player;
+    }
+
+    public Location getTargetLocation() {
+        return targetLocation;
+    }
+
+    public void setTargetLocation(Location targetLocation) {
+        this.targetLocation = targetLocation;
+    }
+
+    public Location getInitialLocation() {
+        return initialLocation;
+    }
+
+    public void setInitialLocation(Location initialLocation) {
+        this.initialLocation = initialLocation;
     }
 }

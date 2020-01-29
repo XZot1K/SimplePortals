@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) XZot1K $year. All rights reserved.
+ */
+
 package xzot1k.plugins.sp;
 
 import org.bukkit.command.PluginCommand;
@@ -70,24 +74,17 @@ public class SimplePortals extends JavaPlugin {
         getServer().getScheduler().runTaskAsynchronously(this, () -> {
             try {
                 if (updateChecker.checkForUpdates())
-                    log(Level.INFO,
-                            "The version " + getDescription().getVersion() + " is doesn't match the latest version!");
+                    log(Level.INFO, "The version " + getDescription().getVersion() + " is doesn't match the latest version!");
                 else
                     log(Level.INFO, "Everything looks like it is up to date!");
             } catch (Exception ignored) {
+                log(Level.INFO, "Unable to check for updates.");
             }
         });
 
         int generalTaskDuration = getConfig().getInt("general-task-duration");
         if (!(generalTaskDuration <= -1))
             getServer().getScheduler().runTaskTimerAsynchronously(getPluginInstance(), () -> {
-                if (getConfig().getBoolean("update-checker"))
-                    if (updateChecker.checkForUpdates())
-                        log(Level.INFO, "[SimplePortals] The version " + getDescription().getVersion()
-                                + " is doesn't match the latest version!");
-                    else
-                        log(Level.INFO, "[SimplePortals] Everything looks like it is up to date!");
-
                 getManager().savePortals();
                 if (getConfig().getBoolean("reload-plugin-timer")) {
                     getManager().getPortals().clear();
