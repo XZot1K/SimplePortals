@@ -44,6 +44,7 @@ public class SimplePortals extends JavaPlugin {
         }
 
         saveDefaultConfigs();
+        reloadConfigs();
         updateConfigs();
 
         manager = new Manager(getPluginInstance());
@@ -124,11 +125,9 @@ public class SimplePortals extends JavaPlugin {
                         getConfig().set("teleport-sound", "GHAST_CHARGE");
                         updateCount++;
                     }
-                } else {
-                    if (createSound != null && createSound.equalsIgnoreCase("GHAST_CHARGE")) {
-                        getConfig().set("teleport-sound", "ENTITY_GHAST_SHOOT");
-                        updateCount++;
-                    }
+                } else if (createSound != null && createSound.equalsIgnoreCase("GHAST_CHARGE")) {
+                    getConfig().set("teleport-sound", "ENTITY_GHAST_SHOOT");
+                    updateCount++;
                 }
             }
 
@@ -177,6 +176,7 @@ public class SimplePortals extends JavaPlugin {
                 if (!currentKeys.contains(updatedKey)) {
                     currentYaml.set(updatedKey, jarYaml.get(updatedKey));
                     updateCount++;
+                    System.out.println(updatedKey);
                 }
 
             for (String currentKey : currentKeys)
