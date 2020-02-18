@@ -227,7 +227,7 @@ public class Manager {
     }
 
     public long getCooldownTimeLeft(Player player, String cooldownId, int cooldown) {
-        long cd = Math.max(cooldown, 0);
+        long cd = 0;
         if (cd >= 0)
             if (!getPlayerPortalCooldowns().isEmpty() && getPlayerPortalCooldowns().containsKey(player.getUniqueId())) {
                 HashMap<String, Long> cooldownIds = getPlayerPortalCooldowns().get(player.getUniqueId());

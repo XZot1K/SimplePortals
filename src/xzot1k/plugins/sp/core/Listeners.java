@@ -8,13 +8,11 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
-import org.bukkit.event.entity.EntityPortalEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.EquipmentSlot;
 import xzot1k.plugins.sp.SimplePortals;
@@ -85,8 +83,7 @@ public class Listeners implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onMove(PlayerMoveEvent e) {
-        if (e.getFrom().getBlockX() != Objects.requireNonNull(e.getTo()).getBlockX() || e.getFrom().getBlockY() != e.getTo().getBlockY()
-                || e.getFrom().getBlockZ() != e.getTo().getBlockZ()) {
+        if (e.getFrom().getBlockX() != Objects.requireNonNull(e.getTo()).getBlockX() || e.getFrom().getBlockY() != e.getTo().getBlockY() || e.getFrom().getBlockZ() != e.getTo().getBlockZ()) {
             Portal portal = pluginInstance.getManager().getPortalAtLocation(e.getTo());
             if (portal != null && !portal.isDisabled()) {
                 PortalEnterEvent portalEnterEvent = new PortalEnterEvent(e.getPlayer(), portal, e.getFrom(), portal.getTeleportLocation().asBukkitLocation());
@@ -128,17 +125,37 @@ public class Listeners implements Listener {
                     if (commandLine.toUpperCase().endsWith(":PLAYER")) {
                         commandLine = commandLine.replaceAll("(?i):player", "").replaceAll("(?i):console", "")
                                 .replaceAll("(?i):chat", "");
-                        pluginInstance.getServer().dispatchCommand(e.getPlayer(), commandLine.replace("{player}", e.getPlayer().getName()));
+                        pluginInstance.getServer().dispatchCommand(e.getPlayer(), commandLine
+                                .replace("{x}", String.valueOf(e.getTo().getX()))
+                                .replace("{y}", String.valueOf(e.getTo().getY()))
+                                .replace("{z}", String.valueOf(e.getTo().getZ()))
+                                .replace("{world}", e.getTo().getWorld().getName())
+                                .replace("{player}", e.getPlayer().getName()));
                     } else if (commandLine.toUpperCase().endsWith(":CONSOLE")) {
                         commandLine = commandLine.replaceAll("(?i):player", "").replaceAll("(?i):console", "")
                                 .replaceAll("(?i):chat", "");
-                        pluginInstance.getServer().dispatchCommand(pluginInstance.getServer().getConsoleSender(), commandLine.replace("{player}", e.getPlayer().getName()));
+                        pluginInstance.getServer().dispatchCommand(pluginInstance.getServer().getConsoleSender(), commandLine
+                                .replace("{x}", String.valueOf(e.getTo().getX()))
+                                .replace("{y}", String.valueOf(e.getTo().getY()))
+                                .replace("{z}", String.valueOf(e.getTo().getZ()))
+                                .replace("{world}", e.getTo().getWorld().getName())
+                                .replace("{player}", e.getPlayer().getName()));
                     } else if (commandLine.toUpperCase().endsWith(":CHAT")) {
                         commandLine = commandLine.replaceAll("(?i):player", "").replaceAll("(?i):console", "")
                                 .replaceAll("(?i):chat", "");
-                        e.getPlayer().chat(commandLine.replace("{player}", e.getPlayer().getName()));
+                        e.getPlayer().chat(commandLine
+                                .replace("{x}", String.valueOf(e.getTo().getX()))
+                                .replace("{y}", String.valueOf(e.getTo().getY()))
+                                .replace("{z}", String.valueOf(e.getTo().getZ()))
+                                .replace("{world}", e.getTo().getWorld().getName())
+                                .replace("{player}", e.getPlayer().getName()));
                     } else
-                        pluginInstance.getServer().dispatchCommand(pluginInstance.getServer().getConsoleSender(), commandLine.replace("{player}", e.getPlayer().getName()));
+                        pluginInstance.getServer().dispatchCommand(pluginInstance.getServer().getConsoleSender(), commandLine
+                                .replace("{x}", String.valueOf(e.getTo().getX()))
+                                .replace("{y}", String.valueOf(e.getTo().getY()))
+                                .replace("{z}", String.valueOf(e.getTo().getZ()))
+                                .replace("{world}", e.getTo().getWorld().getName())
+                                .replace("{player}", e.getPlayer().getName()));
                 }
 
                 if (!portal.isCommandsOnly() || portal.getTeleportLocation() == null) {
@@ -217,27 +234,21 @@ public class Listeners implements Listener {
     }
 
     @EventHandler(ignoreCancelled = true)
-    public void onTeleport(EntityPortalEvent e) {
-        if (!(e.getEntity() instanceof Player)) return;
-
-        Player player = (Player) e.getEntity();
-        if (pluginInstance.getConfig().getBoolean("block-creative-portal-entrance") && player.getGameMode() == GameMode.CREATIVE) {
-            e.setCancelled(true);
-            return;
-        }
+    public void onTeleport(PlayerTeleportEvent e) {
+        if (!e.getCause().name().toUpperCase().contains("PORTAL")) return;
 
         Portal portal = pluginInstance.getManager().getPortalAtLocation(e.getFrom());
         if (portal != null && !portal.isDisabled()) e.setCancelled(true);
     }
 
     @EventHandler(ignoreCancelled = true)
-    public void onTeleport(PlayerPortalEvent e) {
+    public void onTeleport(PortalEnterEvent e) {
         if (pluginInstance.getConfig().getBoolean("block-creative-portal-entrance") && e.getPlayer().getGameMode() == GameMode.CREATIVE) {
             e.setCancelled(true);
             return;
         }
 
-        Portal portal = pluginInstance.getManager().getPortalAtLocation(e.getFrom());
+        Portal portal = pluginInstance.getManager().getPortalAtLocation(e.getInitialLocation());
         if (portal != null && !portal.isDisabled()) e.setCancelled(true);
     }
 
