@@ -6,9 +6,9 @@ package xzot1k.plugins.sp.core;
 
 import org.bukkit.GameMode;
 import org.bukkit.Location;
-import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockFromToEvent;
@@ -26,13 +26,13 @@ import java.util.Objects;
 
 public class Listeners implements Listener {
 
-    private SimplePortals pluginInstance;
+    private final SimplePortals pluginInstance;
 
     public Listeners(SimplePortals pluginInstance) {
         this.pluginInstance = pluginInstance;
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler
     public void onBlockFromTo(BlockFromToEvent e) {
         Portal portalFrom = pluginInstance.getManager().getPortalAtLocation(e.getBlock().getLocation());
         if (portalFrom != null && !portalFrom.isDisabled()) {
@@ -45,13 +45,12 @@ public class Listeners implements Listener {
             e.setCancelled(true);
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler
     public void onClick(PlayerInteractEvent e) {
         if (e.getAction() == Action.LEFT_CLICK_BLOCK && e.getClickedBlock() != null
                 && pluginInstance.getManager().isInSelectionMode(e.getPlayer())) {
             e.setCancelled(true);
-            if (pluginInstance.getManager().updateCurrentSelection(e.getPlayer(), e.getClickedBlock().getLocation(),
-                    PointType.POINT_ONE)) {
+            if (pluginInstance.getManager().updateCurrentSelection(e.getPlayer(), e.getClickedBlock().getLocation(), PointType.POINT_ONE)) {
                 pluginInstance.getManager().highlightBlock(e.getClickedBlock(), e.getPlayer(), PointType.POINT_ONE);
                 String message = pluginInstance.getLangConfig().getString("point-1-set-message");
                 if (message != null && !message.equalsIgnoreCase(""))
@@ -60,14 +59,13 @@ public class Listeners implements Listener {
             }
         }
 
-        if (e.getAction() == Action.RIGHT_CLICK_BLOCK && e.getClickedBlock() != null
-                && pluginInstance.getManager().isInSelectionMode(e.getPlayer())) {
+        if (e.getAction() == Action.RIGHT_CLICK_BLOCK && e.getClickedBlock() != null && pluginInstance.getManager().isInSelectionMode(e.getPlayer())) {
             e.setCancelled(true);
 
-            if (pluginInstance.getServerVersion().toLowerCase().startsWith("v1_15") || pluginInstance.getServerVersion().toLowerCase().startsWith("v1_14")
-                    || pluginInstance.getServerVersion().toLowerCase().startsWith("v1_13") || pluginInstance.getServerVersion().toLowerCase().startsWith("v1_12")
-                    || pluginInstance.getServerVersion().toLowerCase().startsWith("v1_11") || pluginInstance.getServerVersion().toLowerCase().startsWith("v1_10")
-                    || pluginInstance.getServerVersion().toLowerCase().startsWith("v1_9"))
+            if (pluginInstance.getServerVersion().toLowerCase().startsWith("v1_16") || pluginInstance.getServerVersion().toLowerCase().startsWith("v1_15")
+                    || pluginInstance.getServerVersion().toLowerCase().startsWith("v1_14") || pluginInstance.getServerVersion().toLowerCase().startsWith("v1_13")
+                    || pluginInstance.getServerVersion().toLowerCase().startsWith("v1_12") || pluginInstance.getServerVersion().toLowerCase().startsWith("v1_11")
+                    || pluginInstance.getServerVersion().toLowerCase().startsWith("v1_10") || pluginInstance.getServerVersion().toLowerCase().startsWith("v1_9"))
                 if (e.getHand() != EquipmentSlot.HAND)
                     return;
 
@@ -81,7 +79,7 @@ public class Listeners implements Listener {
         }
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler
     public void onMove(PlayerMoveEvent e) {
         if (e.getFrom().getBlockX() != Objects.requireNonNull(e.getTo()).getBlockX() || e.getFrom().getBlockY() != e.getTo().getBlockY() || e.getFrom().getBlockZ() != e.getTo().getBlockZ()) {
             Portal portal = pluginInstance.getManager().getPortalAtLocation(e.getTo());
@@ -91,14 +89,10 @@ public class Listeners implements Listener {
                 if (portalEnterEvent.isCancelled()) return;
 
                 final boolean canBypassCooldown = e.getPlayer().hasPermission("simpleportals.cdbypass"),
-                        cooldownFail = (pluginInstance.getConfig().getBoolean("use-portal-cooldown")
-                                && (pluginInstance.getManager().isPlayerOnCooldown(e.getPlayer(), "normal", pluginInstance.getConfig().getInt("portal-cooldown-duration"))
-                                || pluginInstance.getManager().isPlayerOnCooldown(e.getPlayer(), "join-protection", pluginInstance.getConfig().getInt("join-protection-cooldown")))
-                                && !canBypassCooldown),
-                        permissionFail = !pluginInstance.getConfig().getBoolean("bypass-portal-permissions")
-                                && !e.getPlayer().hasPermission("simpleportals.portal." + portal.getPortalId())
-                                && !e.getPlayer().hasPermission("simpleportals.portals." + portal.getPortalId())
-                                && !e.getPlayer().hasPermission("simpleportals.portal.*") && !e.getPlayer().hasPermission("simpleportals.portals.*");
+                        cooldownFail = (pluginInstance.getConfig().getBoolean("use-portal-cooldown") && (pluginInstance.getManager().isPlayerOnCooldown(e.getPlayer(), "normal", pluginInstance.getConfig().getInt("portal-cooldown-duration"))
+                                || pluginInstance.getManager().isPlayerOnCooldown(e.getPlayer(), "join-protection", pluginInstance.getConfig().getInt("join-protection-cooldown"))) && !canBypassCooldown),
+                        permissionFail = !pluginInstance.getConfig().getBoolean("bypass-portal-permissions") && !(e.getPlayer().hasPermission("simpleportals.portal." + portal.getPortalId())
+                                || e.getPlayer().hasPermission("simpleportals.portals." + portal.getPortalId()) || e.getPlayer().hasPermission("simpleportals.portal.*") && !e.getPlayer().hasPermission("simpleportals.portals.*"));
                 if (cooldownFail || permissionFail) {
                     double tv = pluginInstance.getConfig().getDouble("throw-velocity");
                     if (!(tv <= -1))
@@ -114,62 +108,12 @@ public class Listeners implements Listener {
                 if (pluginInstance.getConfig().getBoolean("use-portal-cooldown") && !canBypassCooldown)
                     pluginInstance.getManager().updatePlayerPortalCooldown(e.getPlayer(), "normal");
 
-                if (canBypassCooldown) {
-                    final String message = pluginInstance.getLangConfig().getString("cd-bypass");
-                    if (message != null && !message.equalsIgnoreCase(""))
-                        e.getPlayer().sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix") + message));
-                }
-
-                for (int i = -1; ++i < portal.getCommands().size(); ) {
-                    String commandLine = portal.getCommands().get(i);
-                    if (commandLine.toUpperCase().endsWith(":PLAYER")) {
-                        commandLine = commandLine.replaceAll("(?i):player", "").replaceAll("(?i):console", "")
-                                .replaceAll("(?i):chat", "");
-                        pluginInstance.getServer().dispatchCommand(e.getPlayer(), commandLine
-                                .replace("{x}", String.valueOf(e.getTo().getX()))
-                                .replace("{y}", String.valueOf(e.getTo().getY()))
-                                .replace("{z}", String.valueOf(e.getTo().getZ()))
-                                .replace("{world}", e.getTo().getWorld().getName())
-                                .replace("{player}", e.getPlayer().getName()));
-                    } else if (commandLine.toUpperCase().endsWith(":CONSOLE")) {
-                        commandLine = commandLine.replaceAll("(?i):player", "").replaceAll("(?i):console", "")
-                                .replaceAll("(?i):chat", "");
-                        pluginInstance.getServer().dispatchCommand(pluginInstance.getServer().getConsoleSender(), commandLine
-                                .replace("{x}", String.valueOf(e.getTo().getX()))
-                                .replace("{y}", String.valueOf(e.getTo().getY()))
-                                .replace("{z}", String.valueOf(e.getTo().getZ()))
-                                .replace("{world}", e.getTo().getWorld().getName())
-                                .replace("{player}", e.getPlayer().getName()));
-                    } else if (commandLine.toUpperCase().endsWith(":CHAT")) {
-                        commandLine = commandLine.replaceAll("(?i):player", "").replaceAll("(?i):console", "")
-                                .replaceAll("(?i):chat", "");
-                        e.getPlayer().chat(commandLine
-                                .replace("{x}", String.valueOf(e.getTo().getX()))
-                                .replace("{y}", String.valueOf(e.getTo().getY()))
-                                .replace("{z}", String.valueOf(e.getTo().getZ()))
-                                .replace("{world}", e.getTo().getWorld().getName())
-                                .replace("{player}", e.getPlayer().getName()));
-                    } else
-                        pluginInstance.getServer().dispatchCommand(pluginInstance.getServer().getConsoleSender(), commandLine
-                                .replace("{x}", String.valueOf(e.getTo().getX()))
-                                .replace("{y}", String.valueOf(e.getTo().getY()))
-                                .replace("{z}", String.valueOf(e.getTo().getZ()))
-                                .replace("{world}", e.getTo().getWorld().getName())
-                                .replace("{player}", e.getPlayer().getName()));
-                }
-
+                portal.invokeCommands(e.getPlayer(), e.getTo());
                 if (!portal.isCommandsOnly() || portal.getTeleportLocation() == null) {
                     String particleEffect = pluginInstance.getConfig().getString("teleport-visual-effect");
-                    if (particleEffect != null && !particleEffect.equalsIgnoreCase("")) {
+                    if (particleEffect != null && !particleEffect.isEmpty()) {
                         final String particleFixed = particleEffect.toUpperCase().replace(" ", "_").replace("-", "_");
-                        for (int i = -1; ++i < Particle.values().length; ) {
-                            Particle currentParticle = Particle.values()[i];
-                            if (currentParticle.name().equalsIgnoreCase(particleFixed)) {
-                                pluginInstance.getManager().getParticleHandler().broadcastParticle(e.getPlayer().getLocation(),
-                                        1, 2, 1, 0, currentParticle.name(), 50);
-                                break;
-                            }
-                        }
+                        pluginInstance.getManager().getParticleHandler().broadcastParticle(e.getPlayer().getLocation(), 1, 2, 1, 0, particleFixed, 50);
                     }
 
                     final String sound = pluginInstance.getConfig().getString("teleport-sound");
@@ -213,7 +157,7 @@ public class Listeners implements Listener {
         }
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler
     public void onJoin(PlayerJoinEvent e) {
         if (pluginInstance.getConfig().getBoolean("join-protection") && pluginInstance.getConfig().getBoolean("use-portal-cooldown")
                 && !e.getPlayer().hasPermission("simpleportals.cdbypass")) {
@@ -223,17 +167,17 @@ public class Listeners implements Listener {
 
             pluginInstance.getManager().updatePlayerPortalCooldown(e.getPlayer(), "join-protection");
             double tv = pluginInstance.getConfig().getDouble("throw-velocity");
-            if (!(tv <= -1)) e.getPlayer().setVelocity(e.getPlayer().getLocation().getDirection()
-                    .setY(e.getPlayer().getLocation().getDirection().getY() / 2).multiply(-tv));
+            if (!(tv <= -1))
+                e.getPlayer().setVelocity(e.getPlayer().getLocation().getDirection().setY(e.getPlayer().getLocation().getDirection().getY() / 2).multiply(-tv));
         }
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler
     public void onQuit(PlayerQuitEvent e) {
         pluginInstance.getManager().getSmartTransferMap().remove(e.getPlayer().getUniqueId());
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler
     public void onTeleport(PlayerTeleportEvent e) {
         if (!e.getCause().name().toUpperCase().contains("PORTAL")) return;
 
@@ -241,8 +185,21 @@ public class Listeners implements Listener {
         if (portal != null && !portal.isDisabled()) e.setCancelled(true);
     }
 
-    @EventHandler(ignoreCancelled = true)
-    public void onTeleport(PortalEnterEvent e) {
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onPortalEntryFirst(PortalEnterEvent e) {
+        if (pluginInstance.getConfig().getBoolean("block-creative-portal-entrance") && e.getPlayer().getGameMode() == GameMode.CREATIVE) {
+            e.setCancelled(true);
+            return;
+        }
+
+        Portal portal = pluginInstance.getManager().getPortalAtLocation(e.getInitialLocation());
+        if (portal != null && !portal.isDisabled()) e.setCancelled(true);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPortalEntryLast(PortalEnterEvent e) {
+        if (e.isCancelled()) return;
+
         if (pluginInstance.getConfig().getBoolean("block-creative-portal-entrance") && e.getPlayer().getGameMode() == GameMode.CREATIVE) {
             e.setCancelled(true);
             return;

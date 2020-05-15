@@ -29,4 +29,3 @@ enter-cooldown-message: "&cYou can't enter this portal for another &e{time} &cse
 enter-no-permission-message: "&cYou don't have permission to enter this portal."
 portal-commands-message: "&aThe commands on the portal &e{name} &aare: &e{commands}"
 portal-toggle-message: "&aThe portal &e{name} &ahas been &e{status}&a."
-cd-bypass: "&cIt seems your account has access to the 'simpleportals.cdbypass' permission; therefore, bypassed the portal cooldown feature."

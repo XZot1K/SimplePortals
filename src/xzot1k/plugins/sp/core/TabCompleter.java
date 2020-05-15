@@ -1,10 +1,16 @@
+/*
+ * Copyright (c) XZot1K $year. All rights reserved.
+ */
+
 package xzot1k.plugins.sp.core;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import xzot1k.plugins.sp.SimplePortals;
+import xzot1k.plugins.sp.api.enums.PortalCommandType;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class TabCompleter implements org.bukkit.command.TabCompleter {
@@ -19,14 +25,40 @@ public class TabCompleter implements org.bukkit.command.TabCompleter {
     public List<String> onTabComplete(CommandSender commandSender, Command command, String label, String[] args) {
 
         if (command.getName().equalsIgnoreCase("simpleportals")) {
+            List<String> values = new ArrayList<>();
+            if (args.length == 1) {
 
-            if (args.length == 2) {
-                List<String> portalNames = new ArrayList<>();
-                for (int i = -1; ++i < getPluginInstance().getManager().getPortals().size(); )
-                    portalNames.add(getPluginInstance().getManager().getPortals().get(i).getPortalId());
-                return portalNames;
+                values.add("switchserver");
+                values.add("selectionmode");
+                values.add("reload");
+                values.add("showregion");
+                values.add("setlocation");
+                values.add("info");
+                values.add("create");
+                values.add("delete");
+                values.add("fill");
+                values.add("relocate");
+                values.add("addcommand");
+                values.add("clearcommands");
+                values.add("togglecommandonly");
+                values.add("commands");
+                values.add("enable");
+                values.add("disable");
+
+            } else if (args.length == 2) for (int i = -1; ++i < getPluginInstance().getManager().getPortals().size(); )
+                values.add(getPluginInstance().getManager().getPortals().get(i).getPortalId());
+            else if (args.length == 3) {
+                int colonCount = 0;
+                for (char character : args[2].toCharArray()) if (character == ':') colonCount++;
+
+                if (colonCount == 1) for (PortalCommandType portalCommandType : PortalCommandType.values())
+                    values.add(portalCommandType.name());
+                else if (colonCount == 2) for (int i = 0; ++i < 100; )
+                    values.add(String.valueOf(i));
             }
 
+            if (values.size() > 0) Collections.sort(values);
+            return values;
         }
 
         return null;

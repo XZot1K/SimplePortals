@@ -1,5 +1,13 @@
+/*
+ * Copyright (c) XZot1K $year. All rights reserved.
+ */
+
 package xzot1k.plugins.sp.core;
 
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -8,10 +16,6 @@ import org.bukkit.entity.Player;
 import xzot1k.plugins.sp.SimplePortals;
 import xzot1k.plugins.sp.api.objects.Portal;
 import xzot1k.plugins.sp.api.objects.Region;
-import xzot1k.plugins.sp.core.utils.jsonmsgs.JSONClickAction;
-import xzot1k.plugins.sp.core.utils.jsonmsgs.JSONExtra;
-import xzot1k.plugins.sp.core.utils.jsonmsgs.JSONHoverAction;
-import xzot1k.plugins.sp.core.utils.jsonmsgs.JSONMessage;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,7 +24,7 @@ import java.util.Objects;
 
 public class Commands implements CommandExecutor {
 
-    private SimplePortals pluginInstance;
+    private final SimplePortals pluginInstance;
     private HashMap<Integer, List<String>> helpPageMap;
 
     public Commands(SimplePortals pluginInstance) {
@@ -157,6 +161,13 @@ public class Commands implements CommandExecutor {
             return;
         }
 
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
+                    + pluginInstance.getLangConfig().getString("must-be-player-message")));
+            return;
+        }
+
+        Player player = (Player) sender;
         Portal portal = pluginInstance.getManager().getPortalById(portalName);
         if (portal == null) {
             sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
@@ -186,7 +197,7 @@ public class Commands implements CommandExecutor {
             return;
         }
 
-        portal.fillPortal(material, durability);
+        portal.fillPortal(player, material, durability);
         sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
                 + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-filled-message")).replace("{name}", portal.getPortalId()).replace("{material}", material.name())));
     }
@@ -543,45 +554,45 @@ public class Commands implements CommandExecutor {
 
             if (page < getHelpPageMap().size() && page > 1) {
                 // page is both below the max page and above 1
-                JSONMessage footerMessage1 = new JSONMessage("&e&m-------&r&d[");
-                JSONExtra footerExtra1 = new JSONExtra(" &b(Previous Page)"),
-                        footerExtra2 = new JSONExtra(" &b(Next Page) "),
-                        footerExtra3 = new JSONExtra("&d]&e&m--------\n");
+                TextComponent footerMessage1 = new TextComponent("&e&m-------&r&d["),
+                        footerExtra1 = new TextComponent(" &b(Previous Page)"),
+                        footerExtra2 = new TextComponent(" &b(Next Page) "),
+                        footerEnd = new TextComponent("&d]&e&m--------\n");
 
-                footerExtra1.setClickEvent(JSONClickAction.RUN_COMMAND, "/portals help " + (page - 1));
-                footerExtra1.setHoverEvent(JSONHoverAction.SHOW_TEXT, "&aClicking this will open the help menu at page &e" + (page - 1) + "&a.");
-                footerExtra2.setClickEvent(JSONClickAction.RUN_COMMAND, "/portals help " + (page + 1));
-                footerExtra2.setHoverEvent(JSONHoverAction.SHOW_TEXT, "&aClicking this will open the help menu at page &e" + (page + 1) + "&a.");
+                footerExtra1.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/portals help " + (page - 1)));
+                footerExtra1.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[]{new TextComponent("&aClicking this will open the help menu at page &e" + (page - 1) + "&a.")}));
+                footerExtra2.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/portals help " + (page + 1)));
+                footerExtra2.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[]{new TextComponent("&aClicking this will open the help menu at page &e" + (page + 1) + "&a.")}));
 
                 footerMessage1.addExtra(footerExtra1);
                 footerMessage1.addExtra(footerExtra2);
-                footerMessage1.addExtra(footerExtra3);
+                footerMessage1.addExtra(footerEnd);
 
-                footerMessage1.sendJSONToPlayer(player);
+                player.spigot().sendMessage(footerMessage1);
             } else if (page < getHelpPageMap().size() && page <= 1) {
                 // page is less than or = to 1
-                JSONMessage footerMessage1 = new JSONMessage("&e&m---------------&r&d[");
-                JSONExtra footerExtra1 = new JSONExtra(" &b(Next Page) "),
-                        footerExtra2 = new JSONExtra("&d]&e&m---------------\n");
+                TextComponent footerMessage = new TextComponent("&e&m---------------&r&d["),
+                        footerExtra = new TextComponent(" &b(Next Page) "),
+                        footerEnd = new TextComponent("&d]&e&m---------------\n");
 
-                footerExtra1.setClickEvent(JSONClickAction.RUN_COMMAND, "/portals help " + (page + 1));
-                footerExtra1.setHoverEvent(JSONHoverAction.SHOW_TEXT, "&aClicking this will open the help menu at page &e" + (page + 1) + "&a.");
-                footerMessage1.addExtra(footerExtra1);
-                footerMessage1.addExtra(footerExtra2);
+                footerExtra.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/portals help " + (page + 1)));
+                footerExtra.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[]{new TextComponent("&aClicking this will open the help menu at page &e" + (page + 1) + "&a.")}));
+                footerMessage.addExtra(footerExtra);
+                footerMessage.addExtra(footerEnd);
 
-                footerMessage1.sendJSONToPlayer(player);
+                player.spigot().sendMessage(footerMessage);
             } else if (page >= getHelpPageMap().size() && page > 1) {
                 // page at/above max page and greater that 1
-                JSONMessage footerMessage1 = new JSONMessage("&d[&e&m------------&r&d]");
-                JSONExtra footerExtra1 = new JSONExtra(" &b(Previous Page) "),
-                        footerExtra2 = new JSONExtra("&d]&e&m-------------\n");
+                TextComponent footerMessage = new TextComponent("&d[&e&m------------&r&d]"),
+                        footerExtra = new TextComponent(" &b(Previous Page) "),
+                        footerEnd = new TextComponent("&d]&e&m-------------\n");
 
-                footerExtra1.setClickEvent(JSONClickAction.RUN_COMMAND, "/portals help " + (page - 1));
-                footerExtra1.setHoverEvent(JSONHoverAction.SHOW_TEXT, "&aClicking this will open the help menu at page &e" + (page - 1) + "&a.");
-                footerMessage1.addExtra(footerExtra1);
-                footerMessage1.addExtra(footerExtra2);
+                footerExtra.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/portals help " + (page - 1)));
+                footerExtra.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[]{new TextComponent("&aClicking this will open the help menu at page &e" + (page - 1) + "&a.")}));
+                footerMessage.addExtra(footerExtra);
+                footerMessage.addExtra(footerEnd);
 
-                footerMessage1.sendJSONToPlayer(player);
+                player.spigot().sendMessage(footerMessage);
             } else
                 player.sendMessage(pluginInstance.getManager().colorText("&d[&e&m---------------------------------------&r&d]\n"));
         } else {

@@ -1,16 +1,25 @@
+/*
+ * Copyright (c) XZot1K $year. All rights reserved.
+ */
+
 package xzot1k.plugins.sp.api.objects;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.Directional;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import xzot1k.plugins.sp.SimplePortals;
+import xzot1k.plugins.sp.api.enums.Direction;
+import xzot1k.plugins.sp.api.enums.PortalCommandType;
 import xzot1k.plugins.sp.core.objects.TaskHolder;
+import xzot1k.plugins.sp.core.tasks.RegionTask;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,11 +27,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class Portal {
 
-    private SimplePortals pluginInstance;
+    private final SimplePortals pluginInstance;
     private Region region;
     private SerializableLocation teleportLocation;
     private String portalId, serverSwitchName;
@@ -42,15 +50,24 @@ public class Portal {
             setTeleportLocation(getRegion().getPoint1().asBukkitLocation().clone().add(0, 2, 0));
     }
 
+    /**
+     * Adds the portal to the virtual storage.
+     */
     public void register() {
         if (!pluginInstance.getManager().getPortals().contains(this))
             pluginInstance.getManager().getPortals().add(this);
     }
 
+    /**
+     * Removes the portal from virtual storage.
+     */
     public void unregister() {
         pluginInstance.getManager().getPortals().remove(this);
     }
 
+    /**
+     * Deletes the portal from file and virtual storage.
+     */
     public void delete() {
         try {
             File file = new File(pluginInstance.getDataFolder(), "/portals.yml");
@@ -62,6 +79,9 @@ public class Portal {
         }
     }
 
+    /**
+     * Saves the portal to file.
+     */
     public void save() {
         try {
             File file = new File(pluginInstance.getDataFolder(), "/portals.yml");
@@ -113,6 +133,68 @@ public class Portal {
 
     }
 
+    /**
+     * Invokes all commands attached to the portal (includes percentage calculations).
+     *
+     * @param player            The player to send command based on.
+     * @param locationForCoords The location where the player is or should be.
+     */
+    public void invokeCommands(Player player, Location locationForCoords) {
+        pluginInstance.getServer().getScheduler().runTaskLater(pluginInstance, () -> {
+            for (String commandLine : getCommands()) {
+                PortalCommandType portalCommandType = PortalCommandType.CONSOLE;
+                int percentage = 100;
+                if (commandLine.contains(":")) {
+                    String[] commandLineSplit = commandLine.split(":");
+                    if (commandLineSplit.length == 2) {
+                        PortalCommandType foundPortalCommandType = PortalCommandType.getType(commandLineSplit[1]);
+                        if (foundPortalCommandType != null) portalCommandType = foundPortalCommandType;
+                    } else if (commandLineSplit.length == 3) {
+                        PortalCommandType foundPortalCommandType = PortalCommandType.getType(commandLineSplit[1]);
+                        if (foundPortalCommandType != null) portalCommandType = foundPortalCommandType;
+
+                        String foundPercentValue = commandLineSplit[2];
+                        if (pluginInstance.getManager().isNumeric(foundPercentValue))
+                            percentage = Integer.parseInt(foundPercentValue);
+                    }
+                }
+
+
+                int chance = pluginInstance.getManager().getRandom(1, 100);
+                if (chance < percentage) {
+                    commandLine = commandLine.replaceAll("(?i):player", "").replaceAll("(?i):console", "")
+                            .replaceAll("(?i):chat", "").replaceAll("(?i):" + percentage, "");
+                    switch (portalCommandType) {
+
+                        case PLAYER:
+                            pluginInstance.getServer().dispatchCommand(player, commandLine.replace("{x}", String.valueOf(locationForCoords.getX()))
+                                    .replace("{y}", String.valueOf(locationForCoords.getY())).replace("{z}", String.valueOf(locationForCoords.getZ()))
+                                    .replace("{world}", locationForCoords.getWorld().getName()).replace("{player}", player.getName()));
+                            break;
+
+                        case CHAT:
+                            player.chat(commandLine.replace("{x}", String.valueOf(locationForCoords.getX()))
+                                    .replace("{y}", String.valueOf(locationForCoords.getY())).replace("{z}", String.valueOf(locationForCoords.getZ()))
+                                    .replace("{world}", locationForCoords.getWorld().getName()).replace("{player}", player.getName()));
+                            break;
+
+                        default:
+                            pluginInstance.getServer().dispatchCommand(pluginInstance.getServer().getConsoleSender(), commandLine.replace("{x}", String.valueOf(locationForCoords.getX()))
+                                    .replace("{y}", String.valueOf(locationForCoords.getY())).replace("{z}", String.valueOf(locationForCoords.getZ()))
+                                    .replace("{world}", locationForCoords.getWorld().getName()).replace("{player}", player.getName()));
+                            break;
+
+                    }
+                }
+            }
+        }, pluginInstance.getConfig().getInt("command-tick-delay"));
+    }
+
+    /**
+     * Performs the general action of the portal by teleporting the player and playing effects. (Handles server transfer)
+     *
+     * @param player The player to perform actions on.
+     */
     public void performAction(Player player) {
         if (getServerSwitchName() == null || getServerSwitchName().equalsIgnoreCase("none")) {
             Location location = getTeleportLocation().asBukkitLocation();
@@ -163,145 +245,95 @@ public class Portal {
             pluginInstance.getManager().switchServer(player, getServerSwitchName());
         }
 
-        try {
-            String particleEffect = Objects
-                    .requireNonNull(pluginInstance.getConfig().getString("teleport-visual-effect")).toUpperCase()
-                    .replace(" ", "_").replace("-", "_");
-            player.getWorld().playSound(player.getLocation(),
-                    Sound.valueOf(Objects.requireNonNull(pluginInstance.getConfig().getString("teleport-sound"))
-                            .toUpperCase().replace(" ", "_").replace("-", "_")),
-                    1, 1);
+        String particleEffect = pluginInstance.getConfig().getString("teleport-visual-effect");
+        if (particleEffect != null && !particleEffect.isEmpty())
             pluginInstance.getManager().getParticleHandler().broadcastParticle(player.getLocation(), 1, 2, 1, 0,
-                    particleEffect, 50);
-        } catch (Exception ignored) {
-        }
+                    particleEffect.toUpperCase().replace(" ", "_").replace("-", "_"), 10);
+
+        String soundName = pluginInstance.getConfig().getString("teleport-sound");
+        if (soundName != null && !soundName.isEmpty())
+            player.getWorld().playSound(player.getLocation(), Sound.valueOf(soundName.toUpperCase().replace(" ", "_")
+                    .replace("-", "_")), 1, 1);
     }
 
-    public void fillPortal(Material material, int durability) {
-        Location point1 = getRegion().getPoint1().asBukkitLocation(),
-                point2 = getRegion().getPoint2().asBukkitLocation();
-        if (Objects.requireNonNull(point1.getWorld()).getName()
-                .equalsIgnoreCase(Objects.requireNonNull(point2.getWorld()).getName())) {
-            if (point1.getBlockX() <= point2.getBlockX()) {
-                for (int pos_x = point1.getBlockX() - 1; ++pos_x <= point2.getBlockX(); )
-                    if (point1.getBlockZ() <= point2.getBlockZ())
-                        fillHelper(material, (short) durability, point1, point2, pos_x, point1.getBlockY(), point2.getBlockY(), point1.getWorld());
-                    else
-                        fillHelper(material, (short) durability, point2, point1, pos_x, point1.getBlockY(), point2.getBlockY(), point1.getWorld());
-            } else {
-                for (int pos_x = point2.getBlockX(); pos_x <= point1.getBlockX(); pos_x++)
-                    if (point1.getBlockZ() <= point2.getBlockZ())
-                        fillHelperTwo(material, (short) durability, point1, point2, pos_x, point1.getBlockY(), point2.getBlockY(), point1.getWorld());
-                    else
-                        fillHelperTwo(material, (short) durability, point2, point1, pos_x, point1.getBlockY(), point2.getBlockY(), point1.getWorld());
-            }
-        }
+    /**
+     * Attempts to fill a portals region with the passed material and durability.
+     *
+     * @param player     The player whom filled the portal's region (Determines Block Face Direction).
+     * @param material   The material that is used.
+     * @param durability The durability to modify the material.
+     */
+    public void fillPortal(Player player, Material material, int durability) {
+        if (!getRegion().getPoint1().getWorldName().equalsIgnoreCase(getRegion().getPoint2().getWorldName())) return;
+
+        int lowestX = (int) Math.min(getRegion().getPoint1().getX(), getRegion().getPoint2().getX()),
+                highestX = (int) Math.max(getRegion().getPoint1().getX(), getRegion().getPoint2().getX()),
+
+                lowestY = (int) Math.min(getRegion().getPoint1().getY(), getRegion().getPoint2().getY()),
+                highestY = (int) Math.max(getRegion().getPoint1().getY(), getRegion().getPoint2().getY()),
+
+                lowestZ = (int) Math.min(getRegion().getPoint1().getZ(), getRegion().getPoint2().getZ()),
+                highestZ = (int) Math.max(getRegion().getPoint1().getZ(), getRegion().getPoint2().getZ());
+
+        final World world = pluginInstance.getServer().getWorld(getRegion().getPoint1().getWorldName());
+        for (int y = lowestY - 1; ++y <= highestY; )
+            for (int x = lowestX - 1; ++x <= highestX; )
+                for (int z = lowestZ - 1; ++z <= highestZ; ) {
+                    Location location = new Location(world, x, y, z);
+                    if (location.getBlock().getType() == Material.AIR || location.getBlock().getType() == getLastFillMaterial()) {
+                        location.getBlock().setType(material);
+                        if ((pluginInstance.getServerVersion().toLowerCase().startsWith("v1_14") || pluginInstance.getServerVersion().toLowerCase().startsWith("v1_15"))
+                                && !pluginInstance.getServerVersion().toLowerCase().startsWith("v1_13")) {
+                            final Block block = location.getBlock();
+                            block.setType(Material.AIR);
+                            block.setType(material);
+
+                            if ((pluginInstance.getServerVersion().startsWith("v1_12") || pluginInstance.getServerVersion().startsWith("v1_11")
+                                    || pluginInstance.getServerVersion().startsWith("v1_10") || pluginInstance.getServerVersion().startsWith("v1_9")))
+                                try {
+                                    Method method = block.getClass().getMethod("setData", Byte.class);
+                                    if (method != null)
+                                        method.invoke(block, (byte) durability);
+                                } catch (Exception ignored) {}
+
+                            if (pluginInstance.getServerVersion().startsWith("v1_11") || pluginInstance.getServerVersion().startsWith("v1_12")
+                                    || pluginInstance.getServerVersion().startsWith("v1_13") || pluginInstance.getServerVersion().startsWith("v1_14")
+                                    || pluginInstance.getServerVersion().startsWith("v1_15") || pluginInstance.getServerVersion().startsWith("v1_16")) {
+                                block.setBlockData(pluginInstance.getServer().createBlockData(material));
+                                setBlock(block, material, BlockFace.valueOf(Direction.getYaw(player).name()));
+                            } else {
+                                if (block instanceof Directional)
+                                    try {
+                                        Method method = Block.class.getMethod("setData", Byte.class, Boolean.class);
+                                        method.setAccessible(true);
+                                        method.invoke(block, oppositeDirectionByte(Direction.getYaw(player)), true);
+                                    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {
+                                    }
+                                else try {
+                                    Method method = Block.class.getMethod("setData", Byte.class, Boolean.class);
+                                    method.setAccessible(true);
+                                    method.invoke(block, block.getData(), true);
+                                } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {
+                                }
+                            }
+                        }
+                    }
+                }
 
         setLastFillMaterial(material);
     }
 
-    private void fillHelperTwo(Material material, short durability, Location point1, Location point2, int pos_x, int blockY, int blockY2, World world) {
-        for (int pos_z = point1.getBlockZ(); pos_z <= point2.getBlockZ(); pos_z++)
-            if (blockY <= blockY2) fillHelperInner(material, durability, pos_x, blockY, blockY2, world, pos_z);
-            else fillHelperInner(material, durability, pos_x, blockY2, blockY, world, pos_z);
-    }
-
-    private void fillHelperInner(Material material, short durability, int pos_x, int blockY, int blockY2, World world, int pos_z) {
-        for (int pos_y = blockY; pos_y <= blockY2; pos_y++)
-            fillHelperInnerTwo(material, durability, pos_x, world, pos_z, pos_y);
-    }
-
-    private void fillHelperInnerTwo(Material material, short durability, int pos_x, World world, int pos_z, int pos_y) {
-        Location location = new Location(world, pos_x, pos_y, pos_z);
-        if (location.getBlock().getType() == Material.AIR || location.getBlock().getType() == getLastFillMaterial()) {
-            location.getBlock().setType(material);
-            if ((pluginInstance.getServerVersion().toLowerCase().startsWith("v1_14") || pluginInstance.getServerVersion().toLowerCase().startsWith("v1_15"))
-                    && !pluginInstance.getServerVersion().toLowerCase().startsWith("v1_13")) {
-                try {
-                    Method closeMethod = location.getBlock().getClass().getMethod("setData", Short.class);
-                    if (closeMethod != null) closeMethod.invoke(location.getBlock().getClass(), durability);
-                } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {
-                }
-            }
-        }
-    }
-
-    private void fillHelper(Material material, short durability, Location point1, Location point2, int pos_x, int blockY, int blockY2, World world) {
-        for (int pos_z = point1.getBlockZ() - 1; ++pos_z <= point2.getBlockZ(); )
-            if (blockY <= blockY2)
-                for (int pos_y = blockY - 1; ++pos_y <= blockY2; ) {
-                    fillHelperInnerTwo(material, durability, pos_x, world, pos_z, pos_y);
-                }
-            else
-                for (int pos_y = blockY2 - 1; ++pos_y <= blockY; ) {
-                    fillHelperInnerTwo(material, durability, pos_x, world, pos_z, pos_y);
-                }
-    }
-
+    /**
+     * Displays the region using particle packets.
+     *
+     * @param player The player to display to.
+     */
     public void displayRegion(Player player) {
-        String particleEffect = Objects.requireNonNull(pluginInstance.getConfig().getString("region-visual-effect"))
-                .toUpperCase().replace(" ", "_").replace("-", "_");
+        String particleEffect = pluginInstance.getConfig().getString("region-visual-effect");
+        if (particleEffect == null || particleEffect.isEmpty()) return;
 
-        BukkitTask bukkitTask = new BukkitRunnable() {
-            Location point1 = getRegion().getPoint1().asBukkitLocation(),
-                    point2 = getRegion().getPoint2().asBukkitLocation();
-            int duration = pluginInstance.getConfig().getInt("region-visual-duration");
-            double lifetime = 0;
-
-            @Override
-            public void run() {
-                if (lifetime >= duration) {
-                    cancel();
-                    return;
-                }
-
-                if (Objects.requireNonNull(point1.getWorld()).getName()
-                        .equalsIgnoreCase(Objects.requireNonNull(point2.getWorld()).getName())) {
-                    if (point1.getBlockX() <= point2.getBlockX()) {
-                        for (int pos_x = point1.getBlockX() - 1; ++pos_x <= point2.getBlockX(); ) {
-                            if (point1.getBlockZ() <= point2.getBlockZ()) {
-                                displayHelperCaseOne(pos_x, point1, point2, player, particleEffect);
-                            } else {
-                                displayHelperCaseOne(pos_x, point2, point1, player, particleEffect);
-                            }
-                        }
-                    } else {
-                        for (int pos_x = point2.getBlockX(); pos_x <= point1.getBlockX(); pos_x++) {
-                            if (point1.getBlockZ() <= point2.getBlockZ()) {
-                                displayHelperCaseTwo(pos_x, point1, point2, player, particleEffect);
-                            } else {
-                                displayHelperCaseTwo(pos_x, point2, point1, player, particleEffect);
-                            }
-                        }
-                    }
-                }
-
-                lifetime += 0.25;
-            }
-
-            private void displayHelperCaseTwo(int pos_x, Location point1, Location point2, Player player, String particleEffect) {
-                for (int pos_z = point1.getBlockZ(); pos_z <= point2.getBlockZ(); pos_z++) {
-                    if (point1.getBlockY() <= point2.getBlockY()) {
-                        displayHelperCaseThree(pos_x, point1, point2, player, particleEffect, pos_z, point1.getWorld(), point1.getX(), point2.getX(), point1.getY(), point2.getY(), point1.getZ(), point2.getZ());
-                    } else {
-                        displayHelperCaseThree(pos_x, point2, point1, player, particleEffect, pos_z, point1.getWorld(), point1.getX(), point2.getX(), point1.getY(), point2.getY(), point1.getZ(), point2.getZ());
-                    }
-                }
-            }
-
-            private void displayHelperCaseOne(int pos_x, Location point1, Location point2, Player player, String particleEffect) {
-                for (int pos_z = point1.getBlockZ() - 1; ++pos_z <= point2.getBlockZ(); ) {
-                    if (point1.getBlockY() <= point2.getBlockY()) {
-                        displayHelperCaseFour(pos_x, point1, point2, player, particleEffect, pos_z, point1.getWorld(), point1.getX(), point2.getX(), point1.getY(), point2.getY(), point1.getZ(), point2.getZ());
-                    } else {
-                        displayHelperCaseFour(pos_x, point2, point1, player, particleEffect, pos_z, point1.getWorld(), point1.getX(), point2.getX(), point1.getY(), point2.getY(), point1.getZ(), point2.getZ());
-                    }
-                }
-            }
-        }.runTaskTimer(pluginInstance, 0, 5);
-
-        if (!pluginInstance.getManager().getVisualTasks().isEmpty()
-                && pluginInstance.getManager().getVisualTasks().containsKey(player.getUniqueId())) {
+        BukkitTask bukkitTask = new RegionTask(pluginInstance, player, this).runTaskTimerAsynchronously(pluginInstance, 0, 5);
+        if (!pluginInstance.getManager().getVisualTasks().isEmpty() && pluginInstance.getManager().getVisualTasks().containsKey(player.getUniqueId())) {
             TaskHolder taskHolder = pluginInstance.getManager().getVisualTasks().get(player.getUniqueId());
             if (taskHolder != null) {
                 if (taskHolder.getSelectionPointOne() != null)
@@ -318,27 +350,45 @@ public class Portal {
         pluginInstance.getManager().getVisualTasks().put(player.getUniqueId(), taskHolder);
     }
 
-    private void displayHelperCaseFour(int pos_x, Location point1, Location point2, Player player, String particleEffect, int pos_z, World world, double x, double x2, double y, double y2, double z, double z2) {
-        for (int pos_y = point1.getBlockY() - 1; ++pos_y <= point2.getBlockY(); ) {
-            displayHelperCaseFive(pos_x, player, particleEffect, pos_z, world, x, x2, y, y2, z, z2, pos_y);
+    private void setBlock(Block block, Material material, BlockFace blockFace) {
+        block.setType(material);
+
+        org.bukkit.block.data.BlockData blockData = block.getBlockData();
+        if (blockData instanceof Directional) {
+            ((Directional) blockData).setFacing(blockFace);
+            block.setBlockData(blockData);
+        }
+
+        if (blockData instanceof org.bukkit.block.data.Orientable) {
+            ((org.bukkit.block.data.Orientable) blockData).setAxis(org.bukkit.Axis.valueOf(convertBlockFaceToAxis(blockFace)));
+            block.setBlockData(blockData);
+        }
+
+        if (blockData instanceof org.bukkit.block.data.Rotatable) {
+            ((org.bukkit.block.data.Rotatable) blockData).setRotation(blockFace);
+            block.setBlockData(blockData);
         }
     }
 
-    private void displayHelperCaseFive(int pos_x, Player player, String particleEffect, int pos_z, World world, double x, double x2, double y, double y2, double z, double z2, int pos_y) {
-        Location location = new Location(world, pos_x, pos_y, pos_z);
-        if (location.getX() == x || location.getX() == x2
-                || location.getY() == y
-                || location.getY() == y2
-                || location.getZ() == z
-                || location.getZ() == z2)
-            pluginInstance.getManager().getParticleHandler().displayParticle(player,
-                    location.add(0.5, 0.5, 0.5), 0, 0, 0, 0, particleEffect, 1);
+    private String convertBlockFaceToAxis(BlockFace face) {
+        switch (face) {
+            case NORTH:
+            case SOUTH:
+                return "Z";
+            case UP:
+            case DOWN:
+                return "Y";
+            case EAST:
+            case WEST:
+            default:
+                return "X";
+        }
     }
 
-    private void displayHelperCaseThree(int pos_x, Location point1, Location point2, Player player, String particleEffect, int pos_z, World world, double x, double x2, double y, double y2, double z, double z2) {
-        for (int pos_y = point1.getBlockY(); pos_y <= point2.getBlockY(); pos_y++) {
-            displayHelperCaseFive(pos_x, player, particleEffect, pos_z, world, x, x2, y, y2, z, z2, pos_y);
-        }
+    private byte oppositeDirectionByte(Direction direction) {
+        for (int i = -1; ++i < Direction.values().length; )
+            if (direction == Direction.values()[i]) return (byte) i;
+        return 4;
     }
 
     public Region getRegion() {

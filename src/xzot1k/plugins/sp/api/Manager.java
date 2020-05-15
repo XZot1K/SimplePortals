@@ -23,10 +23,12 @@ import xzot1k.plugins.sp.api.objects.Portal;
 import xzot1k.plugins.sp.api.objects.Region;
 import xzot1k.plugins.sp.api.objects.SerializableLocation;
 import xzot1k.plugins.sp.core.objects.TaskHolder;
-import xzot1k.plugins.sp.core.packets.jsonmsgs.JSONHandler;
-import xzot1k.plugins.sp.core.packets.jsonmsgs.versions.*;
 import xzot1k.plugins.sp.core.packets.particles.ParticleHandler;
-import xzot1k.plugins.sp.core.packets.particles.versions.*;
+import xzot1k.plugins.sp.core.packets.particles.versions.PH1_8R1;
+import xzot1k.plugins.sp.core.packets.particles.versions.PH1_8R2;
+import xzot1k.plugins.sp.core.packets.particles.versions.PH1_8R3;
+import xzot1k.plugins.sp.core.packets.particles.versions.PH_Latest;
+import xzot1k.plugins.sp.core.tasks.HighlightTask;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -35,16 +37,16 @@ import java.util.*;
 import java.util.logging.Level;
 
 public class Manager {
-    private SimplePortals pluginInstance;
-    private HashMap<UUID, Region> currentSelections;
-    private HashMap<UUID, Boolean> selectionMode;
-    private HashMap<UUID, HashMap<String, Long>> playerPortalCooldowns;
-    private List<Portal> portals;
-    private HashMap<UUID, TaskHolder> visualTasks;
-    private HashMap<UUID, SerializableLocation> smartTransferMap;
+    private final SimplePortals pluginInstance;
+    private final HashMap<UUID, Region> currentSelections;
+    private final HashMap<UUID, Boolean> selectionMode;
+    private final HashMap<UUID, HashMap<String, Long>> playerPortalCooldowns;
+    private final List<Portal> portals;
+    private final HashMap<UUID, TaskHolder> visualTasks;
+    private final HashMap<UUID, SerializableLocation> smartTransferMap;
 
+    private Random random;
     private ParticleHandler particleHandler;
-    private JSONHandler jsonHandler;
 
     public Manager(SimplePortals pluginInstance) {
         this.pluginInstance = pluginInstance;
@@ -55,93 +57,73 @@ public class Manager {
         portals = new ArrayList<>();
         smartTransferMap = new HashMap<>();
 
+        setRandom(new Random());
         setupPackets();
     }
 
     private void setupPackets() {
-        boolean success = false;
-        switch (pluginInstance.getServerVersion()) {
-            case "v1_15_R1":
-                particleHandler = new PH_Latest();
-                setJSONHandler(new JSONHandler1_15R1());
-                success = true;
-                break;
-            case "v1_14_R1":
-                particleHandler = new PH_Latest();
-                setJSONHandler(new JSONHandler1_14R1());
-                success = true;
-                break;
-            case "v1_13_R2":
-                particleHandler = new PH_Latest();
-                setJSONHandler(new JSONHandler1_13R2());
-                success = true;
-                break;
-            case "v1_13_R1":
-                particleHandler = new PH_Latest();
-                setJSONHandler(new JSONHandler1_13R1());
-                success = true;
-                break;
-            case "v1_12_R1":
-                particleHandler = new PH1_12R1(pluginInstance);
-                setJSONHandler(new JSONHandler1_12R1());
-                success = true;
-                break;
-            case "v1_11_R1":
-                particleHandler = new PH1_11R1(pluginInstance);
-                setJSONHandler(new JSONHandler1_11R1());
-                success = true;
-                break;
-            case "v1_10_R1":
-                particleHandler = new PH1_10R1(pluginInstance);
-                setJSONHandler(new JSONHandler1_10R1());
-                success = true;
-                break;
-            case "v1_9_R2":
-                particleHandler = new PH1_9R2(pluginInstance);
-                setJSONHandler(new JSONHandler1_9R2());
-                success = true;
-                break;
-            case "v1_9_R1":
-                particleHandler = new PH1_9R1(pluginInstance);
-                setJSONHandler(new JSONHandler1_9R1());
-                success = true;
-                break;
-            case "v1_8_R3":
-                particleHandler = new PH1_8R3(pluginInstance);
-                setJSONHandler(new JSONHandler1_8R3());
-                success = true;
-                break;
-            case "v1_8_R2":
-                particleHandler = new PH1_8R2(pluginInstance);
-                setJSONHandler(new JSONHandler1_8R2());
-                success = true;
-                break;
-            case "v1_8_R1":
-                particleHandler = new PH1_8R1(pluginInstance);
-                setJSONHandler(new JSONHandler1_8R1());
-                success = true;
-                break;
-            default:
-                break;
+        try {
+            switch (pluginInstance.getServerVersion()) {
+                case "v1_8_R3":
+                    particleHandler = new PH1_8R3(pluginInstance);
+                    break;
+                case "v1_8_R2":
+                    particleHandler = new PH1_8R2(pluginInstance);
+                    break;
+                case "v1_8_R1":
+                    particleHandler = new PH1_8R1(pluginInstance);
+                    break;
+                default:
+                    particleHandler = new PH_Latest();
+                    break;
+            }
+
+            pluginInstance.log(Level.INFO, "Packets have been setup for " + pluginInstance.getServerVersion() + "!");
+        } catch (Exception e) {
+            pluginInstance.log(Level.INFO, "There was an issue obtaining proper packets for " + pluginInstance.getServerVersion()
+                    + ". (Error: " + e.getMessage() + ")");
         }
-
-        if (success)
-            pluginInstance.log(Level.INFO,
-                    "All packets have been successfully setup for " + pluginInstance.getServerVersion() + "!");
-        else
-            pluginInstance.log(Level.WARNING, "Your server version (" + pluginInstance.getServerVersion()
-                    + ") is not supported. Most packet features will be disabled.");
-
     }
 
+    /**
+     * Obtains a random value in a range.
+     *
+     * @param min The minimum value.
+     * @param max The maximum value.
+     * @return The generated value.
+     */
+    public int getRandom(int min, int max) {
+        return getRandom().nextInt((max - min) + 1) + min;
+    }
+
+    /**
+     * Checks if a string is considered numerical. (Accepts negatives)
+     *
+     * @param string The text to check.
+     * @return Whether it is numerical.
+     */
     public boolean isNumeric(String string) {
         return string.matches("-?\\d+(\\.\\d+)?");
     }
 
+    /**
+     * Colors a line of text using bukkit color codes.
+     *
+     * @param text The text to color.
+     * @return The new value.
+     */
     public String colorText(String text) {
         return ChatColor.translateAlternateColorCodes('&', text);
     }
 
+    /**
+     * Updates a player's selection region.
+     *
+     * @param player    The player selecting.
+     * @param location  The point location.
+     * @param pointType The point type. (lowest or highest)
+     * @return Whether the process was successful.
+     */
     public boolean updateCurrentSelection(Player player, Location location, PointType pointType) {
         if (!getCurrentSelections().isEmpty() && getCurrentSelections().containsKey(player.getUniqueId())) {
             Region region = getCurrentSelections().get(player.getUniqueId());
@@ -174,38 +156,56 @@ public class Manager {
         return selectionWorldCheck(player, region);
     }
 
-    private boolean selectionWorldCheck(Player player, Region region) {
-        if (!region.getPoint1().getWorldName().equalsIgnoreCase(region.getPoint2().getWorldName())) {
-            player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                    + pluginInstance.getLangConfig().getString("not-same-world-message")));
-            return false;
-        }
-
-        getCurrentSelections().put(player.getUniqueId(), region);
-        return true;
-    }
-
+    /**
+     * Obtains a current selection region from the passed player if possible.
+     *
+     * @param player The player to obtain a region from.
+     * @return the region object.
+     */
     public Region getCurrentSelection(Player player) {
         if (!getCurrentSelections().isEmpty() && getCurrentSelections().containsKey(player.getUniqueId()))
             return getCurrentSelections().get(player.getUniqueId());
         return null;
     }
 
+    /**
+     * Clears a player's region selection.
+     *
+     * @param player The player to clear for.
+     */
     public void clearCurrentSelection(Player player) {
         if (!getCurrentSelections().isEmpty())
             getCurrentSelections().remove(player.getUniqueId());
     }
 
+    /**
+     * Sets the player's selection mode status.
+     *
+     * @param player        The player to set for.
+     * @param selectionMode Whether they need to be in or out of selection mode.
+     */
     public void setSelectionMode(Player player, boolean selectionMode) {
         getSelectionMode().put(player.getUniqueId(), selectionMode);
     }
 
+    /**
+     * Checks if player is in selection mode.
+     *
+     * @param player The player to check.
+     * @return Whether thee player is in selection mode.
+     */
     public boolean isInSelectionMode(Player player) {
         if (!getSelectionMode().isEmpty() && getSelectionMode().containsKey(player.getUniqueId()))
             return getSelectionMode().get(player.getUniqueId());
         return false;
     }
 
+    /**
+     * Updates a cooldown with an id.
+     *
+     * @param player     The player to update for.
+     * @param cooldownId The id of the cooldown.
+     */
     public void updatePlayerPortalCooldown(Player player, String cooldownId) {
         if (getPlayerPortalCooldowns().containsKey(player.getUniqueId())) {
             HashMap<String, Long> cooldownIds = getPlayerPortalCooldowns().get(player.getUniqueId());
@@ -220,12 +220,28 @@ public class Manager {
         getPlayerPortalCooldowns().put(player.getUniqueId(), cooldownIds);
     }
 
+    /**
+     * Checks if player is on cooldown for a particular id.
+     *
+     * @param player     The player to check.
+     * @param cooldownId The cooldown id.
+     * @param cooldown   The duration of the cooldown being checked.
+     * @return Whether the player is on cooldown.
+     */
     public boolean isPlayerOnCooldown(Player player, String cooldownId, int cooldown) {
         if (!getPlayerPortalCooldowns().isEmpty() && getPlayerPortalCooldowns().containsKey(player.getUniqueId()))
             return getCooldownTimeLeft(player, cooldownId, cooldown) > 0;
         return false;
     }
 
+    /**
+     * Obtains the remaining cooldown duration.
+     *
+     * @param player     The player to obtain the cooldown from.
+     * @param cooldownId The cooldown id.
+     * @param cooldown   The duration of the cooldown being checked.
+     * @return The obtained remaining duration.
+     */
     public long getCooldownTimeLeft(Player player, String cooldownId, int cooldown) {
         long cd = 0;
         if (cd >= 0)
@@ -238,6 +254,12 @@ public class Manager {
         return (cd > 0) ? ((cd / 1000) + cooldown) - (System.currentTimeMillis() / 1000) : 0;
     }
 
+    /**
+     * Obtains a portal object from a location.
+     *
+     * @param location The location to check.
+     * @return The portal object
+     */
     public Portal getPortalAtLocation(Location location) {
         for (int i = -1; ++i < getPortals().size(); ) {
             Portal portal = getPortals().get(i);
@@ -248,6 +270,12 @@ public class Manager {
         return null;
     }
 
+    /**
+     * Obtains a portal object by name.
+     *
+     * @param portalName The portal name.
+     * @return The portal object.
+     */
     public Portal getPortalById(String portalName) {
         for (int i = -1; ++i < getPortals().size(); ) {
             Portal portal = getPortals().get(i);
@@ -258,6 +286,12 @@ public class Manager {
         return null;
     }
 
+    /**
+     * Checks if a portal with a particular name exists.
+     *
+     * @param portalName The portal name to check for.
+     * @return Whether the portal object exists.
+     */
     public boolean doesPortalExist(String portalName) {
         for (int i = -1; ++i < getPortals().size(); ) {
             Portal portal = getPortals().get(i);
@@ -268,6 +302,12 @@ public class Manager {
         return false;
     }
 
+    /**
+     * Handles general teleportation of a player to a location. (Handles the player's vehicle, if possible)
+     *
+     * @param player   The player to teleport.
+     * @param location The destination.
+     */
     @SuppressWarnings("deprecation")
     public void teleportPlayerWithEntity(Player player, Location location) {
         if (player.getVehicle() != null && pluginInstance.getConfig().getBoolean("vehicle-teleportation")) {
@@ -293,6 +333,14 @@ public class Manager {
             player.teleport(location);
     }
 
+    /**
+     * Checks if a player is facing a portal.
+     *
+     * @param player The player to check.
+     * @param portal The portal to check for.
+     * @param range  The range to check.
+     * @return Whether they are facing the portal.
+     */
     public boolean isFacingPortal(Player player, Portal portal, int range) {
         BlockIterator blockIterator = new BlockIterator(player, range);
         Block lastBlock;
@@ -310,6 +358,12 @@ public class Manager {
         return foundPortal;
     }
 
+    /**
+     * Obtains a direction from a raw yaw value.
+     *
+     * @param yaw The yaw value of a location.
+     * @return The direction as a string. (Returns NORTH, SOUTH, etc.)
+     */
     public String getDirection(double yaw) {
         if (yaw < 0)
             yaw += 360;
@@ -324,69 +378,42 @@ public class Manager {
         return "NORTH";
     }
 
+    /**
+     * Highlights the passed block for the player (packet) based on a region point (A or B).
+     *
+     * @param block     The block to highlight.
+     * @param player    The player to send the packet to.
+     * @param pointType The region point type. (Allows the plugin to keep track of two highlights for one user)
+     */
     public void highlightBlock(Block block, Player player, PointType pointType) {
-        if (particleHandler == null)
-            return;
+        if (getParticleHandler() == null) return;
 
-        String particleEffect = Objects.requireNonNull(pluginInstance.getConfig().getString("selection-visual-effect"))
-                .toUpperCase().replace(" ", "_").replace("-", "_");
+        String particleEffect = pluginInstance.getConfig().getString("selection-visual-effect").toUpperCase()
+                .replace(" ", "_").replace("-", "_");
+        if (particleEffect == null || particleEffect.isEmpty()) return;
 
-        BukkitTask bukkitTask = new BukkitRunnable() {
-            int duration = pluginInstance.getConfig().getInt("selection-visual-duration");
-            double lifetime = 0;
-            Location blockLocation = block.getLocation().clone();
-
-            @Override
-            public void run() {
-                if (lifetime >= duration) {
-                    cancel();
-                    return;
-                }
-
-                for (double y = blockLocation.getBlockY() - 0.2; (y += 0.2) < (blockLocation.getBlockY() + 1.1); )
-                    for (double x = blockLocation.getBlockX() - 0.2; (x += 0.2) < (blockLocation.getBlockX() + 1.1); )
-                        for (double z = blockLocation.getBlockZ() - 0.2; (z += 0.2) < (blockLocation.getBlockZ()
-                                + 1.1); ) {
-                            Location location = new Location(blockLocation.getWorld(), x, y, z);
-
-                            if ((y < (blockLocation.getBlockY() + 0.2) || y > (blockLocation.getBlockY() + 0.9))
-                                    && (z < (blockLocation.getBlockZ() + 0.2) || z > (blockLocation.getBlockZ() + 0.9)))
-                                particleHandler.displayParticle(player, location, 0, 0, 0, 0, particleEffect, 1);
-
-                            if ((x < (blockLocation.getBlockX() + 0.2) || x > (blockLocation.getBlockX() + 0.9))
-                                    && (z < (blockLocation.getBlockZ() + 0.2) || z > (blockLocation.getBlockZ() + 0.9)))
-                                particleHandler.displayParticle(player, location, 0, 0, 0, 0, particleEffect, 1);
-
-                            if ((y < (blockLocation.getBlockY() + 0.2) || y > (blockLocation.getBlockY() + 0.9))
-                                    && (x < (blockLocation.getBlockX() + 0.2) || x > (blockLocation.getBlockX() + 0.9)))
-                                particleHandler.displayParticle(player, location, 0, 0, 0, 0, particleEffect, 1);
-                        }
-
-                lifetime += 0.25;
-            }
-        }.runTaskTimer(pluginInstance, 0, 5);
+        BukkitTask bukkitTask = new HighlightTask(pluginInstance, player, block.getLocation(), particleEffect)
+                .runTaskTimerAsynchronously(pluginInstance, 0, 5);
 
         if (!getVisualTasks().isEmpty() && getVisualTasks().containsKey(player.getUniqueId())) {
             TaskHolder taskHolder = getVisualTasks().get(player.getUniqueId());
             if (taskHolder != null) {
-                if (taskHolder.getRegionDisplay() != null)
-                    taskHolder.getRegionDisplay().cancel();
-                if (pointType == PointType.POINT_ONE)
-                    taskHolder.setSelectionPointOne(bukkitTask);
-                else
-                    taskHolder.setSelectionPointTwo(bukkitTask);
+                if (taskHolder.getRegionDisplay() != null) taskHolder.getRegionDisplay().cancel();
+                if (pointType == PointType.POINT_ONE) taskHolder.setSelectionPointOne(bukkitTask);
+                else taskHolder.setSelectionPointTwo(bukkitTask);
                 return;
             }
         }
 
         TaskHolder taskHolder = new TaskHolder();
-        if (pointType == PointType.POINT_ONE)
-            taskHolder.setSelectionPointOne(bukkitTask);
-        else
-            taskHolder.setSelectionPointTwo(bukkitTask);
+        if (pointType == PointType.POINT_ONE) taskHolder.setSelectionPointOne(bukkitTask);
+        else taskHolder.setSelectionPointTwo(bukkitTask);
         getVisualTasks().put(player.getUniqueId(), taskHolder);
     }
 
+    /**
+     * Loads portals from file and adds them to virtual storage.
+     */
     public void loadPortals() {
         if (!getPortals().isEmpty()) getPortals().clear();
         File portalFile = new File(pluginInstance.getDataFolder(), "/portals.yml");
@@ -460,16 +487,9 @@ public class Manager {
         }
     }
 
-    private void portalMaterialCheckHelper(Portal portal, String materialName) {
-        if (materialName != null && !materialName.equalsIgnoreCase("")) {
-            Material material = Material.getMaterial(materialName.toUpperCase().replace(" ", "_")
-                    .replace("-", "_"));
-            portal.setLastFillMaterial(material == null ? Material.AIR : material);
-        } else portal.setLastFillMaterial(Material.AIR);
-
-        portal.register();
-    }
-
+    /**
+     * Saves all portals to file.
+     */
     public void savePortals() {
         for (int i = -1; ++i < getPortals().size(); ) {
             Portal portal = getPortals().get(i);
@@ -477,6 +497,11 @@ public class Manager {
         }
     }
 
+    /**
+     * Clears visual effects from the player's view and internal storage.
+     *
+     * @param player The player to clear for.
+     */
     public void clearAllVisuals(Player player) {
         if (!getVisualTasks().isEmpty() && getVisualTasks().containsKey(player.getUniqueId())) {
             TaskHolder taskHolder = getVisualTasks().get(player.getUniqueId());
@@ -489,6 +514,12 @@ public class Manager {
         }
     }
 
+    /**
+     * Contacts the proxy to move the player to another attached server.
+     *
+     * @param player     The player to move.
+     * @param serverName The server to move the player to. (Exact same from configuration or from the /server command)
+     */
     public void switchServer(Player player, String serverName) {
         try {
             Bukkit.getMessenger().registerOutgoingPluginChannel(pluginInstance, "BungeeCord");
@@ -504,6 +535,28 @@ public class Manager {
         }
     }
 
+    private void portalMaterialCheckHelper(Portal portal, String materialName) {
+        if (materialName != null && !materialName.equalsIgnoreCase("")) {
+            Material material = Material.getMaterial(materialName.toUpperCase().replace(" ", "_")
+                    .replace("-", "_"));
+            portal.setLastFillMaterial(material == null ? Material.AIR : material);
+        } else portal.setLastFillMaterial(Material.AIR);
+
+        portal.register();
+    }
+
+    private boolean selectionWorldCheck(Player player, Region region) {
+        if (!region.getPoint1().getWorldName().equalsIgnoreCase(region.getPoint2().getWorldName())) {
+            player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
+                    + pluginInstance.getLangConfig().getString("not-same-world-message")));
+            return false;
+        }
+
+        getCurrentSelections().put(player.getUniqueId(), region);
+        return true;
+    }
+
+    // getters & setters
     private HashMap<UUID, Region> getCurrentSelections() {
         return currentSelections;
     }
@@ -528,16 +581,15 @@ public class Manager {
         return visualTasks;
     }
 
-    public JSONHandler getJSONHandler() {
-        return jsonHandler;
-    }
-
-    private void setJSONHandler(JSONHandler jsonHandler) {
-        this.jsonHandler = jsonHandler;
-    }
-
     public HashMap<UUID, SerializableLocation> getSmartTransferMap() {
         return smartTransferMap;
     }
 
+    public Random getRandom() {
+        return random;
+    }
+
+    private void setRandom(Random random) {
+        this.random = random;
+    }
 }

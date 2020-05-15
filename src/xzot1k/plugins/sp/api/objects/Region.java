@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) XZot1K $year. All rights reserved.
+ */
+
 package xzot1k.plugins.sp.api.objects;
 
 import org.bukkit.Location;
@@ -7,7 +11,7 @@ import java.util.Objects;
 
 public class Region {
 
-    private SimplePortals pluginInstance;
+    private final SimplePortals pluginInstance;
     private SerializableLocation point1, point2;
 
     public Region(SimplePortals pluginInstance, Location point1, Location point2) {
@@ -25,14 +29,10 @@ public class Region {
     public boolean isInRegion(Location location) {
         Location point1 = getPoint1().asBukkitLocation(), point2 = getPoint2().asBukkitLocation();
 
-        if (Objects.requireNonNull(point1.getWorld()).getName().equalsIgnoreCase(Objects.requireNonNull(location.getWorld()).getName())
-                && Objects.requireNonNull(point2.getWorld()).getName().equalsIgnoreCase(location.getWorld().getName()))
-            if ((location.getY() <= point1.getY() && location.getBlockY() >= point2.getBlockY())
-                    || (location.getBlockY() <= point2.getBlockY() && location.getBlockY() >= point1.getBlockY()))
-                if ((location.getBlockX() <= point1.getBlockX() && location.getBlockX() >= point2.getBlockX())
-                        || (location.getBlockX() <= point2.getBlockX() && location.getBlockX() >= point1.getBlockX()))
-                    return (location.getBlockZ() <= point1.getBlockZ() && location.getBlockZ() >= point2.getBlockZ())
-                            || (location.getBlockZ() <= point2.getBlockZ() && location.getBlockZ() >= point1.getBlockZ());
+        if (Objects.requireNonNull(point1.getWorld()).getName().equalsIgnoreCase(Objects.requireNonNull(location.getWorld()).getName()) && Objects.requireNonNull(point2.getWorld()).getName().equalsIgnoreCase(location.getWorld().getName()))
+            if ((location.getY() <= point1.getY() && location.getBlockY() >= point2.getBlockY()) || (location.getBlockY() <= point2.getBlockY() && location.getBlockY() >= point1.getBlockY()))
+                if ((location.getBlockX() <= point1.getBlockX() && location.getBlockX() >= point2.getBlockX()) || (location.getBlockX() <= point2.getBlockX() && location.getBlockX() >= point1.getBlockX()))
+                    return (location.getBlockZ() <= point1.getBlockZ() && location.getBlockZ() >= point2.getBlockZ()) || (location.getBlockZ() <= point2.getBlockZ() && location.getBlockZ() >= point1.getBlockZ());
 
         return false;
     }
