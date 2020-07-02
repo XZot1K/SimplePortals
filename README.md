@@ -1,3 +1,4 @@
+![image](https://imgur.com/yCQEyCi.png)
 # How to use SimplePortals API in your plugin
 
 In order to properly use SimplePortals you will need to be able to retrieve the plugin's instance. You can do this by following these instructions:
