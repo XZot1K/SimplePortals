@@ -282,8 +282,8 @@ public class Portal {
                     Location location = new Location(world, x, y, z);
                     if (location.getBlock().getType() == Material.AIR || location.getBlock().getType() == getLastFillMaterial()) {
                         location.getBlock().setType(material);
-                        if ((pluginInstance.getServerVersion().toLowerCase().startsWith("v1_14") || pluginInstance.getServerVersion().toLowerCase().startsWith("v1_15"))
-                                && !pluginInstance.getServerVersion().toLowerCase().startsWith("v1_13")) {
+                        if ((pluginInstance.getServerVersion().toLowerCase().startsWith("v1_14") || pluginInstance.getServerVersion().toLowerCase().startsWith("v1_15")
+                                || pluginInstance.getServerVersion().toLowerCase().startsWith("v1_16")) && !pluginInstance.getServerVersion().toLowerCase().startsWith("v1_13")) {
                             final Block block = location.getBlock();
                             block.setType(Material.AIR);
                             block.setType(material);

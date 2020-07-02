@@ -27,8 +27,10 @@ public class SimplePortals extends JavaPlugin {
     private UpdateChecker updateChecker;
     private String serverVersion;
 
+
     private FileConfiguration langConfig;
     private File langFile;
+    private boolean prismaInstalled;
 
     @Override
     public void onEnable() {
@@ -47,6 +49,7 @@ public class SimplePortals extends JavaPlugin {
         reloadConfigs();
         updateConfigs();
 
+        setPrismaInstalled(getServer().getPluginManager().getPlugin("Prisma") != null);
         manager = new Manager(getPluginInstance());
         updateChecker = new UpdateChecker(getPluginInstance(), 56772);
 
@@ -120,7 +123,7 @@ public class SimplePortals extends JavaPlugin {
                 String createSound = getConfig().getString("teleport-sound");
                 if (!getServerVersion().startsWith("v1_9") && !getServerVersion().startsWith("v1_10") && !getServerVersion().startsWith("v1_11")
                         && !getServerVersion().startsWith("v1_12") && !getServerVersion().startsWith("v1_13") && !getServerVersion().startsWith("v1_14")
-                        && !getServerVersion().startsWith("v1_15")) {
+                        && !getServerVersion().startsWith("v1_15") && !getServerVersion().startsWith("v1_16")) {
                     if (createSound != null && createSound.equalsIgnoreCase("ENTITY_GHAST_SHOOT")) {
                         getConfig().set("teleport-sound", "GHAST_CHARGE");
                         updateCount++;
@@ -176,7 +179,6 @@ public class SimplePortals extends JavaPlugin {
                 if (!currentKeys.contains(updatedKey)) {
                     currentYaml.set(updatedKey, jarYaml.get(updatedKey));
                     updateCount++;
-                    System.out.println(updatedKey);
                 }
 
             for (String currentKey : currentKeys)
@@ -277,5 +279,13 @@ public class SimplePortals extends JavaPlugin {
 
     private void setServerVersion(String serverVersion) {
         this.serverVersion = serverVersion;
+    }
+
+    public boolean isPrismaInstalled() {
+        return prismaInstalled;
+    }
+
+    private void setPrismaInstalled(boolean prismaInstalled) {
+        this.prismaInstalled = prismaInstalled;
     }
 }

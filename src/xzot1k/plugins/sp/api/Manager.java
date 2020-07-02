@@ -17,6 +17,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.BlockIterator;
+import us.eunoians.prisma.ColorProvider;
 import xzot1k.plugins.sp.SimplePortals;
 import xzot1k.plugins.sp.api.enums.PointType;
 import xzot1k.plugins.sp.api.objects.Portal;
@@ -107,13 +108,48 @@ public class Manager {
     }
 
     /**
-     * Colors a line of text using bukkit color codes.
+     * Colors the text passed.
      *
-     * @param text The text to color.
-     * @return The new value.
+     * @param message The message to translate.
+     * @return The colored text.
      */
-    public String colorText(String text) {
-        return ChatColor.translateAlternateColorCodes('&', text);
+    public String colorText(String message) {
+        String messageCopy = message;
+        if (pluginInstance.getServerVersion().startsWith("v1_16") && messageCopy.contains("#")) {
+            if (pluginInstance.isPrismaInstalled()) messageCopy = ColorProvider.translatePrisma(messageCopy);
+            else {
+                final List<String> hexToReplace = new ArrayList<>();
+                final char[] charArray = messageCopy.toCharArray();
+
+                StringBuilder hexBuilder = new StringBuilder();
+                for (int i = -1; ++i < charArray.length; ) {
+                    final char currentChar = charArray[i];
+                    if (currentChar == '#') {
+                        final int remainingCharLength = (charArray.length - i);
+                        if (remainingCharLength < 6) break;
+                        else {
+                            hexBuilder.append("#");
+                            for (int increment = 0; ++increment < 7; )
+                                hexBuilder.append(charArray[i + increment]);
+
+                            try {
+                                Integer.parseInt(hexBuilder.toString().substring(1));
+                                hexToReplace.add(hexBuilder.toString());
+                            } catch (NumberFormatException ignored) {}
+                            hexBuilder.setLength(0);
+                        }
+                    }
+                }
+
+                if (!hexToReplace.isEmpty()) {
+                    for (String hex : hexToReplace) {
+                        messageCopy = messageCopy.replace(hex, net.md_5.bungee.api.ChatColor.of(hex).toString());
+                    }
+                }
+            }
+        }
+
+        return ChatColor.translateAlternateColorCodes('&', messageCopy);
     }
 
     /**
