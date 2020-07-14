@@ -287,7 +287,8 @@ public class Manager {
                     cd = cooldownIds.get(cooldownId);
             }
 
-        return (cd > 0) ? ((cd / 1000) + cooldown) - (System.currentTimeMillis() / 1000) : 0;
+        final long calculated = ((cd / 1000) + cooldown) - (System.currentTimeMillis() / 1000);
+        return (cd > 0) ? Math.max(calculated, 0) : 0;
     }
 
     /**
@@ -299,6 +300,8 @@ public class Manager {
     public Portal getPortalAtLocation(Location location) {
         for (int i = -1; ++i < getPortals().size(); ) {
             Portal portal = getPortals().get(i);
+            if (portal == null || portal.getRegion() == null) continue;
+
             if (portal.getRegion().isInRegion(location))
                 return portal;
         }

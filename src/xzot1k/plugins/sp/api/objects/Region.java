@@ -27,6 +27,7 @@ public class Region {
     }
 
     public boolean isInRegion(Location location) {
+        if (getPoint1() == null || getPoint2() == null) return false;
         Location point1 = getPoint1().asBukkitLocation(), point2 = getPoint2().asBukkitLocation();
 
         if (Objects.requireNonNull(point1.getWorld()).getName().equalsIgnoreCase(Objects.requireNonNull(location.getWorld()).getName()) && Objects.requireNonNull(point2.getWorld()).getName().equalsIgnoreCase(location.getWorld().getName()))
