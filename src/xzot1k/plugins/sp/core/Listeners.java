@@ -91,8 +91,8 @@ public class Listeners implements Listener {
                 final boolean canBypassCooldown = e.getPlayer().hasPermission("simpleportals.cdbypass"),
                         cooldownFail = (pluginInstance.getConfig().getBoolean("use-portal-cooldown") && (pluginInstance.getManager().isPlayerOnCooldown(e.getPlayer(), "normal", pluginInstance.getConfig().getInt("portal-cooldown-duration"))
                                 || pluginInstance.getManager().isPlayerOnCooldown(e.getPlayer(), "join-protection", pluginInstance.getConfig().getInt("join-protection-cooldown"))) && !canBypassCooldown),
-                        permissionFail = !pluginInstance.getConfig().getBoolean("bypass-portal-permissions") && !(e.getPlayer().hasPermission("simpleportals.portal." + portal.getPortalId())
-                                || e.getPlayer().hasPermission("simpleportals.portals." + portal.getPortalId()) || e.getPlayer().hasPermission("simpleportals.portal.*") || e.getPlayer().hasPermission("simpleportals.portals.*"));
+                        permissionFail = !pluginInstance.getConfig().getBoolean("bypass-portal-permissions") && (!e.getPlayer().hasPermission("simpleportals.portal." + portal.getPortalId())
+                                && !e.getPlayer().hasPermission("simpleportals.portals." + portal.getPortalId()) && !e.getPlayer().hasPermission("simpleportals.portal.*") && !e.getPlayer().hasPermission("simpleportals.portals.*"));
                 if (cooldownFail || permissionFail) {
                     double tv = pluginInstance.getConfig().getDouble("throw-velocity");
                     if (!(tv <= -1))

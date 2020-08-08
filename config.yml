@@ -7,7 +7,7 @@ reload-plugin-timer: true
 # If this is enabled when the player is teleport they will keep their current Yaw and Pitch.
 keep-teleport-head-axis: false
 # If this is enabled, all players will be able to use all portals.
-bypass-portal-permissions: false
+bypass-portal-permissions: true
 # If this is enabled, the player can teleport through portals with vehicles, such as Horses and Boats.
 vehicle-teleportation: true
 # IF this is enabled, portal usage for creative mode players will be blocked entirely.
