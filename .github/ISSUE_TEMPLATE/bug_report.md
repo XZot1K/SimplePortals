@@ -26,11 +26,5 @@ If applicable, add screenshots, GIFs, or videos to help explain your problem.
  - Version: [e.g. Paper Spigot 1.16.2 (Latest Build)]
  - Plugins: [e.g. Essentials, HyperDrive, Vault, etc.]
 
-**Verification (REQUIRED - Only one is required):**
- - Spigot: [Username]
- - Mc-Market: [Username]
- - Songoda: [Username]
- - Version [e.g. 22]
-
 **Additional context**
 Add any other context about the issue/bug here.
