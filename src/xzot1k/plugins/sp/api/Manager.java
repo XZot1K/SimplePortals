@@ -153,8 +153,7 @@ public class Manager {
                 && !pluginInstance.getServerVersion().startsWith("v1_11") && !pluginInstance.getServerVersion().startsWith("v1_10")
                 && !pluginInstance.getServerVersion().startsWith("v1_9") && !pluginInstance.getServerVersion().startsWith("v1_8"))
                 && messageCopy.contains("#")) {
-            if (pluginInstance.isPrismaInstalled())
-                messageCopy = ColorProvider.translatePrisma(messageCopy);
+            if (pluginInstance.isPrismaInstalled()) messageCopy = ColorProvider.translatePrisma(messageCopy);
             else {
                 try {
                     final Pattern hexPattern = Pattern.compile("\\{#([A-Fa-f0-9]){6}}");
@@ -547,16 +546,12 @@ public class Manager {
                 String materialName = yaml.getString(portalId + ".last-fill-material");
                 portalMaterialCheckHelper(portal, materialName);
 
-                ConfigurationSection portalSection = yaml.getConfigurationSection(portalId);
-                if (portalSection == null) continue;
-                Collection<String> keys = portalSection.getKeys(false);
-                if (keys.isEmpty()) continue;
-
-                if (keys.contains("disabled")) portal.setDisabled(yaml.getBoolean(portalId + ".disabled"));
-                if (keys.contains("message")) portal.setMessage(yaml.getString(portalId + ".message"));
-                if (keys.contains("title")) portal.setMessage(yaml.getString(portalId + ".title"));
-                if (keys.contains("sub-title")) portal.setMessage(yaml.getString(portalId + ".sub-title"));
-                if (keys.contains("bar-message")) portal.setMessage(yaml.getString(portalId + ".bar-message"));
+                if (yaml.contains(portalId + ".disabled")) portal.setDisabled(yaml.getBoolean(portalId + ".disabled"));
+                if (yaml.contains(portalId + ".message")) portal.setMessage(yaml.getString(portalId + ".message"));
+                if (yaml.contains(portalId + ".title")) portal.setTitle(yaml.getString(portalId + ".title"));
+                if (yaml.contains(portalId + ".sub-title")) portal.setSubTitle(yaml.getString(portalId + ".sub-title"));
+                if (yaml.contains(portalId + ".bar-message"))
+                    portal.setBarMessage(yaml.getString(portalId + ".bar-message"));
             } catch (Exception ignored) {
                 pluginInstance.log(Level.WARNING,
                         "The portal " + portalId + " was unable to be loaded. Please check its information in the portals.yml. "

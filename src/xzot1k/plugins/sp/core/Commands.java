@@ -642,15 +642,15 @@ public class Commands implements CommandExecutor {
 
             if (page < getHelpPageMap().size() && page > 1) {
                 // page is both below the max page and above 1
-                TextComponent footerMessage1 = new TextComponent("&e&m-------&r&d["),
-                        footerExtra1 = new TextComponent(" &b(Previous Page)"),
-                        footerExtra2 = new TextComponent(" &b(Next Page) "),
-                        footerEnd = new TextComponent("&d]&e&m--------\n");
+                TextComponent footerMessage1 = new TextComponent(pluginInstance.getManager().colorText("&e&m-------&r&d[")),
+                        footerExtra1 = new TextComponent(pluginInstance.getManager().colorText(" &b(Previous Page)")),
+                        footerExtra2 = new TextComponent(pluginInstance.getManager().colorText(" &b(Next Page) ")),
+                        footerEnd = new TextComponent(pluginInstance.getManager().colorText("&d]&e&m--------\n"));
 
                 footerExtra1.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/portals help " + (page - 1)));
-                footerExtra1.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[]{new TextComponent("&aClicking this will open the help menu at page &e" + (page - 1) + "&a.")}));
+                footerExtra1.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[]{new TextComponent(pluginInstance.getManager().colorText("&aClicking this will open the help menu at page &e" + (page - 1) + "&a."))}));
                 footerExtra2.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/portals help " + (page + 1)));
-                footerExtra2.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[]{new TextComponent("&aClicking this will open the help menu at page &e" + (page + 1) + "&a.")}));
+                footerExtra2.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[]{new TextComponent(pluginInstance.getManager().colorText("&aClicking this will open the help menu at page &e" + (page + 1) + "&a."))}));
 
                 footerMessage1.addExtra(footerExtra1);
                 footerMessage1.addExtra(footerExtra2);
@@ -659,24 +659,24 @@ public class Commands implements CommandExecutor {
                 player.spigot().sendMessage(footerMessage1);
             } else if (page < getHelpPageMap().size() && page <= 1) {
                 // page is less than or = to 1
-                TextComponent footerMessage = new TextComponent("&e&m---------------&r&d["),
-                        footerExtra = new TextComponent(" &b(Next Page) "),
-                        footerEnd = new TextComponent("&d]&e&m---------------\n");
+                TextComponent footerMessage = new TextComponent(pluginInstance.getManager().colorText("&e&m---------------&r&d[")),
+                        footerExtra = new TextComponent(pluginInstance.getManager().colorText(" &b(Next Page) ")),
+                        footerEnd = new TextComponent(pluginInstance.getManager().colorText("&d]&e&m---------------\n"));
 
                 footerExtra.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/portals help " + (page + 1)));
-                footerExtra.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[]{new TextComponent("&aClicking this will open the help menu at page &e" + (page + 1) + "&a.")}));
+                footerExtra.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[]{new TextComponent(pluginInstance.getManager().colorText("&aClicking this will open the help menu at page &e" + (page + 1) + "&a."))}));
                 footerMessage.addExtra(footerExtra);
                 footerMessage.addExtra(footerEnd);
 
                 player.spigot().sendMessage(footerMessage);
             } else if (page >= getHelpPageMap().size() && page > 1) {
                 // page at/above max page and greater that 1
-                TextComponent footerMessage = new TextComponent("&d[&e&m------------&r&d]"),
-                        footerExtra = new TextComponent(" &b(Previous Page) "),
-                        footerEnd = new TextComponent("&d]&e&m-------------\n");
+                TextComponent footerMessage = new TextComponent(pluginInstance.getManager().colorText("&d[&e&m------------&r&d]")),
+                        footerExtra = new TextComponent(pluginInstance.getManager().colorText(" &b(Previous Page) ")),
+                        footerEnd = new TextComponent(pluginInstance.getManager().colorText("&d]&e&m-------------\n"));
 
                 footerExtra.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/portals help " + (page - 1)));
-                footerExtra.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[]{new TextComponent("&aClicking this will open the help menu at page &e" + (page - 1) + "&a.")}));
+                footerExtra.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[]{new TextComponent(pluginInstance.getManager().colorText("&aClicking this will open the help menu at page &e" + (page - 1) + "&a."))}));
                 footerMessage.addExtra(footerExtra);
                 footerMessage.addExtra(footerEnd);
 
