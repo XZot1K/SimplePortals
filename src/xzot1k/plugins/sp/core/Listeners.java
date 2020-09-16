@@ -22,7 +22,6 @@ import xzot1k.plugins.sp.api.objects.Portal;
 import xzot1k.plugins.sp.api.objects.SerializableLocation;
 
 import java.util.List;
-import java.util.Objects;
 
 public class Listeners implements Listener {
 
@@ -81,9 +80,15 @@ public class Listeners implements Listener {
 
     @EventHandler
     public void onMove(PlayerMoveEvent e) {
-        if (e.getFrom().getBlockX() != Objects.requireNonNull(e.getTo()).getBlockX() || e.getFrom().getBlockY() != e.getTo().getBlockY() || e.getFrom().getBlockZ() != e.getTo().getBlockZ()) {
+        if (e.getTo() == null) return;
+        if (e.getFrom().getBlockX() != e.getTo().getBlockX() || e.getFrom().getBlockY() != e.getTo().getBlockY() || e.getFrom().getBlockZ() != e.getTo().getBlockZ()) {
             Portal portal = pluginInstance.getManager().getPortalAtLocation(e.getTo());
             if (portal != null && !portal.isDisabled()) {
+
+                if (pluginInstance.getManager().getPortalLinkMap().containsKey(e.getPlayer().getUniqueId()) && pluginInstance.getManager().getPortalLinkMap().get(e.getPlayer().getUniqueId()).equalsIgnoreCase(portal.getPortalId()))
+                    return;
+                else pluginInstance.getManager().getPortalLinkMap().remove(e.getPlayer().getUniqueId());
+
                 PortalEnterEvent portalEnterEvent = new PortalEnterEvent(e.getPlayer(), portal, e.getFrom(), portal.getTeleportLocation().asBukkitLocation());
                 pluginInstance.getServer().getPluginManager().callEvent(portalEnterEvent);
                 if (portalEnterEvent.isCancelled()) return;
@@ -128,27 +133,43 @@ public class Listeners implements Listener {
                         }
                     }
 
-                    String message = pluginInstance.getLangConfig().getString("portal-message");
-                    if (message != null && !message.equalsIgnoreCase(""))
-                        e.getPlayer().sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix") + message
-                                .replace("{name}", portal.getPortalId())
-                                .replace("{time}", String.valueOf(pluginInstance.getManager().getCooldownTimeLeft(e.getPlayer(),
-                                        "normal", pluginInstance.getConfig().getInt("portal-cooldown-duration"))))));
+                    if (portal.getMessage() != null && !portal.getMessage().isEmpty())
+                        e.getPlayer().sendMessage(pluginInstance.getManager().colorText(portal.getMessage().replace("{name}", portal.getPortalId())
+                                .replace("{time}", String.valueOf(pluginInstance.getManager().getCooldownTimeLeft(e.getPlayer(), "normal", pluginInstance.getConfig().getInt("portal-cooldown-duration"))))));
+
+                    if (portal.getBarMessage() != null && !portal.getBarMessage().isEmpty())
+                        pluginInstance.getManager().sendBarMessage(e.getPlayer(), portal.getBarMessage().replace("{name}", portal.getPortalId())
+                                .replace("{time}", String.valueOf(pluginInstance.getManager().getCooldownTimeLeft(e.getPlayer(), "normal", pluginInstance.getConfig().getInt("portal-cooldown-duration")))));
+
+                    if ((portal.getTitle() != null && !portal.getTitle().isEmpty()) && (portal.getSubTitle() != null && !portal.getSubTitle().isEmpty()))
+                        pluginInstance.getManager().sendTitle(e.getPlayer(), portal.getTitle().replace("{name}", portal.getPortalId())
+                                        .replace("{time}", String.valueOf(pluginInstance.getManager().getCooldownTimeLeft(e.getPlayer(), "normal", pluginInstance.getConfig().getInt("portal-cooldown-duration")))),
+                                portal.getSubTitle().replace("{name}", portal.getPortalId())
+                                        .replace("{time}", String.valueOf(pluginInstance.getManager().getCooldownTimeLeft(e.getPlayer(), "normal", pluginInstance.getConfig().getInt("portal-cooldown-duration")))));
+                    else if (portal.getTitle() != null && !portal.getTitle().isEmpty())
+                        pluginInstance.getManager().sendTitle(e.getPlayer(), portal.getTitle().replace("{name}", portal.getPortalId())
+                                .replace("{time}", String.valueOf(pluginInstance.getManager().getCooldownTimeLeft(e.getPlayer(), "normal", pluginInstance.getConfig().getInt("portal-cooldown-duration")))), null);
+                    else if (portal.getSubTitle() != null && !portal.getSubTitle().isEmpty())
+                        pluginInstance.getManager().sendTitle(e.getPlayer(), null, portal.getSubTitle().replace("{name}", portal.getPortalId())
+                                .replace("{time}", String.valueOf(pluginInstance.getManager().getCooldownTimeLeft(e.getPlayer(), "normal", pluginInstance.getConfig().getInt("portal-cooldown-duration")))));
 
                     portal.performAction(e.getPlayer());
                 }
             } else {
+                pluginInstance.getManager().getPortalLinkMap().remove(e.getPlayer().getUniqueId());
                 if (!pluginInstance.getManager().getSmartTransferMap().isEmpty() && pluginInstance.getManager().getSmartTransferMap().containsKey(e.getPlayer().getUniqueId())) {
                     SerializableLocation serializableLocation = pluginInstance.getManager().getSmartTransferMap().get(e.getPlayer().getUniqueId());
                     if (serializableLocation != null) {
                         Location location = e.getPlayer().getLocation();
-                        serializableLocation.setWorldName(Objects.requireNonNull(location.getWorld()).getName());
-                        serializableLocation.setX(location.getX());
-                        serializableLocation.setY(location.getY());
-                        serializableLocation.setZ(location.getZ());
-                        serializableLocation.setYaw(location.getYaw());
-                        serializableLocation.setPitch(location.getPitch());
-                        return;
+                        if (location.getWorld() != null) {
+                            serializableLocation.setWorldName(location.getWorld().getName());
+                            serializableLocation.setX(location.getX());
+                            serializableLocation.setY(location.getY());
+                            serializableLocation.setZ(location.getZ());
+                            serializableLocation.setYaw(location.getYaw());
+                            serializableLocation.setPitch(location.getPitch());
+                            return;
+                        }
                     }
                 }
 

@@ -33,7 +33,7 @@ public class Portal {
     private final SimplePortals pluginInstance;
     private Region region;
     private SerializableLocation teleportLocation;
-    private String portalId, serverSwitchName;
+    private String portalId, serverSwitchName, message, title, subTitle, barMessage;
     private boolean commandsOnly, disabled;
     private List<String> commands;
     private Material lastFillMaterial;
@@ -48,6 +48,10 @@ public class Portal {
         setLastFillMaterial(Material.AIR);
         if (getRegion() != null && getRegion().getPoint1() != null)
             setTeleportLocation(getRegion().getPoint1().asBukkitLocation().clone().add(0, 2, 0));
+        setMessage(pluginInstance.getLangConfig().getString("portal-message"));
+        setTitle(pluginInstance.getLangConfig().getString("portal-title-message"));
+        setSubTitle(pluginInstance.getLangConfig().getString("portal-subtitle-message"));
+        setBarMessage(pluginInstance.getLangConfig().getString("portal-bar-message"));
     }
 
     /**
@@ -125,6 +129,10 @@ public class Portal {
             yaml.set(getPortalId() + ".commands-only", isCommandsOnly());
             yaml.set(getPortalId() + ".commands", getCommands());
             yaml.set(getPortalId() + ".disabled", isDisabled());
+            yaml.set(getPortalId() + ".message", getMessage());
+            yaml.set(getPortalId() + ".title", getTitle());
+            yaml.set(getPortalId() + ".sub-title", getSubTitle());
+            yaml.set(getPortalId() + ".bar-message", getBarMessage());
 
             yaml.save(file);
         } catch (IOException e) {
@@ -205,6 +213,7 @@ public class Portal {
                 }
 
                 pluginInstance.getManager().teleportPlayerWithEntity(player, location);
+                pluginInstance.getManager().getPortalLinkMap().put(player.getUniqueId(), getPortalId());
             }
         } else {
             if ((!pluginInstance.getManager().getSmartTransferMap().isEmpty()
@@ -240,6 +249,7 @@ public class Portal {
                 }
 
                 pluginInstance.getManager().teleportPlayerWithEntity(player, serializableLocation.asBukkitLocation());
+                pluginInstance.getManager().getPortalLinkMap().put(player.getUniqueId(), getPortalId());
             }
 
             pluginInstance.getManager().switchServer(player, getServerSwitchName());
@@ -457,5 +467,37 @@ public class Portal {
 
     public void setLastFillMaterial(Material lastFillMaterial) {
         this.lastFillMaterial = lastFillMaterial;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getSubTitle() {
+        return subTitle;
+    }
+
+    public void setSubTitle(String subTitle) {
+        this.subTitle = subTitle;
+    }
+
+    public String getBarMessage() {
+        return barMessage;
+    }
+
+    public void setBarMessage(String barMessage) {
+        this.barMessage = barMessage;
     }
 }

@@ -5,7 +5,6 @@
 package xzot1k.plugins.sp.api;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -24,11 +23,14 @@ import xzot1k.plugins.sp.api.objects.Portal;
 import xzot1k.plugins.sp.api.objects.Region;
 import xzot1k.plugins.sp.api.objects.SerializableLocation;
 import xzot1k.plugins.sp.core.objects.TaskHolder;
+import xzot1k.plugins.sp.core.packets.bar.*;
 import xzot1k.plugins.sp.core.packets.particles.ParticleHandler;
 import xzot1k.plugins.sp.core.packets.particles.versions.PH1_8R1;
 import xzot1k.plugins.sp.core.packets.particles.versions.PH1_8R2;
 import xzot1k.plugins.sp.core.packets.particles.versions.PH1_8R3;
 import xzot1k.plugins.sp.core.packets.particles.versions.PH_Latest;
+import xzot1k.plugins.sp.core.packets.titles.TitleHandler;
+import xzot1k.plugins.sp.core.packets.titles.versions.*;
 import xzot1k.plugins.sp.core.tasks.HighlightTask;
 
 import java.io.ByteArrayOutputStream;
@@ -36,6 +38,8 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.util.*;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Manager {
     private final SimplePortals pluginInstance;
@@ -45,9 +49,12 @@ public class Manager {
     private final List<Portal> portals;
     private final HashMap<UUID, TaskHolder> visualTasks;
     private final HashMap<UUID, SerializableLocation> smartTransferMap;
+    private final HashMap<UUID, String> portalLinkMap;
 
     private Random random;
     private ParticleHandler particleHandler;
+    private TitleHandler titleHandler;
+    private BarHandler barHandler;
 
     public Manager(SimplePortals pluginInstance) {
         this.pluginInstance = pluginInstance;
@@ -57,6 +64,7 @@ public class Manager {
         visualTasks = new HashMap<>();
         portals = new ArrayList<>();
         smartTransferMap = new HashMap<>();
+        portalLinkMap = new HashMap<>();
 
         setRandom(new Random());
         setupPackets();
@@ -65,19 +73,44 @@ public class Manager {
     private void setupPackets() {
         try {
             switch (pluginInstance.getServerVersion()) {
+                case "v1_12_R1":
+                    titleHandler = new Titles1_12R1();
+                    break;
+                case "v1_11_R1":
+                    titleHandler = new Titles1_11R1();
+                    break;
+                case "v1_10_R1":
+                    titleHandler = new Titles1_10R1();
+                    break;
+                case "v1_9_R2":
+                    titleHandler = new Titles1_9R2();
+                    break;
+                case "v1_9_R1":
+                    titleHandler = new Titles1_9R1();
+                    barHandler = new ABH1_9R1();
+                    break;
                 case "v1_8_R3":
+                    titleHandler = new Titles1_8R3();
                     particleHandler = new PH1_8R3(pluginInstance);
+                    barHandler = new ABH1_8R3();
                     break;
                 case "v1_8_R2":
+                    titleHandler = new Titles1_8R2();
                     particleHandler = new PH1_8R2(pluginInstance);
+                    barHandler = new ABH1_8R2();
                     break;
                 case "v1_8_R1":
+                    titleHandler = new Titles1_8R1();
                     particleHandler = new PH1_8R1(pluginInstance);
+                    barHandler = new ABH1_8R1();
                     break;
                 default:
-                    particleHandler = new PH_Latest();
                     break;
             }
+
+            if (getParticleHandler() == null) particleHandler = new PH_Latest();
+            if (getBarHandler() == null) barHandler = new ABH_Latest();
+            if (getTitleHandler() == null) titleHandler = new Titles_Latest();
 
             pluginInstance.log(Level.INFO, "Packets have been setup for " + pluginInstance.getServerVersion() + "!");
         } catch (Exception e) {
@@ -115,41 +148,43 @@ public class Manager {
      */
     public String colorText(String message) {
         String messageCopy = message;
-        if (pluginInstance.getServerVersion().startsWith("v1_16") && messageCopy.contains("#")) {
-            if (pluginInstance.isPrismaInstalled()) messageCopy = ColorProvider.translatePrisma(messageCopy);
+        if ((!pluginInstance.getServerVersion().startsWith("v1_15") && !pluginInstance.getServerVersion().startsWith("v1_14")
+                && !pluginInstance.getServerVersion().startsWith("v1_13") && !pluginInstance.getServerVersion().startsWith("v1_12")
+                && !pluginInstance.getServerVersion().startsWith("v1_11") && !pluginInstance.getServerVersion().startsWith("v1_10")
+                && !pluginInstance.getServerVersion().startsWith("v1_9") && !pluginInstance.getServerVersion().startsWith("v1_8"))
+                && messageCopy.contains("#")) {
+            if (pluginInstance.isPrismaInstalled())
+                messageCopy = ColorProvider.translatePrisma(messageCopy);
             else {
-                final List<String> hexToReplace = new ArrayList<>();
-                final char[] charArray = messageCopy.toCharArray();
-
-                StringBuilder hexBuilder = new StringBuilder();
-                for (int i = -1; ++i < charArray.length; ) {
-                    final char currentChar = charArray[i];
-                    if (currentChar == '#') {
-                        final int remainingCharLength = (charArray.length - i);
-                        if (remainingCharLength < 6) break;
-                        else {
-                            hexBuilder.append("#");
-                            for (int increment = 0; ++increment < 7; )
-                                hexBuilder.append(charArray[i + increment]);
-
-                            try {
-                                Integer.parseInt(hexBuilder.toString().substring(1));
-                                hexToReplace.add(hexBuilder.toString());
-                            } catch (NumberFormatException ignored) {}
-                            hexBuilder.setLength(0);
-                        }
+                try {
+                    final Pattern hexPattern = Pattern.compile("\\{#([A-Fa-f0-9]){6}}");
+                    Matcher matcher = hexPattern.matcher(message);
+                    while (matcher.find()) {
+                        final net.md_5.bungee.api.ChatColor hex = net.md_5.bungee.api.ChatColor.of(matcher.group().substring(1, matcher.group().length() - 1));
+                        final String pre = message.substring(0, matcher.start()), post = message.substring(matcher.end());
+                        matcher = hexPattern.matcher(message = (pre + hex + post));
                     }
-                }
-
-                if (!hexToReplace.isEmpty()) {
-                    for (String hex : hexToReplace) {
-                        messageCopy = messageCopy.replace(hex, net.md_5.bungee.api.ChatColor.of(hex).toString());
-                    }
-                }
+                } catch (IllegalArgumentException ignored) {}
+                return net.md_5.bungee.api.ChatColor.translateAlternateColorCodes('&', message);
             }
         }
 
-        return ChatColor.translateAlternateColorCodes('&', messageCopy);
+        return net.md_5.bungee.api.ChatColor.translateAlternateColorCodes('&', messageCopy);
+    }
+
+    public void sendBarMessage(Player player, String message) {
+        if (getBarHandler() == null || message == null || message.isEmpty()) return;
+        getBarHandler().sendActionBar(player, message);
+    }
+
+    public void sendTitle(Player player, String title, String subTitle) {
+        if (getTitleHandler() == null || ((title == null || title.isEmpty()) && (subTitle == null || subTitle.isEmpty())))
+            return;
+
+        if (title != null && !title.isEmpty() && subTitle != null && !subTitle.isEmpty())
+            getTitleHandler().sendTitle(player, title, subTitle, 0, 10, 0);
+        else if (title != null && !title.isEmpty()) getTitleHandler().sendTitle(player, title, 0, 10, 0);
+        else if (subTitle != null && !subTitle.isEmpty()) getTitleHandler().sendSubTitle(player, subTitle, 0, 10, 0);
     }
 
     /**
@@ -518,6 +553,10 @@ public class Manager {
                 if (keys.isEmpty()) continue;
 
                 if (keys.contains("disabled")) portal.setDisabled(yaml.getBoolean(portalId + ".disabled"));
+                if (keys.contains("message")) portal.setMessage(yaml.getString(portalId + ".message"));
+                if (keys.contains("title")) portal.setMessage(yaml.getString(portalId + ".title"));
+                if (keys.contains("sub-title")) portal.setMessage(yaml.getString(portalId + ".sub-title"));
+                if (keys.contains("bar-message")) portal.setMessage(yaml.getString(portalId + ".bar-message"));
             } catch (Exception ignored) {
                 pluginInstance.log(Level.WARNING,
                         "The portal " + portalId + " was unable to be loaded. Please check its information in the portals.yml. "
@@ -630,5 +669,17 @@ public class Manager {
 
     private void setRandom(Random random) {
         this.random = random;
+    }
+
+    public TitleHandler getTitleHandler() {
+        return titleHandler;
+    }
+
+    public BarHandler getBarHandler() {
+        return barHandler;
+    }
+
+    public HashMap<UUID, String> getPortalLinkMap() {
+        return portalLinkMap;
     }
 }

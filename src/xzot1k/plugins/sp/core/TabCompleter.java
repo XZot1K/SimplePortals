@@ -45,8 +45,9 @@ public class TabCompleter implements org.bukkit.command.TabCompleter {
                 values.add("enable");
                 values.add("disable");
 
-            } else if (args.length == 2) for (int i = -1; ++i < getPluginInstance().getManager().getPortals().size(); )
-                values.add(getPluginInstance().getManager().getPortals().get(i).getPortalId());
+            } else if (args.length == 2 || (args.length == 3 && (args[0].equalsIgnoreCase("setlocation") || args[0].equalsIgnoreCase("sl"))))
+                for (int i = -1; ++i < getPluginInstance().getManager().getPortals().size(); )
+                    values.add(getPluginInstance().getManager().getPortals().get(i).getPortalId());
             else if (args.length == 3) {
                 int colonCount = 0;
                 for (char character : args[2].toCharArray()) if (character == ':') colonCount++;
@@ -54,6 +55,17 @@ public class TabCompleter implements org.bukkit.command.TabCompleter {
                 if (colonCount == 1) for (PortalCommandType portalCommandType : PortalCommandType.values())
                     values.add(portalCommandType.name());
                 else if (colonCount == 2) for (int i = 0; ++i < 100; )
+                    values.add(String.valueOf(i));
+            } else if (args.length == 4 && (args[0].equalsIgnoreCase("setlocation") || args[0].equalsIgnoreCase("sl"))) {
+                int colonCount = 0;
+                for (char character : args[2].toCharArray()) if (character == ':') colonCount++;
+
+                if (colonCount == 1) {
+                    values.add("BAR");
+                    values.add("TITLE");
+                    values.add("SUBTITLE");
+                    values.add("NORMAL");
+                } else if (colonCount == 2) for (int i = 0; ++i < 100; )
                     values.add(String.valueOf(i));
             }
 

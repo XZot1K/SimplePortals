@@ -8,7 +8,9 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -16,6 +18,7 @@ import org.bukkit.entity.Player;
 import xzot1k.plugins.sp.SimplePortals;
 import xzot1k.plugins.sp.api.objects.Portal;
 import xzot1k.plugins.sp.api.objects.Region;
+import xzot1k.plugins.sp.api.objects.SerializableLocation;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,6 +42,9 @@ public class Commands implements CommandExecutor {
 
             if (args.length >= 3 && (args[0].equalsIgnoreCase("addcommand") || args[0].equalsIgnoreCase("addcmd"))) {
                 addCommand(sender, args);
+                return true;
+            } else if (args.length >= 3 && (args[0].equalsIgnoreCase("message"))) {
+                setMessage(sender, args);
                 return true;
             }
 
@@ -99,6 +105,9 @@ public class Commands implements CommandExecutor {
                         return true;
                     } else if (args[0].equalsIgnoreCase("fill")) {
                         initiateFill(sender, args[1], args[2]);
+                        return true;
+                    } else if (args[0].equalsIgnoreCase("setlocation") || args[0].equalsIgnoreCase("sl")) {
+                        initiatePortalLocationSet(sender, args[1], args[2]);
                         return true;
                     }
 
@@ -202,6 +211,42 @@ public class Commands implements CommandExecutor {
                 + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-filled-message")).replace("{name}", portal.getPortalId()).replace("{material}", material.name())));
     }
 
+    private void setMessage(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("simpleportals.message")) {
+            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
+                    + pluginInstance.getLangConfig().getString("no-permission-message")));
+            return;
+        }
+
+        Portal portal = pluginInstance.getManager().getPortalById(args[1]);
+        if (portal == null) {
+            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
+                    + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-invalid-message")).replace("{name}", args[1])));
+            return;
+        }
+
+        StringBuilder enteredMessage = new StringBuilder(args[2]);
+        if (args.length > 3) for (int i = 2; ++i < args.length; ) enteredMessage.append(" ").append(args[i]);
+
+        String foundType = "Normal";
+        final String tempMessage = enteredMessage.toString().toUpperCase(), fixedMessage = enteredMessage.toString().replaceAll("(?i):NORMAL", "")
+                .replaceAll("(?i):BAR", "").replaceAll("(?i):SUBTITLE", "").replaceAll("(?i):TITLE", "");
+        if (tempMessage.endsWith(":BAR")) {
+            portal.setBarMessage(fixedMessage);
+            foundType = "Bar";
+        } else if (tempMessage.endsWith(":TITLE")) {
+            portal.setTitle(fixedMessage);
+            foundType = "Title";
+        } else if (tempMessage.endsWith(":SUBTITLE")) {
+            portal.setSubTitle(fixedMessage);
+            foundType = "Sub-Title";
+        } else portal.setMessage(fixedMessage);
+
+        sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
+                + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-message-set"))
+                .replace("{message}", fixedMessage).replace("{type}", foundType).replace("{name}", portal.getPortalId())));
+    }
+
     private void addCommand(CommandSender sender, String[] args) {
         if (sender instanceof Player) {
             Player player = (Player) sender;
@@ -275,6 +320,70 @@ public class Commands implements CommandExecutor {
                     + pluginInstance.getLangConfig().getString("must-be-player-message")));
     }
 
+    private void initiatePortalLocationSet(CommandSender sender, String portalName) {
+        if (sender instanceof Player) {
+            Player player = (Player) sender;
+            if (!player.hasPermission("simpleportals.setlocation") || !player.hasPermission("simpleportals.sl")) {
+                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
+                        + pluginInstance.getLangConfig().getString("no-permission-message")));
+                return;
+            }
+
+            Portal portal = pluginInstance.getManager().getPortalById(portalName);
+            if (portal != null) {
+                portal.setTeleportLocation(player.getLocation());
+                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
+                        + Objects.requireNonNull(pluginInstance.getLangConfig().getString("location-set-message"))
+                        .replace("{name}", portal.getPortalId())));
+            } else
+                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
+                        + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
+        } else
+            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
+                    + pluginInstance.getLangConfig().getString("must-be-player-message")));
+    }
+
+    private void initiatePortalLocationSet(CommandSender sender, String portalName, String otherPortalName) {
+        if (sender instanceof Player) {
+            Player player = (Player) sender;
+            if (!player.hasPermission("simpleportals.setlocation") || !player.hasPermission("simpleportals.sl")) {
+                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
+                        + pluginInstance.getLangConfig().getString("no-permission-message")));
+                return;
+            }
+
+            Portal portal = pluginInstance.getManager().getPortalById(portalName);
+            if (portal != null) {
+
+                Portal foundPortal = pluginInstance.getManager().getPortalById(otherPortalName);
+                if (foundPortal == null) {
+                    player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
+                            + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-invalid-message")).replace("{name}", otherPortalName)));
+                    return;
+                }
+
+                SerializableLocation foundPointOne = foundPortal.getRegion().getPoint1(), foundPointTwo = foundPortal.getRegion().getPoint2();
+                final int x = (int) ((foundPointOne.getX() + foundPointTwo.getX()) / 2), y = (int) ((foundPointOne.getY() + foundPointTwo.getY()) / 2), z = (int) ((foundPointOne.getZ() + foundPointTwo.getZ()) / 2);
+
+                World world = pluginInstance.getServer().getWorld(foundPointOne.getWorldName());
+                if (world == null) {
+                    player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
+                            + Objects.requireNonNull(pluginInstance.getLangConfig().getString("world-invalid-message")).replace("{name}", foundPointOne.getWorldName())));
+                    return;
+                }
+
+                portal.setTeleportLocation(new Location(world, x + 0.5, y + 0.5, z + 0.5, player.getLocation().getYaw(), player.getLocation().getPitch()));
+                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
+                        + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-link-message"))
+                        .replace("{name}", portal.getPortalId()).replace("{other}", foundPortal.getPortalId())));
+            } else
+                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
+                        + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
+        } else
+            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
+                    + pluginInstance.getLangConfig().getString("must-be-player-message")));
+    }
+
     private void initiateRelocate(CommandSender sender, String portalName) {
         if (sender instanceof Player) {
             Player player = (Player) sender;
@@ -320,29 +429,6 @@ public class Commands implements CommandExecutor {
                 portal.displayRegion(player);
                 player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
                         + Objects.requireNonNull(pluginInstance.getLangConfig().getString("region-displayed-message")).replace("{name}", portal.getPortalId())));
-            } else
-                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                        + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
-        } else
-            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                    + pluginInstance.getLangConfig().getString("must-be-player-message")));
-    }
-
-    private void initiatePortalLocationSet(CommandSender sender, String portalName) {
-        if (sender instanceof Player) {
-            Player player = (Player) sender;
-            if (!player.hasPermission("simpleportals.setlocation") || !player.hasPermission("simpleportals.sl")) {
-                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                        + pluginInstance.getLangConfig().getString("no-permission-message")));
-                return;
-            }
-
-            Portal portal = pluginInstance.getManager().getPortalById(portalName);
-            if (portal != null) {
-                portal.setTeleportLocation(player.getLocation());
-                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                        + Objects.requireNonNull(pluginInstance.getLangConfig().getString("location-set-message"))
-                        .replace("{name}", portal.getPortalId())));
             } else
                 player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
                         + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
@@ -510,21 +596,23 @@ public class Commands implements CommandExecutor {
         page1Lines.add("&e/portals <switchserver/ss> <name> <server> &7- sets the server for the portal.");
         page1Lines.add("&e/portals <showregion/sr> <name> &7- shows the portal's current region.");
         page1Lines.add("&e/portals <setlocation/sl> <name> &7- sets the portal's teleport location.");
+        page1Lines.add("&e/portals <setlocation/sl> <name> <name> &7- sets the portal's teleport location to the center of the entered portal.");
         page1Lines.add("&e/portals info &7- shows plugin information.");
-        page1Lines.add("&e/portals create <name> &7- creates a new portal.");
         getHelpPageMap().put(1, page1Lines);
 
+        page2Lines.add("&e/portals create <name> &7- creates a new portal.");
         page2Lines.add("&e/portals delete <name> &7- deletes the given portal.");
         page2Lines.add("&e/portals list &7- shows all available portals.");
         page2Lines.add("&e/portals fill <name> <material:durability> &7- replaces air inside the portals region.");
         page2Lines.add("&e/portals relocate <name> &7- relocates the portal to a selected region.");
         page2Lines.add("&e/portals <addcommand/addcmd> <name> <command> &7- adds the entered command line to the portal's command list.");
         page2Lines.add("&e/portals <clearcommands/clearcmds> <name> &7- clears all commands from the specified portal.");
-        page2Lines.add("&e/portals <togglecommandonly/tco> <name> &7- toggles command only mode for a portal.");
         getHelpPageMap().put(2, page2Lines);
 
+        page3Lines.add("&e/portals <togglecommandonly/tco> <name> &7- toggles command only mode for a portal.");
         page3Lines.add("&e/portals <commands/cmds> <name> &7- provides a list of all commands on the defined warp in the order they were added.");
         page3Lines.add("&e/portals <enable/disable> <name> &7- enables/disabled the portal entirely untiled toggled again.");
+        page3Lines.add("&e/portals message <name> <text> &7- sets the message of the portal to the entered text. Refer to documentation for message types.");
         getHelpPageMap().put(3, page3Lines);
     }
 
