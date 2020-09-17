@@ -19,6 +19,13 @@ creature-spawning-blacklist:
   - "TROPICAL_FISH"
   - "DOLPHIN"
 
+# These define how titles are sent and their durations.
+# (Note: Effects both sub-titles and normal titles.)
+titles:
+  fade-in: 0
+  fade-out: 0
+  display-time: 5
+
 # Should players have a cooldown for portal usage?
 use-portal-cooldown: true
 # If this option is enabled, players who join the server will automatically be placed on portal cooldown

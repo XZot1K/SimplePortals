@@ -572,7 +572,7 @@ public class Commands implements CommandExecutor {
         if (sender instanceof Player) {
             Player player = (Player) sender;
 
-            if (!player.hasPermission("simpleportals.selectionmode") || !player.hasPermission("simpleportals.sm")) {
+            if (!player.hasPermission("simpleportals.selectionmode") && !player.hasPermission("simpleportals.sm")) {
                 player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
                         + pluginInstance.getLangConfig().getString("no-permission-message")));
                 return;

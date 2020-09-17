@@ -181,9 +181,14 @@ public class Manager {
             return;
 
         if (title != null && !title.isEmpty() && subTitle != null && !subTitle.isEmpty())
-            getTitleHandler().sendTitle(player, title, subTitle, 0, 10, 0);
-        else if (title != null && !title.isEmpty()) getTitleHandler().sendTitle(player, title, 0, 10, 0);
-        else if (subTitle != null && !subTitle.isEmpty()) getTitleHandler().sendSubTitle(player, subTitle, 0, 10, 0);
+            getTitleHandler().sendTitle(player, title, subTitle, pluginInstance.getConfig().getInt("titles.fade-in"),
+                    pluginInstance.getConfig().getInt("titles.display-time"), pluginInstance.getConfig().getInt("titles.fade-out"));
+        else if (title != null && !title.isEmpty())
+            getTitleHandler().sendTitle(player, title, pluginInstance.getConfig().getInt("titles.fade-in"),
+                    pluginInstance.getConfig().getInt("titles.display-time"), pluginInstance.getConfig().getInt("titles.fade-out"));
+        else if (subTitle != null && !subTitle.isEmpty())
+            getTitleHandler().sendSubTitle(player, subTitle, pluginInstance.getConfig().getInt("titles.fade-in"),
+                    pluginInstance.getConfig().getInt("titles.display-time"), pluginInstance.getConfig().getInt("titles.fade-out"));
     }
 
     /**

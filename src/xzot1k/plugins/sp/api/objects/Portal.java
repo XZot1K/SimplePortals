@@ -10,6 +10,7 @@ import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.data.Directional;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -286,46 +287,44 @@ public class Portal {
                 highestZ = (int) Math.max(getRegion().getPoint1().getZ(), getRegion().getPoint2().getZ());
 
         final World world = pluginInstance.getServer().getWorld(getRegion().getPoint1().getWorldName());
-        for (int y = lowestY - 1; ++y <= highestY; )
-            for (int x = lowestX - 1; ++x <= highestX; )
-                for (int z = lowestZ - 1; ++z <= highestZ; ) {
-                    Location location = new Location(world, x, y, z);
-                    if (location.getBlock().getType() == Material.AIR || location.getBlock().getType() == getLastFillMaterial()) {
-                        location.getBlock().setType(material);
-                        if ((pluginInstance.getServerVersion().toLowerCase().startsWith("v1_14") || pluginInstance.getServerVersion().toLowerCase().startsWith("v1_15")
-                                || pluginInstance.getServerVersion().toLowerCase().startsWith("v1_16")) && !pluginInstance.getServerVersion().toLowerCase().startsWith("v1_13")) {
-                            final Block block = location.getBlock();
-                            block.setType(Material.AIR);
-                            block.setType(material);
+        for (int x = lowestX - 1; ++x <= highestX; )
+            for (int z = lowestZ - 1; ++z <= highestZ; )
+                for (int y = lowestY - 1; ++y <= highestY; ) {
+                    final Location location = new Location(world, x, y, z);
+                    final Block block = location.getBlock();
+                    final BlockState blockState = block.getState();
+                    if (block.getType() == Material.AIR || block.getType() == getLastFillMaterial()) {
+                        blockState.setType(material);
 
-                            if ((pluginInstance.getServerVersion().startsWith("v1_12") || pluginInstance.getServerVersion().startsWith("v1_11")
-                                    || pluginInstance.getServerVersion().startsWith("v1_10") || pluginInstance.getServerVersion().startsWith("v1_9")))
+                        if (!pluginInstance.getServerVersion().startsWith("v1_12") && !pluginInstance.getServerVersion().startsWith("v1_11") && !pluginInstance.getServerVersion().startsWith("v1_10")
+                                && !pluginInstance.getServerVersion().startsWith("v1_9") && !pluginInstance.getServerVersion().startsWith("v1_8") && !pluginInstance.getServerVersion().startsWith("v1_7"))
+                            try {
+                                Method method = block.getClass().getMethod("setData", Byte.class);
+                                if (method != null)
+                                    method.invoke(block, (byte) durability);
+                            } catch (Exception ignored) {}
+
+                        if (!pluginInstance.getServerVersion().startsWith("v1_7") && !pluginInstance.getServerVersion().startsWith("v1_8")
+                                && !pluginInstance.getServerVersion().startsWith("v1_9") && !pluginInstance.getServerVersion().startsWith("v1_10")) {
+                            blockState.update(true, false);
+                            blockState.setBlockData(pluginInstance.getServer().createBlockData(material));
+                            setBlock(block, material, BlockFace.valueOf(Direction.getYaw(player).name()));
+                        } else {
+                            if (block instanceof Directional)
                                 try {
-                                    Method method = block.getClass().getMethod("setData", Byte.class);
-                                    if (method != null)
-                                        method.invoke(block, (byte) durability);
-                                } catch (Exception ignored) {}
-
-                            if (pluginInstance.getServerVersion().startsWith("v1_11") || pluginInstance.getServerVersion().startsWith("v1_12")
-                                    || pluginInstance.getServerVersion().startsWith("v1_13") || pluginInstance.getServerVersion().startsWith("v1_14")
-                                    || pluginInstance.getServerVersion().startsWith("v1_15") || pluginInstance.getServerVersion().startsWith("v1_16")) {
-                                block.setBlockData(pluginInstance.getServer().createBlockData(material));
-                                setBlock(block, material, BlockFace.valueOf(Direction.getYaw(player).name()));
-                            } else {
-                                if (block instanceof Directional)
-                                    try {
-                                        Method method = Block.class.getMethod("setData", Byte.class, Boolean.class);
-                                        method.setAccessible(true);
-                                        method.invoke(block, oppositeDirectionByte(Direction.getYaw(player)), true);
-                                    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {
-                                    }
-                                else try {
-                                    Method method = Block.class.getMethod("setData", Byte.class, Boolean.class);
+                                    Method method = BlockState.class.getMethod("setData", Byte.class);
                                     method.setAccessible(true);
-                                    method.invoke(block, block.getData(), true);
+                                    method.invoke(block, oppositeDirectionByte(Direction.getYaw(player)));
                                 } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {
                                 }
+                            else try {
+                                Method method = Block.class.getMethod("setData", Byte.class);
+                                method.setAccessible(true);
+                                method.invoke(block, oppositeDirectionByte(Direction.getYaw(player)));
+                            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {
                             }
+
+                            blockState.update(true, false);
                         }
                     }
                 }
@@ -361,23 +360,32 @@ public class Portal {
     }
 
     private void setBlock(Block block, Material material, BlockFace blockFace) {
-        block.setType(material);
+        final BlockState blockState = block.getState();
+        blockState.setType(material);
+
+        if (material.name().contains("PORTAL"))
+            if (blockFace.name().startsWith("NORTH") || blockFace.name().startsWith("SOUTH"))
+                blockFace = BlockFace.WEST;
+            else if (blockFace.name().startsWith("EAST") || blockFace.name().startsWith("WEST"))
+                blockFace = BlockFace.SOUTH;
 
         org.bukkit.block.data.BlockData blockData = block.getBlockData();
         if (blockData instanceof Directional) {
             ((Directional) blockData).setFacing(blockFace);
-            block.setBlockData(blockData);
+            blockState.setBlockData(blockData);
         }
 
         if (blockData instanceof org.bukkit.block.data.Orientable) {
             ((org.bukkit.block.data.Orientable) blockData).setAxis(org.bukkit.Axis.valueOf(convertBlockFaceToAxis(blockFace)));
-            block.setBlockData(blockData);
+            blockState.setBlockData(blockData);
         }
 
         if (blockData instanceof org.bukkit.block.data.Rotatable) {
             ((org.bukkit.block.data.Rotatable) blockData).setRotation(blockFace);
-            block.setBlockData(blockData);
+            blockState.setBlockData(blockData);
         }
+
+        blockState.update(true, false);
     }
 
     private String convertBlockFaceToAxis(BlockFace face) {
