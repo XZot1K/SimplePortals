@@ -66,7 +66,10 @@ public class Commands implements CommandExecutor {
 
                     break;
                 case 2:
-                    if (args[0].equalsIgnoreCase("create")) {
+                    if (args[0].equalsIgnoreCase("disablemessages") || args[0].equalsIgnoreCase("dm")) {
+                        initiateDisableMessages(sender, args[1]);
+                        return true;
+                    } else if (args[0].equalsIgnoreCase("create")) {
                         initiatePortalCreation(sender, args[1]);
                         return true;
                     } else if (args[0].equalsIgnoreCase("disable") || args[0].equalsIgnoreCase("enabled")) {
@@ -121,6 +124,29 @@ public class Commands implements CommandExecutor {
         }
 
         return false;
+    }
+
+    private void initiateDisableMessages(CommandSender sender, String portalName) {
+        if (!sender.hasPermission("simpleportals.dm")) {
+            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
+                    + pluginInstance.getLangConfig().getString("no-permission-message")));
+            return;
+        }
+
+        Portal portal = pluginInstance.getManager().getPortalById(portalName);
+        if (portal == null) {
+            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
+                    + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
+            return;
+        }
+
+        portal.setMessage("");
+        portal.setTitle("");
+        portal.setSubTitle("");
+        portal.setBarMessage("");
+        sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
+                + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-dm-message"))
+                .replace("{name}", portalName)));
     }
 
     private void initiateToggleDisabled(CommandSender sender, String portalName) {

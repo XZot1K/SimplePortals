@@ -44,6 +44,8 @@ public class TabCompleter implements org.bukkit.command.TabCompleter {
                 values.add("commands");
                 values.add("enable");
                 values.add("disable");
+                values.add("message");
+                values.add("disablemessages");
 
             } else if (args.length == 2 || (args.length == 3 && (args[0].equalsIgnoreCase("setlocation") || args[0].equalsIgnoreCase("sl"))))
                 for (int i = -1; ++i < getPluginInstance().getManager().getPortals().size(); )
