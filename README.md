@@ -1,4 +1,3 @@
-![image](https://imgur.com/yCQEyCi.png)
 # How to use SimplePortals API in your plugin
 
 In order to properly use SimplePortals you will need to be able to retrieve the plugin's instance. You can do this by following these instructions:
@@ -52,3 +51,10 @@ public class Main extends JavaPlugin
 
 3. Once 1 and 2 are completed, add "depend: [SimplePortals]" or related thigns inside your plugin.yml (This step is optional, but never hurts to make sure SimplePortals is installed).  
 4. Everything should be all set. As a test, call the getSimplePortals() method from your Main class and you will be able to access the Manager class!
+
+***
+I currently use DedicatedMC as the official ZotWare testing server. If you need something powerful in terms of hardware without digging a hole in your pocket give them a shot and let me know how you like them!
+![image](https://imgur.com/oqEKWO3.png)
+
+I use GGServers for the official ZotWare preview server (Still in Development). They have a nice variety of hosting options alongside a pretty good console with good response times.
+![image](https://imgur.com/SnbAkPG.png)
