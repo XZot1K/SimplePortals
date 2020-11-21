@@ -8,7 +8,6 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockFromToEvent;
@@ -206,28 +205,36 @@ public class Listeners implements Listener {
         if (portal != null && !portal.isDisabled()) e.setCancelled(true);
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
-    public void onPortalEntryFirst(PortalEnterEvent e) {
+    @EventHandler
+    public void onPortalEntryFirst(PlayerPortalEvent e) {
         if (pluginInstance.getConfig().getBoolean("block-creative-portal-entrance") && e.getPlayer().getGameMode() == GameMode.CREATIVE) {
             e.setCancelled(true);
+            e.setCanCreatePortal(false);
             return;
         }
 
-        Portal portal = pluginInstance.getManager().getPortalAtLocation(e.getInitialLocation());
-        if (portal != null && !portal.isDisabled()) e.setCancelled(true);
+        Portal portal = pluginInstance.getManager().getPortalAtLocation(e.getFrom());
+        if (portal != null && !portal.isDisabled()) {
+            e.setCancelled(true);
+            e.setCanCreatePortal(false);
+        }
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler
     public void onPortalEntryLast(PortalEnterEvent e) {
         if (e.isCancelled()) return;
 
         if (pluginInstance.getConfig().getBoolean("block-creative-portal-entrance") && e.getPlayer().getGameMode() == GameMode.CREATIVE) {
             e.setCancelled(true);
+            e.setTargetLocation(null);
             return;
         }
 
         Portal portal = pluginInstance.getManager().getPortalAtLocation(e.getInitialLocation());
-        if (portal != null && !portal.isDisabled()) e.setCancelled(true);
+        if (portal != null && !portal.isDisabled()) {
+            e.setCancelled(true);
+            e.setTargetLocation(null);
+        }
     }
 
     @EventHandler

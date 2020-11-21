@@ -72,8 +72,11 @@ public class Commands implements CommandExecutor {
                     } else if (args[0].equalsIgnoreCase("create")) {
                         initiatePortalCreation(sender, args[1]);
                         return true;
-                    } else if (args[0].equalsIgnoreCase("disable") || args[0].equalsIgnoreCase("enabled")) {
-                        initiateToggleDisabled(sender, args[1]);
+                    } else if (args[0].equalsIgnoreCase("enable")) {
+                        initiateEnable(sender, args[1]);
+                        return true;
+                    } else if (args[0].equalsIgnoreCase("disable")) {
+                        initiateDisable(sender, args[1]);
                         return true;
                     } else if (args[0].equalsIgnoreCase("commands") || args[0].equalsIgnoreCase("cmds")) {
                         sendPortalCommands(sender, args[1]);
@@ -149,7 +152,7 @@ public class Commands implements CommandExecutor {
                 .replace("{name}", portalName)));
     }
 
-    private void initiateToggleDisabled(CommandSender sender, String portalName) {
+    private void initiateDisable(CommandSender sender, String portalName) {
         if (!sender.hasPermission("simpleportals.toggle")) {
             sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
                     + pluginInstance.getLangConfig().getString("no-permission-message")));
@@ -163,10 +166,43 @@ public class Commands implements CommandExecutor {
             return;
         }
 
-        portal.setDisabled(!portal.isDisabled());
+        if (portal.isDisabled()) {
+            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
+                    + Objects.requireNonNull(pluginInstance.getLangConfig().getString("already-disabled-message"))
+                    .replace("{name}", portalName)));
+            return;
+        }
+
+        portal.setDisabled(true);
         sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-toggle-message"))
-                .replace("{status}", portal.isDisabled() ? "Disabled" : "Enabled")
+                + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-disabled-message"))
+                .replace("{name}", portalName)));
+    }
+
+    private void initiateEnable(CommandSender sender, String portalName) {
+        if (!sender.hasPermission("simpleportals.toggle")) {
+            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
+                    + pluginInstance.getLangConfig().getString("no-permission-message")));
+            return;
+        }
+
+        Portal portal = pluginInstance.getManager().getPortalById(portalName);
+        if (portal == null) {
+            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
+                    + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
+            return;
+        }
+
+        if (!portal.isDisabled()) {
+            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
+                    + Objects.requireNonNull(pluginInstance.getLangConfig().getString("already-enabled-message"))
+                    .replace("{name}", portalName)));
+            return;
+        }
+
+        portal.setDisabled(false);
+        sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
+                + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-enabled-message"))
                 .replace("{name}", portalName)));
     }
 
