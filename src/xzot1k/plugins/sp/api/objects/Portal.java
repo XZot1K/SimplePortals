@@ -49,91 +49,54 @@ public class Portal {
         setLastFillMaterial(Material.AIR);
         if (getRegion() != null && getRegion().getPoint1() != null)
             setTeleportLocation(getRegion().getPoint1().asBukkitLocation().clone().add(0, 2, 0));
-        setMessage(pluginInstance.getLangConfig().getString("portal-message"));
-        setTitle(pluginInstance.getLangConfig().getString("portal-title-message"));
-        setSubTitle(pluginInstance.getLangConfig().getString("portal-subtitle-message"));
-        setBarMessage(pluginInstance.getLangConfig().getString("portal-bar-message"));
+        setMessage(getPluginInstance().getLangConfig().getString("portal-message"));
+        setTitle(getPluginInstance().getLangConfig().getString("portal-title-message"));
+        setSubTitle(getPluginInstance().getLangConfig().getString("portal-subtitle-message"));
+        setBarMessage(getPluginInstance().getLangConfig().getString("portal-bar-message"));
     }
 
     /**
-     * Adds the portal to the virtual storage.
+     * Attempts to delete the portal file.
+     *
+     * @return Whether the process was successful.
      */
-    public void register() {
-        if (!pluginInstance.getManager().getPortals().contains(this))
-            pluginInstance.getManager().getPortals().add(this);
-    }
-
-    /**
-     * Removes the portal from virtual storage.
-     */
-    public void unregister() {
-        pluginInstance.getManager().getPortals().remove(this);
-    }
-
-    /**
-     * Deletes the portal from file and virtual storage.
-     */
-    public void delete() {
-        try {
-            File file = new File(pluginInstance.getDataFolder(), "/portals.yml");
-            FileConfiguration yaml = YamlConfiguration.loadConfiguration(file);
-            yaml.set(getPortalId(), null);
-            yaml.save(file);
-        } catch (IOException e) {
-            e.printStackTrace();
+    public boolean delete() {
+        File file = new File(getPluginInstance().getDataFolder(), "/portals/" + getPortalId() + ".yml");
+        if (file.exists()) {
+            file.delete();
+            return true;
         }
+
+        return false;
     }
 
     /**
-     * Saves the portal to file.
+     * Attempts to save the portal to its own file located in the portals folder.
      */
     public void save() {
         try {
-            File file = new File(pluginInstance.getDataFolder(), "/portals.yml");
+            File file = new File(getPluginInstance().getDataFolder(), "/portals/" + getPortalId() + ".yml");
             FileConfiguration yaml = YamlConfiguration.loadConfiguration(file);
 
-            yaml.set(getPortalId() + ".last-fill-material", getLastFillMaterial().name());
-            yaml.set(getPortalId() + ".portal-server", getServerSwitchName());
+            yaml.set("last-fill-material", getLastFillMaterial().name());
+            yaml.set("portal-server", getServerSwitchName());
 
-            // save point 1.
-            SerializableLocation point1 = getRegion().getPoint1();
-            if (point1 != null) {
-                yaml.set(getPortalId() + ".point-1.world", point1.getWorldName());
-                yaml.set(getPortalId() + ".point-1.x", point1.getX());
-                yaml.set(getPortalId() + ".point-1.y", point1.getY());
-                yaml.set(getPortalId() + ".point-1.z", point1.getZ());
-            }
+            SerializableLocation pointOne = getRegion().getPoint1();
+            if (pointOne != null) yaml.set("point-one", pointOne.toString());
 
-            // save point 2.
-            SerializableLocation point2 = getRegion().getPoint2();
-            if (point2 != null) {
-                yaml.set(getPortalId() + ".point-2.world", point2.getWorldName());
-                yaml.set(getPortalId() + ".point-2.x", point2.getX());
-                yaml.set(getPortalId() + ".point-2.y", point2.getY());
-                yaml.set(getPortalId() + ".point-2.z", point2.getZ());
-            }
+            SerializableLocation pointTwo = getRegion().getPoint2();
+            if (pointTwo != null) yaml.set("point-two", pointTwo.toString());
 
-            // save teleport location.
             SerializableLocation teleportLocation = getTeleportLocation();
-            if (teleportLocation != null) {
-                yaml.set(getPortalId() + ".teleport-location.world",
-                        teleportLocation.getWorldName());
-                yaml.set(getPortalId() + ".teleport-location.x", teleportLocation.getX());
-                yaml.set(getPortalId() + ".teleport-location.y", teleportLocation.getY());
-                yaml.set(getPortalId() + ".teleport-location.z", teleportLocation.getZ());
-                yaml.set(getPortalId() + ".teleport-location.yaw",
-                        teleportLocation.getYaw());
-                yaml.set(getPortalId() + ".teleport-location.pitch",
-                        teleportLocation.getPitch());
-            }
+            if (teleportLocation != null) yaml.set("teleport-location", teleportLocation.toString());
 
-            yaml.set(getPortalId() + ".commands-only", isCommandsOnly());
-            yaml.set(getPortalId() + ".commands", getCommands());
-            yaml.set(getPortalId() + ".disabled", isDisabled());
-            yaml.set(getPortalId() + ".message", getMessage());
-            yaml.set(getPortalId() + ".title", getTitle());
-            yaml.set(getPortalId() + ".sub-title", getSubTitle());
-            yaml.set(getPortalId() + ".bar-message", getBarMessage());
+            yaml.set("commands-only", isCommandsOnly());
+            yaml.set("commands", getCommands());
+            yaml.set("disabled", isDisabled());
+            yaml.set("message", getMessage());
+            yaml.set("title", getTitle());
+            yaml.set("sub-title", getSubTitle());
+            yaml.set("bar-message", getBarMessage());
 
             yaml.save(file);
         } catch (IOException e) {
@@ -149,7 +112,7 @@ public class Portal {
      * @param locationForCoords The location where the player is or should be.
      */
     public void invokeCommands(Player player, Location locationForCoords) {
-        pluginInstance.getServer().getScheduler().runTaskLater(pluginInstance, () -> {
+        getPluginInstance().getServer().getScheduler().runTaskLater(getPluginInstance(), () -> {
             for (String commandLine : getCommands()) {
                 PortalCommandType portalCommandType = PortalCommandType.CONSOLE;
                 int percentage = 100;
@@ -163,20 +126,20 @@ public class Portal {
                         if (foundPortalCommandType != null) portalCommandType = foundPortalCommandType;
 
                         String foundPercentValue = commandLineSplit[2];
-                        if (pluginInstance.getManager().isNumeric(foundPercentValue))
+                        if (getPluginInstance().getManager().isNumeric(foundPercentValue))
                             percentage = Integer.parseInt(foundPercentValue);
                     }
                 }
 
 
-                int chance = pluginInstance.getManager().getRandom(1, 100);
+                int chance = getPluginInstance().getManager().getRandom(1, 100);
                 if (chance < percentage) {
                     commandLine = commandLine.replaceAll("(?i):player", "").replaceAll("(?i):console", "")
                             .replaceAll("(?i):chat", "").replaceAll("(?i):" + percentage, "");
                     switch (portalCommandType) {
 
                         case PLAYER:
-                            pluginInstance.getServer().dispatchCommand(player, commandLine.replace("{x}", String.valueOf(locationForCoords.getX()))
+                            getPluginInstance().getServer().dispatchCommand(player, commandLine.replace("{x}", String.valueOf(locationForCoords.getX()))
                                     .replace("{y}", String.valueOf(locationForCoords.getY())).replace("{z}", String.valueOf(locationForCoords.getZ()))
                                     .replace("{world}", locationForCoords.getWorld().getName()).replace("{player}", player.getName()));
                             break;
@@ -188,7 +151,7 @@ public class Portal {
                             break;
 
                         default:
-                            pluginInstance.getServer().dispatchCommand(pluginInstance.getServer().getConsoleSender(), commandLine.replace("{x}", String.valueOf(locationForCoords.getX()))
+                            getPluginInstance().getServer().dispatchCommand(getPluginInstance().getServer().getConsoleSender(), commandLine.replace("{x}", String.valueOf(locationForCoords.getX()))
                                     .replace("{y}", String.valueOf(locationForCoords.getY())).replace("{z}", String.valueOf(locationForCoords.getZ()))
                                     .replace("{world}", locationForCoords.getWorld().getName()).replace("{player}", player.getName()));
                             break;
@@ -196,7 +159,7 @@ public class Portal {
                     }
                 }
             }
-        }, pluginInstance.getConfig().getInt("command-tick-delay"));
+        }, getPluginInstance().getConfig().getInt("command-tick-delay"));
     }
 
     /**
@@ -208,23 +171,23 @@ public class Portal {
         if (getServerSwitchName() == null || getServerSwitchName().equalsIgnoreCase("none")) {
             Location location = getTeleportLocation().asBukkitLocation();
             if (location != null) {
-                if (pluginInstance.getConfig().getBoolean("keep-teleport-head-axis")) {
+                if (getPluginInstance().getConfig().getBoolean("keep-teleport-head-axis")) {
                     location.setYaw(player.getLocation().getYaw());
                     location.setPitch(player.getLocation().getPitch());
                 }
 
-                pluginInstance.getManager().teleportPlayerWithEntity(player, location);
-                pluginInstance.getManager().getPortalLinkMap().put(player.getUniqueId(), getPortalId());
+                getPluginInstance().getManager().teleportPlayerWithEntity(player, location);
+                getPluginInstance().getManager().getPortalLinkMap().put(player.getUniqueId(), getPortalId());
             }
         } else {
-            if ((!pluginInstance.getManager().getSmartTransferMap().isEmpty()
-                    && pluginInstance.getManager().getSmartTransferMap().containsKey(player.getUniqueId()))) {
-                SerializableLocation serializableLocation = pluginInstance.getManager().getSmartTransferMap()
+            if ((!getPluginInstance().getManager().getSmartTransferMap().isEmpty()
+                    && getPluginInstance().getManager().getSmartTransferMap().containsKey(player.getUniqueId()))) {
+                SerializableLocation serializableLocation = getPluginInstance().getManager().getSmartTransferMap()
                         .get(player.getUniqueId());
 
-                if (pluginInstance.getManager().isFacingPortal(player, this, 5)) {
+                if (getPluginInstance().getManager().isFacingPortal(player, this, 5)) {
                     double currentYaw = serializableLocation.getYaw();
-                    String direction = pluginInstance.getManager().getDirection(currentYaw);
+                    String direction = getPluginInstance().getManager().getDirection(currentYaw);
 
                     // Set YAW to opposite directions.
                     switch (direction.toUpperCase()) {
@@ -249,19 +212,19 @@ public class Portal {
 
                 }
 
-                pluginInstance.getManager().teleportPlayerWithEntity(player, serializableLocation.asBukkitLocation());
-                pluginInstance.getManager().getPortalLinkMap().put(player.getUniqueId(), getPortalId());
+                getPluginInstance().getManager().teleportPlayerWithEntity(player, serializableLocation.asBukkitLocation());
+                getPluginInstance().getManager().getPortalLinkMap().put(player.getUniqueId(), getPortalId());
             }
 
-            pluginInstance.getManager().switchServer(player, getServerSwitchName());
+            getPluginInstance().getManager().switchServer(player, getServerSwitchName());
         }
 
-        String particleEffect = pluginInstance.getConfig().getString("teleport-visual-effect");
+        String particleEffect = getPluginInstance().getConfig().getString("teleport-visual-effect");
         if (particleEffect != null && !particleEffect.isEmpty())
-            pluginInstance.getManager().getParticleHandler().broadcastParticle(player.getLocation(), 1, 2, 1, 0,
+            getPluginInstance().getManager().getParticleHandler().broadcastParticle(player.getLocation(), 1, 2, 1, 0,
                     particleEffect.toUpperCase().replace(" ", "_").replace("-", "_"), 10);
 
-        String soundName = pluginInstance.getConfig().getString("teleport-sound");
+        String soundName = getPluginInstance().getConfig().getString("teleport-sound");
         if (soundName != null && !soundName.isEmpty())
             player.getWorld().playSound(player.getLocation(), Sound.valueOf(soundName.toUpperCase().replace(" ", "_")
                     .replace("-", "_")), 1, 1);
@@ -286,28 +249,28 @@ public class Portal {
                 lowestZ = (int) Math.min(getRegion().getPoint1().getZ(), getRegion().getPoint2().getZ()),
                 highestZ = (int) Math.max(getRegion().getPoint1().getZ(), getRegion().getPoint2().getZ());
 
-        final World world = pluginInstance.getServer().getWorld(getRegion().getPoint1().getWorldName());
-        for (int x = lowestX - 1; ++x <= highestX; )
-            for (int z = lowestZ - 1; ++z <= highestZ; )
-                for (int y = lowestY - 1; ++y <= highestY; ) {
+        final World world = getPluginInstance().getServer().getWorld(getRegion().getPoint1().getWorldName());
+        for (int x = (lowestX - 1); ++x <= highestX; )
+            for (int z = (lowestZ - 1); ++z <= highestZ; )
+                for (int y = (lowestY - 1); ++y <= highestY; ) {
                     final Location location = new Location(world, x, y, z);
                     final Block block = location.getBlock();
                     final BlockState blockState = block.getState();
                     if (block.getType() == Material.AIR || block.getType() == getLastFillMaterial()) {
                         blockState.setType(material);
 
-                        if (!pluginInstance.getServerVersion().startsWith("v1_12") && !pluginInstance.getServerVersion().startsWith("v1_11") && !pluginInstance.getServerVersion().startsWith("v1_10")
-                                && !pluginInstance.getServerVersion().startsWith("v1_9") && !pluginInstance.getServerVersion().startsWith("v1_8") && !pluginInstance.getServerVersion().startsWith("v1_7"))
+                        if (!getPluginInstance().getServerVersion().startsWith("v1_12") && !getPluginInstance().getServerVersion().startsWith("v1_11") && !getPluginInstance().getServerVersion().startsWith("v1_10")
+                                && !getPluginInstance().getServerVersion().startsWith("v1_9") && !getPluginInstance().getServerVersion().startsWith("v1_8") && !getPluginInstance().getServerVersion().startsWith("v1_7"))
                             try {
                                 Method method = block.getClass().getMethod("setData", Byte.class);
                                 if (method != null)
                                     method.invoke(block, (byte) durability);
                             } catch (Exception ignored) {}
 
-                        if (!pluginInstance.getServerVersion().startsWith("v1_7") && !pluginInstance.getServerVersion().startsWith("v1_8")
-                                && !pluginInstance.getServerVersion().startsWith("v1_9") && !pluginInstance.getServerVersion().startsWith("v1_10")) {
+                        if (!getPluginInstance().getServerVersion().startsWith("v1_7") && !getPluginInstance().getServerVersion().startsWith("v1_8")
+                                && !getPluginInstance().getServerVersion().startsWith("v1_9") && !getPluginInstance().getServerVersion().startsWith("v1_10")) {
                             blockState.update(true, false);
-                            blockState.setBlockData(pluginInstance.getServer().createBlockData(material));
+                            blockState.setBlockData(getPluginInstance().getServer().createBlockData(material));
                             setBlock(block, material, BlockFace.valueOf(Direction.getYaw(player).name()));
                         } else {
                             if (block instanceof Directional)
@@ -338,12 +301,12 @@ public class Portal {
      * @param player The player to display to.
      */
     public void displayRegion(Player player) {
-        String particleEffect = pluginInstance.getConfig().getString("region-visual-effect");
+        String particleEffect = getPluginInstance().getConfig().getString("region-visual-effect");
         if (particleEffect == null || particleEffect.isEmpty()) return;
 
-        BukkitTask bukkitTask = new RegionTask(pluginInstance, player, this).runTaskTimerAsynchronously(pluginInstance, 0, 5);
-        if (!pluginInstance.getManager().getVisualTasks().isEmpty() && pluginInstance.getManager().getVisualTasks().containsKey(player.getUniqueId())) {
-            TaskHolder taskHolder = pluginInstance.getManager().getVisualTasks().get(player.getUniqueId());
+        BukkitTask bukkitTask = new RegionTask(getPluginInstance(), player, this).runTaskTimerAsynchronously(getPluginInstance(), 0, 5);
+        if (!getPluginInstance().getManager().getVisualTasks().isEmpty() && getPluginInstance().getManager().getVisualTasks().containsKey(player.getUniqueId())) {
+            TaskHolder taskHolder = getPluginInstance().getManager().getVisualTasks().get(player.getUniqueId());
             if (taskHolder != null) {
                 if (taskHolder.getSelectionPointOne() != null)
                     taskHolder.getSelectionPointOne().cancel();
@@ -356,7 +319,7 @@ public class Portal {
 
         TaskHolder taskHolder = new TaskHolder();
         taskHolder.setRegionDisplay(bukkitTask);
-        pluginInstance.getManager().getVisualTasks().put(player.getUniqueId(), taskHolder);
+        getPluginInstance().getManager().getVisualTasks().put(player.getUniqueId(), taskHolder);
     }
 
     private void setBlock(Block block, Material material, BlockFace blockFace) {
@@ -430,7 +393,7 @@ public class Portal {
     }
 
     public void setTeleportLocation(Location teleportLocation) {
-        this.teleportLocation = new SerializableLocation(pluginInstance, teleportLocation);
+        this.teleportLocation = new SerializableLocation(getPluginInstance(), teleportLocation);
     }
 
     public void setTeleportLocation(SerializableLocation teleportLocation) {
@@ -507,5 +470,9 @@ public class Portal {
 
     public void setBarMessage(String barMessage) {
         this.barMessage = barMessage;
+    }
+
+    private SimplePortals getPluginInstance() {
+        return pluginInstance;
     }
 }

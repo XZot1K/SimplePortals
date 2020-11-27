@@ -24,7 +24,6 @@ import java.util.logging.Level;
 public class SimplePortals extends JavaPlugin {
     private static SimplePortals pluginInstance;
     private Manager manager;
-    private UpdateChecker updateChecker;
     private String serverVersion;
 
 
@@ -50,8 +49,7 @@ public class SimplePortals extends JavaPlugin {
         updateConfigs();
 
         setPrismaInstalled(getServer().getPluginManager().getPlugin("Prisma") != null);
-        manager = new Manager(getPluginInstance());
-        updateChecker = new UpdateChecker(getPluginInstance(), 56772);
+        manager = new Manager(this);
 
         PluginCommand command = getCommand("simpleportals");
         if (command != null) {
@@ -60,50 +58,24 @@ public class SimplePortals extends JavaPlugin {
         }
 
         getServer().getPluginManager().registerEvents(new Listeners(pluginInstance), this);
+        getManager().convertFromPortalsFile();
 
-        File portalsFile = new File(getDataFolder(), "/portals.yml"),
-                backupFile = new File(getDataFolder(), "/portals-backup.yml");
-        if (portalsFile.exists() && !backupFile.exists()) {
-            try {
-                copy(portalsFile, backupFile);
-            } catch (IOException e) {
-                e.printStackTrace();
-                log(Level.WARNING, "Unable to backup the 'portals.yml' file as it may not exist.");
-            }
+        try {
+            final UpdateChecker updateChecker = new UpdateChecker(this, 56772);
+            if (updateChecker.checkForUpdates()) log(Level.INFO, "The version " + getDescription().getVersion()
+                    + " is doesn't match the latest version!");
+            else log(Level.INFO, "Everything looks like it is up to date!");
+        } catch (Exception e) {
+            e.printStackTrace();
+            log(Level.INFO, "Unable to check for updates ('" + e.getMessage() + "'.");
         }
-
-        getManager().loadPortals();
-        log(Level.INFO, "The plugin has enabled successfully!");
-
-        getServer().getScheduler().runTaskAsynchronously(this, () -> {
-            try {
-                if (updateChecker.checkForUpdates())
-                    log(Level.INFO, "The version " + getDescription().getVersion() + " is doesn't match the latest version!");
-                else
-                    log(Level.INFO, "Everything looks like it is up to date!");
-            } catch (Exception ignored) {
-                log(Level.INFO, "Unable to check for updates.");
-            }
-        });
-
-        int generalTaskDuration = getConfig().getInt("general-task-duration");
-        if (!(generalTaskDuration <= -1))
-            getServer().getScheduler().runTaskTimerAsynchronously(getPluginInstance(), () -> {
-                getManager().savePortals();
-                if (getConfig().getBoolean("reload-plugin-timer")) {
-                    getManager().getPortals().clear();
-                    getManager().loadPortals();
-                }
-            }, 20 * generalTaskDuration, 20 * generalTaskDuration);
 
         new Metrics(this);
     }
 
     @Override
     public void onDisable() {
-        getManager().savePortals();
-        log(Level.INFO, "All portals have been saved!");
-        log(Level.INFO, "The plugin has been disabled.");
+        getServer().getScheduler().cancelTasks(this);
     }
 
     private void updateConfigs() {
@@ -252,6 +224,7 @@ public class SimplePortals extends JavaPlugin {
     }
 
     private void copy(File source, File destination) throws IOException {
+        if (destination.exists()) destination.delete();
         try (InputStream is = new FileInputStream(source); OutputStream os = new FileOutputStream(destination)) {
             byte[] buf = new byte[1024];
             int bytesRead;

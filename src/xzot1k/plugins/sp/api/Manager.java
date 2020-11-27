@@ -19,6 +19,7 @@ import org.bukkit.util.BlockIterator;
 import us.eunoians.prisma.ColorProvider;
 import xzot1k.plugins.sp.SimplePortals;
 import xzot1k.plugins.sp.api.enums.PointType;
+import xzot1k.plugins.sp.api.exceptions.PortalFormException;
 import xzot1k.plugins.sp.api.objects.Portal;
 import xzot1k.plugins.sp.api.objects.Region;
 import xzot1k.plugins.sp.api.objects.SerializableLocation;
@@ -46,7 +47,6 @@ public class Manager {
     private final HashMap<UUID, Region> currentSelections;
     private final HashMap<UUID, Boolean> selectionMode;
     private final HashMap<UUID, HashMap<String, Long>> playerPortalCooldowns;
-    private final List<Portal> portals;
     private final HashMap<UUID, TaskHolder> visualTasks;
     private final HashMap<UUID, SerializableLocation> smartTransferMap;
     private final HashMap<UUID, String> portalLinkMap;
@@ -62,7 +62,6 @@ public class Manager {
         selectionMode = new HashMap<>();
         playerPortalCooldowns = new HashMap<>();
         visualTasks = new HashMap<>();
-        portals = new ArrayList<>();
         smartTransferMap = new HashMap<>();
         portalLinkMap = new HashMap<>();
 
@@ -72,7 +71,7 @@ public class Manager {
 
     private void setupPackets() {
         try {
-            switch (pluginInstance.getServerVersion()) {
+            switch (getPluginInstance().getServerVersion()) {
                 case "v1_12_R1":
                     titleHandler = new Titles1_12R1();
                     break;
@@ -91,17 +90,17 @@ public class Manager {
                     break;
                 case "v1_8_R3":
                     titleHandler = new Titles1_8R3();
-                    particleHandler = new PH1_8R3(pluginInstance);
+                    particleHandler = new PH1_8R3(getPluginInstance());
                     barHandler = new ABH1_8R3();
                     break;
                 case "v1_8_R2":
                     titleHandler = new Titles1_8R2();
-                    particleHandler = new PH1_8R2(pluginInstance);
+                    particleHandler = new PH1_8R2(getPluginInstance());
                     barHandler = new ABH1_8R2();
                     break;
                 case "v1_8_R1":
                     titleHandler = new Titles1_8R1();
-                    particleHandler = new PH1_8R1(pluginInstance);
+                    particleHandler = new PH1_8R1(getPluginInstance());
                     barHandler = new ABH1_8R1();
                     break;
                 default:
@@ -112,9 +111,9 @@ public class Manager {
             if (getBarHandler() == null) barHandler = new ABH_Latest();
             if (getTitleHandler() == null) titleHandler = new Titles_Latest();
 
-            pluginInstance.log(Level.INFO, "Packets have been setup for " + pluginInstance.getServerVersion() + "!");
+            getPluginInstance().log(Level.INFO, "Packets have been setup for " + getPluginInstance().getServerVersion() + "!");
         } catch (Exception e) {
-            pluginInstance.log(Level.INFO, "There was an issue obtaining proper packets for " + pluginInstance.getServerVersion()
+            getPluginInstance().log(Level.INFO, "There was an issue obtaining proper packets for " + getPluginInstance().getServerVersion()
                     + ". (Error: " + e.getMessage() + ")");
         }
     }
@@ -148,12 +147,12 @@ public class Manager {
      */
     public String colorText(String message) {
         String messageCopy = message;
-        if ((!pluginInstance.getServerVersion().startsWith("v1_15") && !pluginInstance.getServerVersion().startsWith("v1_14")
-                && !pluginInstance.getServerVersion().startsWith("v1_13") && !pluginInstance.getServerVersion().startsWith("v1_12")
-                && !pluginInstance.getServerVersion().startsWith("v1_11") && !pluginInstance.getServerVersion().startsWith("v1_10")
-                && !pluginInstance.getServerVersion().startsWith("v1_9") && !pluginInstance.getServerVersion().startsWith("v1_8"))
+        if ((!getPluginInstance().getServerVersion().startsWith("v1_15") && !getPluginInstance().getServerVersion().startsWith("v1_14")
+                && !getPluginInstance().getServerVersion().startsWith("v1_13") && !getPluginInstance().getServerVersion().startsWith("v1_12")
+                && !getPluginInstance().getServerVersion().startsWith("v1_11") && !getPluginInstance().getServerVersion().startsWith("v1_10")
+                && !getPluginInstance().getServerVersion().startsWith("v1_9") && !getPluginInstance().getServerVersion().startsWith("v1_8"))
                 && messageCopy.contains("#")) {
-            if (pluginInstance.isPrismaInstalled()) messageCopy = ColorProvider.translatePrisma(messageCopy);
+            if (getPluginInstance().isPrismaInstalled()) messageCopy = ColorProvider.translatePrisma(messageCopy);
             else {
                 try {
                     final Pattern hexPattern = Pattern.compile("\\{#([A-Fa-f0-9]){6}}");
@@ -181,14 +180,14 @@ public class Manager {
             return;
 
         if (title != null && !title.isEmpty() && subTitle != null && !subTitle.isEmpty())
-            getTitleHandler().sendTitle(player, title, subTitle, pluginInstance.getConfig().getInt("titles.fade-in"),
-                    pluginInstance.getConfig().getInt("titles.display-time"), pluginInstance.getConfig().getInt("titles.fade-out"));
+            getTitleHandler().sendTitle(player, title, subTitle, getPluginInstance().getConfig().getInt("titles.fade-in"),
+                    getPluginInstance().getConfig().getInt("titles.display-time"), getPluginInstance().getConfig().getInt("titles.fade-out"));
         else if (title != null && !title.isEmpty())
-            getTitleHandler().sendTitle(player, title, pluginInstance.getConfig().getInt("titles.fade-in"),
-                    pluginInstance.getConfig().getInt("titles.display-time"), pluginInstance.getConfig().getInt("titles.fade-out"));
+            getTitleHandler().sendTitle(player, title, getPluginInstance().getConfig().getInt("titles.fade-in"),
+                    getPluginInstance().getConfig().getInt("titles.display-time"), getPluginInstance().getConfig().getInt("titles.fade-out"));
         else if (subTitle != null && !subTitle.isEmpty())
-            getTitleHandler().sendSubTitle(player, subTitle, pluginInstance.getConfig().getInt("titles.fade-in"),
-                    pluginInstance.getConfig().getInt("titles.display-time"), pluginInstance.getConfig().getInt("titles.fade-out"));
+            getTitleHandler().sendSubTitle(player, subTitle, getPluginInstance().getConfig().getInt("titles.fade-in"),
+                    getPluginInstance().getConfig().getInt("titles.display-time"), getPluginInstance().getConfig().getInt("titles.fade-out"));
     }
 
     /**
@@ -222,7 +221,7 @@ public class Manager {
         switch (pointType) {
             case POINT_ONE:
             case POINT_TWO:
-                region = new Region(pluginInstance, location, location);
+                region = new Region(getPluginInstance(), location, location);
                 break;
             default:
                 break;
@@ -331,37 +330,64 @@ public class Manager {
     }
 
     /**
-     * Obtains a portal object from a location.
+     * Attempts to obtain a portal from the passed location.
      *
-     * @param location The location to check.
-     * @return The portal object
+     * @param location The location to check for.
+     * @return The portal found (Can return NULL).
      */
     public Portal getPortalAtLocation(Location location) {
-        for (int i = -1; ++i < getPortals().size(); ) {
-            Portal portal = getPortals().get(i);
-            if (portal == null || portal.getRegion() == null) continue;
+        final File portalDirectory = new File(getPluginInstance().getDataFolder(), "/portals");
+        File[] listFiles = portalDirectory.listFiles();
 
-            if (portal.getRegion().isInRegion(location))
-                return portal;
-        }
+        if (listFiles != null && listFiles.length > 0)
+            for (int i = -1; ++i < listFiles.length; ) {
+                File file = listFiles[i];
+                if (file == null || !file.getName().toLowerCase().endsWith(".yml")) continue;
+
+                try {
+                    Portal portal = getPortal(file.getName().replaceAll("(?i)\\.yml", ""));
+                    if (portal.getRegion().isInRegion(location)) return portal;
+                } catch (PortalFormException e) {
+                    e.printStackTrace();
+                    getPluginInstance().log(Level.WARNING, e.getMessage());
+                }
+            }
 
         return null;
     }
 
-    /**
-     * Obtains a portal object by name.
-     *
-     * @param portalName The portal name.
-     * @return The portal object.
-     */
-    public Portal getPortalById(String portalName) {
-        for (int i = -1; ++i < getPortals().size(); ) {
-            Portal portal = getPortals().get(i);
-            if (portal.getPortalId().equalsIgnoreCase(portalName))
-                return portal;
-        }
+    public Portal getPortal(String portalId) throws PortalFormException {
+        File file = new File(getPluginInstance().getDataFolder(), "/portals/" + portalId + ".yml");
+        if (file == null || !file.exists()) return null;
+        FileConfiguration yaml = YamlConfiguration.loadConfiguration(file);
 
-        return null;
+        SerializableLocation pointOne = new SerializableLocation(getPluginInstance(), yaml.getString("point-one")),
+                pointTwo = new SerializableLocation(getPluginInstance(), yaml.getString("point-two")),
+                teleportLocation = new SerializableLocation(getPluginInstance(), yaml.getString("teleport-location"));
+        if (!pointOne.getWorldName().equalsIgnoreCase(pointTwo.getWorldName()))
+            throw new PortalFormException("The portal's point one and point two have mismatching world names ('" + pointTwo.getWorldName()
+                    + "' does NOT equal '" + pointTwo.getWorldName() + "').");
+
+        final Region region = new Region(getPluginInstance(), pointOne, pointTwo);
+        final Portal portal = new Portal(getPluginInstance(), file.getName().replaceAll("(?i)\\.yml", ""), region);
+        portal.setTeleportLocation(teleportLocation);
+        portal.setServerSwitchName(yaml.getString("portal-server"));
+        portal.setCommandsOnly(yaml.getBoolean("commands-only"));
+        portal.setCommands(yaml.getStringList("commands"));
+
+        String materialName = yaml.getString("last-fill-material");
+        if (materialName != null && !materialName.equalsIgnoreCase("")) {
+            Material material = Material.getMaterial(materialName.toUpperCase().replace(" ", "_").replace("-", "_"));
+            portal.setLastFillMaterial(material == null ? Material.AIR : material);
+        } else portal.setLastFillMaterial(Material.AIR);
+
+        if (yaml.contains("disabled")) portal.setDisabled(yaml.getBoolean("disabled"));
+        if (yaml.contains("message")) portal.setMessage(yaml.getString("message"));
+        if (yaml.contains("title")) portal.setTitle(yaml.getString("title"));
+        if (yaml.contains("sub-title")) portal.setSubTitle(yaml.getString("sub-title"));
+        if (yaml.contains("bar-message")) portal.setBarMessage(yaml.getString("bar-message"));
+
+        return portal;
     }
 
     /**
@@ -371,13 +397,7 @@ public class Manager {
      * @return Whether the portal object exists.
      */
     public boolean doesPortalExist(String portalName) {
-        for (int i = -1; ++i < getPortals().size(); ) {
-            Portal portal = getPortals().get(i);
-            if (portal.getPortalId().equalsIgnoreCase(portalName))
-                return true;
-        }
-
-        return false;
+        return new File(getPluginInstance().getDataFolder(), "/portals/" + portalName + ".yml").exists();
     }
 
     /**
@@ -388,11 +408,11 @@ public class Manager {
      */
     @SuppressWarnings("deprecation")
     public void teleportPlayerWithEntity(Player player, Location location) {
-        if (player.getVehicle() != null && pluginInstance.getConfig().getBoolean("vehicle-teleportation")) {
+        if (player.getVehicle() != null && getPluginInstance().getConfig().getBoolean("vehicle-teleportation")) {
             Entity entity = player.getVehicle();
-            if (pluginInstance.getServerVersion().startsWith("v1_11") || pluginInstance.getServerVersion().startsWith("v1_12")
-                    || pluginInstance.getServerVersion().startsWith("v1_13") || pluginInstance.getServerVersion().startsWith("v1_14")
-                    || pluginInstance.getServerVersion().startsWith("v1_15") || pluginInstance.getServerVersion().startsWith("v1_16"))
+            if (getPluginInstance().getServerVersion().startsWith("v1_11") || getPluginInstance().getServerVersion().startsWith("v1_12")
+                    || getPluginInstance().getServerVersion().startsWith("v1_13") || getPluginInstance().getServerVersion().startsWith("v1_14")
+                    || getPluginInstance().getServerVersion().startsWith("v1_15") || getPluginInstance().getServerVersion().startsWith("v1_16"))
                 entity.removePassenger(player);
             else entity.setPassenger(null);
 
@@ -406,7 +426,7 @@ public class Manager {
                     entity.teleport(player.getLocation());
                     entity.addPassenger(player);
                 }
-            }.runTaskLater(pluginInstance, 1);
+            }.runTaskLater(getPluginInstance(), 1);
         } else
             player.teleport(location);
     }
@@ -466,12 +486,12 @@ public class Manager {
     public void highlightBlock(Block block, Player player, PointType pointType) {
         if (getParticleHandler() == null) return;
 
-        String particleEffect = pluginInstance.getConfig().getString("selection-visual-effect").toUpperCase()
+        String particleEffect = getPluginInstance().getConfig().getString("selection-visual-effect").toUpperCase()
                 .replace(" ", "_").replace("-", "_");
         if (particleEffect == null || particleEffect.isEmpty()) return;
 
-        BukkitTask bukkitTask = new HighlightTask(pluginInstance, player, block.getLocation(), particleEffect)
-                .runTaskTimerAsynchronously(pluginInstance, 0, 5);
+        BukkitTask bukkitTask = new HighlightTask(getPluginInstance(), player, block.getLocation(), particleEffect)
+                .runTaskTimerAsynchronously(getPluginInstance(), 0, 5);
 
         if (!getVisualTasks().isEmpty() && getVisualTasks().containsKey(player.getUniqueId())) {
             TaskHolder taskHolder = getVisualTasks().get(player.getUniqueId());
@@ -490,11 +510,10 @@ public class Manager {
     }
 
     /**
-     * Loads portals from file and adds them to virtual storage.
+     * Attempts to read a portals.yml located in the plugin's folder to convert it to the new file structure.
      */
-    public void loadPortals() {
-        if (!getPortals().isEmpty()) getPortals().clear();
-        File portalFile = new File(pluginInstance.getDataFolder(), "/portals.yml");
+    public void convertFromPortalsFile() {
+        File portalFile = new File(getPluginInstance().getDataFolder(), "/portals.yml");
         if (!portalFile.exists()) return;
         FileConfiguration yaml = YamlConfiguration.loadConfiguration(portalFile);
 
@@ -504,75 +523,56 @@ public class Manager {
         final List<String> portalIds = new ArrayList<>(cs.getKeys(false));
         if (portalIds.isEmpty()) return;
 
-        for (int i = -1; ++i < portalIds.size(); ) {
-            final String portalId = portalIds.get(i);
+        for (String portalId : portalIds) {
 
             if (doesPortalExist(portalId)) {
-                pluginInstance.log(Level.WARNING, "The portal '" + portalId + "' was unable to be loaded due to a " +
-                        "portal with a similar ID/Name already loaded.");
+                getPluginInstance().log(Level.WARNING, "The portal '" + portalId + "' already exists in the 'portals' folder. Skipping conversion...");
+                continue;
+            }
+
+            SerializableLocation pointOne = new SerializableLocation(getPluginInstance(), yaml.getString(portalId + ".point-1.world"),
+                    yaml.getDouble(portalId + ".point-1.x"), yaml.getDouble(portalId + ".point-1.y"),
+                    yaml.getDouble(portalId + ".point-1.z"), yaml.getDouble(portalId + ".point-1.yaw"),
+                    yaml.getDouble(portalId + ".point-1.pitch")), pointTwo = new SerializableLocation(getPluginInstance(), yaml.getString(portalId + ".point-2.world"),
+                    yaml.getDouble(portalId + ".point-2.x"), yaml.getDouble(portalId + ".point-2.y"),
+                    yaml.getDouble(portalId + ".point-2.z"), yaml.getDouble(portalId + ".point-2.yaw"),
+                    yaml.getDouble(portalId + ".point-2.pitch")), teleportLocation = new SerializableLocation(getPluginInstance(), yaml.getString(portalId + ".teleport-location.world"),
+                    yaml.getDouble(portalId + ".teleport-location.x"), yaml.getDouble(portalId + ".teleport-location.y"),
+                    yaml.getDouble(portalId + ".teleport-location.z"), yaml.getDouble(portalId + ".teleport-location.yaw"),
+                    yaml.getDouble(portalId + ".teleport-location.pitch"));
+
+            if (!pointOne.getWorldName().equalsIgnoreCase(pointTwo.getWorldName())) {
+                getPluginInstance().log(Level.WARNING, "The portal '" + portalId + "' has mismatching point one and point two world names. Skipping conversion...");
                 return;
             }
 
-            try {
-                String pointOneWorld = yaml.getString(portalId + ".point-1.world"),
-                        pointTwoWorld = yaml.getString(portalId + ".point-2.world"),
-                        teleportWorld = yaml.getString(portalId + ".teleport-location.world");
+            final Region region = new Region(getPluginInstance(), pointOne, pointTwo);
+            final Portal portal = new Portal(getPluginInstance(), portalId, region);
 
-                if (pointOneWorld == null || pointTwoWorld == null || teleportWorld == null
-                        || pluginInstance.getServer().getWorld(pointOneWorld) == null
-                        || pluginInstance.getServer().getWorld(pointTwoWorld) == null
-                        || pluginInstance.getServer().getWorld(teleportWorld) == null) {
-                    pluginInstance.log(Level.WARNING, "The portal '" + portalId
-                            + "' was skipped and not loaded due to a invalid or missing world.");
-                    continue;
-                }
+            portal.setTeleportLocation(teleportLocation);
+            portal.setServerSwitchName(yaml.getString(portalId + ".portal-server"));
+            portal.setCommandsOnly(yaml.getBoolean(portalId + ".commands-only"));
+            portal.setCommands(yaml.getStringList(portalId + ".commands"));
 
-                SerializableLocation teleportPoint1 = new SerializableLocation(pluginInstance, pointOneWorld,
-                        yaml.getDouble(portalId + ".point-1.x"), yaml.getDouble(portalId + ".point-1.y"),
-                        yaml.getDouble(portalId + ".point-1.z"), yaml.getDouble(portalId + ".point-1.yaw"),
-                        yaml.getDouble(portalId + ".point-1.pitch")),
+            String materialName = yaml.getString(portalId + ".last-fill-material");
+            if (materialName != null && !materialName.equalsIgnoreCase("")) {
+                Material material = Material.getMaterial(materialName.toUpperCase().replace(" ", "_").replace("-", "_"));
+                portal.setLastFillMaterial(material == null ? Material.AIR : material);
+            } else portal.setLastFillMaterial(Material.AIR);
 
-                        teleportPoint2 = new SerializableLocation(pluginInstance, pointTwoWorld,
-                                yaml.getDouble(portalId + ".point-2.x"), yaml.getDouble(portalId + ".point-2.y"),
-                                yaml.getDouble(portalId + ".point-2.z"), yaml.getDouble(portalId + ".point-2.yaw"),
-                                yaml.getDouble(portalId + ".point-2.pitch"));
-                Region region = new Region(pluginInstance, teleportPoint1, teleportPoint2);
-                Portal portal = new Portal(pluginInstance, portalId, region);
+            if (yaml.contains(portalId + ".disabled")) portal.setDisabled(yaml.getBoolean(portalId + ".disabled"));
+            if (yaml.contains(portalId + ".message")) portal.setMessage(yaml.getString(portalId + ".message"));
+            if (yaml.contains(portalId + ".title")) portal.setTitle(yaml.getString(portalId + ".title"));
+            if (yaml.contains(portalId + ".sub-title")) portal.setSubTitle(yaml.getString(portalId + ".sub-title"));
+            if (yaml.contains(portalId + ".bar-message"))
+                portal.setBarMessage(yaml.getString(portalId + ".bar-message"));
 
-                SerializableLocation tpLocation = new SerializableLocation(pluginInstance, teleportWorld,
-                        yaml.getDouble(portalId + ".teleport-location.x"), yaml.getDouble(portalId + ".teleport-location.y"),
-                        yaml.getDouble(portalId + ".teleport-location.z"), yaml.getDouble(portalId + ".teleport-location.yaw"),
-                        yaml.getDouble(portalId + ".teleport-location.pitch"));
-                portal.setTeleportLocation(tpLocation);
-                portal.setServerSwitchName(yaml.getString(portalId + ".portal-server"));
-                portal.setCommandsOnly(yaml.getBoolean(portalId + ".commands-only"));
-                portal.setCommands(yaml.getStringList(portalId + ".commands"));
-
-                String materialName = yaml.getString(portalId + ".last-fill-material");
-                portalMaterialCheckHelper(portal, materialName);
-
-                if (yaml.contains(portalId + ".disabled")) portal.setDisabled(yaml.getBoolean(portalId + ".disabled"));
-                if (yaml.contains(portalId + ".message")) portal.setMessage(yaml.getString(portalId + ".message"));
-                if (yaml.contains(portalId + ".title")) portal.setTitle(yaml.getString(portalId + ".title"));
-                if (yaml.contains(portalId + ".sub-title")) portal.setSubTitle(yaml.getString(portalId + ".sub-title"));
-                if (yaml.contains(portalId + ".bar-message"))
-                    portal.setBarMessage(yaml.getString(portalId + ".bar-message"));
-            } catch (Exception ignored) {
-                pluginInstance.log(Level.WARNING,
-                        "The portal " + portalId + " was unable to be loaded. Please check its information in the portals.yml. "
-                                + "This could be something as simple as a missing or invalid world.");
-            }
-        }
-    }
-
-    /**
-     * Saves all portals to file.
-     */
-    public void savePortals() {
-        for (int i = -1; ++i < getPortals().size(); ) {
-            Portal portal = getPortals().get(i);
             portal.save();
+            getPluginInstance().log(Level.INFO, "The portal '" + portalId + "' was converted over to the new file data structure!");
         }
+
+        getPluginInstance().log(Level.INFO, "The portal file data structure conversion process has completed. "
+                + "Don't forget to remove or move your 'portals.yml' to prevent another conversion process!");
     }
 
     /**
@@ -600,33 +600,41 @@ public class Manager {
      */
     public void switchServer(Player player, String serverName) {
         try {
-            Bukkit.getMessenger().registerOutgoingPluginChannel(pluginInstance, "BungeeCord");
+            Bukkit.getMessenger().registerOutgoingPluginChannel(getPluginInstance(), "BungeeCord");
             ByteArrayOutputStream byteArray = new ByteArrayOutputStream();
             DataOutputStream out = new DataOutputStream(byteArray);
             out.writeUTF("Connect");
             out.writeUTF(serverName);
-            player.sendPluginMessage(pluginInstance, "BungeeCord", byteArray.toByteArray());
+            player.sendPluginMessage(getPluginInstance(), "BungeeCord", byteArray.toByteArray());
         } catch (Exception ex) {
             ex.printStackTrace();
-            pluginInstance.log(Level.WARNING,
+            getPluginInstance().log(Level.WARNING,
                     "There seems to have been a issue when switching the player to the " + serverName + " server.");
         }
     }
 
-    private void portalMaterialCheckHelper(Portal portal, String materialName) {
-        if (materialName != null && !materialName.equalsIgnoreCase("")) {
-            Material material = Material.getMaterial(materialName.toUpperCase().replace(" ", "_")
-                    .replace("-", "_"));
-            portal.setLastFillMaterial(material == null ? Material.AIR : material);
-        } else portal.setLastFillMaterial(Material.AIR);
-
-        portal.register();
+    /**
+     * Gets a list of all found portal names.
+     *
+     * @return The list of portal name/ids.
+     */
+    public List<String> getPortalNames() {
+        return new ArrayList<String>() {{
+            File file = new File(getPluginInstance().getDataFolder(), "/portals");
+            File[] listFiles = file.listFiles();
+            if (listFiles != null && listFiles.length > 0)
+                for (int i = -1; ++i < listFiles.length; ) {
+                    File foundFile = listFiles[i];
+                    if (foundFile != null && foundFile.getName().toLowerCase().endsWith(".yml"))
+                        add(foundFile.getName().replaceAll("(?i)\\.yml", ""));
+                }
+        }};
     }
 
     private boolean selectionWorldCheck(Player player, Region region) {
         if (!region.getPoint1().getWorldName().equalsIgnoreCase(region.getPoint2().getWorldName())) {
-            player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                    + pluginInstance.getLangConfig().getString("not-same-world-message")));
+            player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + getPluginInstance().getLangConfig().getString("not-same-world-message")));
             return false;
         }
 
@@ -637,10 +645,6 @@ public class Manager {
     // getters & setters
     private HashMap<UUID, Region> getCurrentSelections() {
         return currentSelections;
-    }
-
-    public List<Portal> getPortals() {
-        return portals;
     }
 
     private HashMap<UUID, Boolean> getSelectionMode() {
@@ -682,4 +686,9 @@ public class Manager {
     public HashMap<UUID, String> getPortalLinkMap() {
         return portalLinkMap;
     }
+
+    private SimplePortals getPluginInstance() {
+        return pluginInstance;
+    }
+
 }

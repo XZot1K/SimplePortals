@@ -48,8 +48,7 @@ public class TabCompleter implements org.bukkit.command.TabCompleter {
                 values.add("disablemessages");
 
             } else if (args.length == 2 || (args.length == 3 && (args[0].equalsIgnoreCase("setlocation") || args[0].equalsIgnoreCase("sl"))))
-                for (int i = -1; ++i < getPluginInstance().getManager().getPortals().size(); )
-                    values.add(getPluginInstance().getManager().getPortals().get(i).getPortalId());
+                values.addAll(getPluginInstance().getManager().getPortalNames());
             else if (args.length == 3) {
                 int colonCount = 0;
                 for (char character : args[2].toCharArray()) if (character == ':') colonCount++;

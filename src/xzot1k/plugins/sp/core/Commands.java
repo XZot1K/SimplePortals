@@ -16,6 +16,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import xzot1k.plugins.sp.SimplePortals;
+import xzot1k.plugins.sp.api.exceptions.PortalFormException;
 import xzot1k.plugins.sp.api.objects.Portal;
 import xzot1k.plugins.sp.api.objects.Region;
 import xzot1k.plugins.sp.api.objects.SerializableLocation;
@@ -24,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Level;
 
 public class Commands implements CommandExecutor {
 
@@ -131,118 +133,161 @@ public class Commands implements CommandExecutor {
 
     private void initiateDisableMessages(CommandSender sender, String portalName) {
         if (!sender.hasPermission("simpleportals.dm")) {
-            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                    + pluginInstance.getLangConfig().getString("no-permission-message")));
+            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + getPluginInstance().getLangConfig().getString("no-permission-message")));
             return;
         }
 
-        Portal portal = pluginInstance.getManager().getPortalById(portalName);
+        Portal portal = null;
+
+        try {
+            portal = getPluginInstance().getManager().getPortal(portalName);
+        } catch (PortalFormException e) {
+            e.printStackTrace();
+            getPluginInstance().log(Level.WARNING, e.getMessage());
+        }
+
         if (portal == null) {
-            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                    + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
+            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
             return;
         }
 
-        portal.setMessage("");
-        portal.setTitle("");
-        portal.setSubTitle("");
-        portal.setBarMessage("");
-        sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-dm-message"))
+        portal.setMessage(null);
+        portal.setTitle(null);
+        portal.setSubTitle(null);
+        portal.setBarMessage(null);
+        portal.save();
+        sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-dm-message"))
                 .replace("{name}", portalName)));
     }
 
     private void initiateDisable(CommandSender sender, String portalName) {
         if (!sender.hasPermission("simpleportals.toggle")) {
-            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                    + pluginInstance.getLangConfig().getString("no-permission-message")));
+            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + getPluginInstance().getLangConfig().getString("no-permission-message")));
             return;
         }
 
-        Portal portal = pluginInstance.getManager().getPortalById(portalName);
+        Portal portal = null;
+
+        try {
+            portal = getPluginInstance().getManager().getPortal(portalName);
+        } catch (PortalFormException e) {
+            e.printStackTrace();
+            getPluginInstance().log(Level.WARNING, e.getMessage());
+        }
+
         if (portal == null) {
-            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                    + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
+            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
             return;
         }
 
         if (portal.isDisabled()) {
-            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                    + Objects.requireNonNull(pluginInstance.getLangConfig().getString("already-disabled-message"))
+            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("already-disabled-message"))
                     .replace("{name}", portalName)));
             return;
         }
 
         portal.setDisabled(true);
-        sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-disabled-message"))
+        portal.save();
+        sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-disabled-message"))
                 .replace("{name}", portalName)));
     }
 
     private void initiateEnable(CommandSender sender, String portalName) {
         if (!sender.hasPermission("simpleportals.toggle")) {
-            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                    + pluginInstance.getLangConfig().getString("no-permission-message")));
+            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + getPluginInstance().getLangConfig().getString("no-permission-message")));
             return;
         }
 
-        Portal portal = pluginInstance.getManager().getPortalById(portalName);
+        Portal portal = null;
+
+        try {
+            portal = getPluginInstance().getManager().getPortal(portalName);
+        } catch (PortalFormException e) {
+            e.printStackTrace();
+            getPluginInstance().log(Level.WARNING, e.getMessage());
+        }
+
         if (portal == null) {
-            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                    + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
+            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
             return;
         }
 
         if (!portal.isDisabled()) {
-            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                    + Objects.requireNonNull(pluginInstance.getLangConfig().getString("already-enabled-message"))
+            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("already-enabled-message"))
                     .replace("{name}", portalName)));
             return;
         }
 
         portal.setDisabled(false);
-        sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-enabled-message"))
+        portal.save();
+        sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-enabled-message"))
                 .replace("{name}", portalName)));
     }
 
     private void sendPortalCommands(CommandSender sender, String portalName) {
         if (!sender.hasPermission("simpleportals.viewcommands")) {
-            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                    + pluginInstance.getLangConfig().getString("no-permission-message")));
+            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + getPluginInstance().getLangConfig().getString("no-permission-message")));
             return;
         }
 
-        Portal portal = pluginInstance.getManager().getPortalById(portalName);
+        Portal portal = null;
+
+        try {
+            portal = getPluginInstance().getManager().getPortal(portalName);
+        } catch (PortalFormException e) {
+            e.printStackTrace();
+            getPluginInstance().log(Level.WARNING, e.getMessage());
+        }
+
         if (portal == null) {
-            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                    + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
+            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
             return;
         }
 
-        sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-commands-message"))
+        sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-commands-message"))
                 .replace("{commands}", portal.getCommands().toString()).replace("{name}", portalName)));
     }
 
     private void initiateFill(CommandSender sender, String portalName, String materialString) {
         if (!sender.hasPermission("simpleportals.fill")) {
-            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                    + pluginInstance.getLangConfig().getString("no-permission-message")));
+            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + getPluginInstance().getLangConfig().getString("no-permission-message")));
             return;
         }
 
         if (!(sender instanceof Player)) {
-            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                    + pluginInstance.getLangConfig().getString("must-be-player-message")));
+            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + getPluginInstance().getLangConfig().getString("must-be-player-message")));
             return;
         }
 
         Player player = (Player) sender;
-        Portal portal = pluginInstance.getManager().getPortalById(portalName);
+        Portal portal = null;
+
+        try {
+            portal = getPluginInstance().getManager().getPortal(portalName);
+        } catch (PortalFormException e) {
+            e.printStackTrace();
+            getPluginInstance().log(Level.WARNING, e.getMessage());
+        }
+
         if (portal == null) {
-            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                    + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
+            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
             return;
         }
 
@@ -251,39 +296,48 @@ public class Commands implements CommandExecutor {
         if (materialString.contains(":")) {
             String[] args = materialString.split(":");
             materialName = args[0];
-            if (pluginInstance.getManager().isNumeric(args[1]))
+            if (getPluginInstance().getManager().isNumeric(args[1]))
                 durability = Integer.parseInt(args[1]);
         } else materialName = materialString;
 
         if (materialName == null || materialName.equalsIgnoreCase("")) {
-            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                    + pluginInstance.getLangConfig().getString("invalid-material-message")));
+            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + getPluginInstance().getLangConfig().getString("invalid-material-message")));
             return;
         }
 
         Material material = Material.getMaterial(materialName.toUpperCase().replace(" ", "_").replace("-", "_"));
         if (material == null) {
-            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                    + pluginInstance.getLangConfig().getString("invalid-material-message")));
+            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + getPluginInstance().getLangConfig().getString("invalid-material-message")));
             return;
         }
 
         portal.fillPortal(player, material, durability);
-        sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-filled-message")).replace("{name}", portal.getPortalId()).replace("{material}", material.name())));
+        portal.save();
+        sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-filled-message")).replace("{name}", portal.getPortalId()).replace("{material}", material.name())));
     }
 
     private void setMessage(CommandSender sender, String[] args) {
         if (!sender.hasPermission("simpleportals.message")) {
-            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                    + pluginInstance.getLangConfig().getString("no-permission-message")));
+            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + getPluginInstance().getLangConfig().getString("no-permission-message")));
             return;
         }
 
-        Portal portal = pluginInstance.getManager().getPortalById(args[1]);
+        Portal portal = null;
+
+        try {
+            portal = getPluginInstance().getManager().getPortal(args[1]);
+        } catch (PortalFormException e) {
+            e.printStackTrace();
+            getPluginInstance().log(Level.WARNING, e.getMessage());
+        }
+
         if (portal == null) {
-            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                    + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-invalid-message")).replace("{name}", args[1])));
+            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}", args[1])));
             return;
         }
 
@@ -303,9 +357,10 @@ public class Commands implements CommandExecutor {
             portal.setSubTitle(fixedMessage);
             foundType = "Sub-Title";
         } else portal.setMessage(fixedMessage);
+        portal.save();
 
-        sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-message-set"))
+        sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-message-set"))
                 .replace("{message}", fixedMessage).replace("{type}", foundType).replace("{name}", portal.getPortalId())));
     }
 
@@ -313,273 +368,355 @@ public class Commands implements CommandExecutor {
         if (sender instanceof Player) {
             Player player = (Player) sender;
             if (!player.hasPermission("simpleportals.addcommand")) {
-                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                        + pluginInstance.getLangConfig().getString("no-permission-message")));
+                player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                        + getPluginInstance().getLangConfig().getString("no-permission-message")));
                 return;
             }
 
-            Portal portal = pluginInstance.getManager().getPortalById(args[1]);
+            Portal portal = null;
+
+            try {
+                portal = getPluginInstance().getManager().getPortal(args[1]);
+            } catch (PortalFormException e) {
+                e.printStackTrace();
+                getPluginInstance().log(Level.WARNING, e.getMessage());
+            }
+
             if (portal != null) {
                 StringBuilder enteredCommand = new StringBuilder(args[2]);
                 if (args.length > 3) for (int i = 2; ++i < args.length; ) enteredCommand.append(" ").append(args[i]);
                 portal.getCommands().add(enteredCommand.toString());
+                portal.save();
+
                 String fixedCommand = enteredCommand.toString().replaceAll("(?i):PLAYER", "").replaceAll("(?i):CONSOLE", "");
-                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                        + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-command-added-message"))
+                player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-command-added-message"))
                         .replace("{command}", fixedCommand).replace("{name}", portal.getPortalId())));
             } else
-                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                        + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-invalid-message")).replace("{name}", args[1])));
+                player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}", args[1])));
         } else
-            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                    + pluginInstance.getLangConfig().getString("must-be-player-message")));
+            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + getPluginInstance().getLangConfig().getString("must-be-player-message")));
     }
 
     private void clearCommands(CommandSender sender, String portalName) {
         if (sender instanceof Player) {
             Player player = (Player) sender;
             if (!player.hasPermission("simpleportals.clearcommands")) {
-                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                        + pluginInstance.getLangConfig().getString("no-permission-message")));
+                player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                        + getPluginInstance().getLangConfig().getString("no-permission-message")));
                 return;
             }
 
-            Portal portal = pluginInstance.getManager().getPortalById(portalName);
+            Portal portal = null;
+
+            try {
+                portal = getPluginInstance().getManager().getPortal(portalName);
+            } catch (PortalFormException e) {
+                e.printStackTrace();
+                getPluginInstance().log(Level.WARNING, e.getMessage());
+            }
+
             if (portal != null) {
                 portal.getCommands().clear();
-                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                        + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-commands-cleared-message"))
+                portal.save();
+                player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-commands-cleared-message"))
                         .replace("{name}", portal.getPortalId())));
             } else
-                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                        + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
+                player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
         } else
-            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                    + pluginInstance.getLangConfig().getString("must-be-player-message")));
+            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + getPluginInstance().getLangConfig().getString("must-be-player-message")));
     }
 
     private void toggleCommandOnly(CommandSender sender, String portalName) {
         if (sender instanceof Player) {
             Player player = (Player) sender;
             if (!player.hasPermission("simpleportals.togglecommandonly")) {
-                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                        + pluginInstance.getLangConfig().getString("no-permission-message")));
+                player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                        + getPluginInstance().getLangConfig().getString("no-permission-message")));
                 return;
             }
 
-            Portal portal = pluginInstance.getManager().getPortalById(portalName);
+            Portal portal = null;
+
+            try {
+                portal = getPluginInstance().getManager().getPortal(portalName);
+            } catch (PortalFormException e) {
+                e.printStackTrace();
+                getPluginInstance().log(Level.WARNING, e.getMessage());
+            }
+
             if (portal != null) {
                 portal.setCommandsOnly(!portal.isCommandsOnly());
-                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                        + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-command-only-toggle-message"))
+                portal.save();
+                player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-command-only-toggle-message"))
                         .replace("{status}", portal.isCommandsOnly() ? "Enabled" : "Disabled")
                         .replace("{name}", portal.getPortalId())));
             } else
-                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                        + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
+                player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
         } else
-            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                    + pluginInstance.getLangConfig().getString("must-be-player-message")));
+            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + getPluginInstance().getLangConfig().getString("must-be-player-message")));
     }
 
     private void initiatePortalLocationSet(CommandSender sender, String portalName) {
         if (sender instanceof Player) {
             Player player = (Player) sender;
             if (!player.hasPermission("simpleportals.setlocation") || !player.hasPermission("simpleportals.sl")) {
-                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                        + pluginInstance.getLangConfig().getString("no-permission-message")));
+                player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                        + getPluginInstance().getLangConfig().getString("no-permission-message")));
                 return;
             }
 
-            Portal portal = pluginInstance.getManager().getPortalById(portalName);
+            Portal portal = null;
+
+            try {
+                portal = getPluginInstance().getManager().getPortal(portalName);
+            } catch (PortalFormException e) {
+                e.printStackTrace();
+                getPluginInstance().log(Level.WARNING, e.getMessage());
+            }
+
             if (portal != null) {
                 portal.setTeleportLocation(player.getLocation());
-                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                        + Objects.requireNonNull(pluginInstance.getLangConfig().getString("location-set-message"))
+                portal.save();
+                player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("location-set-message"))
                         .replace("{name}", portal.getPortalId())));
             } else
-                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                        + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
+                player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
         } else
-            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                    + pluginInstance.getLangConfig().getString("must-be-player-message")));
+            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + getPluginInstance().getLangConfig().getString("must-be-player-message")));
     }
 
     private void initiatePortalLocationSet(CommandSender sender, String portalName, String otherPortalName) {
         if (sender instanceof Player) {
             Player player = (Player) sender;
             if (!player.hasPermission("simpleportals.setlocation") || !player.hasPermission("simpleportals.sl")) {
-                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                        + pluginInstance.getLangConfig().getString("no-permission-message")));
+                player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                        + getPluginInstance().getLangConfig().getString("no-permission-message")));
                 return;
             }
 
-            Portal portal = pluginInstance.getManager().getPortalById(portalName);
+            Portal portal = null;
+
+            try {
+                portal = getPluginInstance().getManager().getPortal(portalName);
+            } catch (PortalFormException e) {
+                e.printStackTrace();
+                getPluginInstance().log(Level.WARNING, e.getMessage());
+            }
+
             if (portal != null) {
 
-                Portal foundPortal = pluginInstance.getManager().getPortalById(otherPortalName);
+                Portal foundPortal = null;
+
+                try {
+                    foundPortal = getPluginInstance().getManager().getPortal(otherPortalName);
+                } catch (PortalFormException e) {
+                    e.printStackTrace();
+                    getPluginInstance().log(Level.WARNING, e.getMessage());
+                }
+
                 if (foundPortal == null) {
-                    player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                            + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-invalid-message")).replace("{name}", otherPortalName)));
+                    player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                            + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}", otherPortalName)));
                     return;
                 }
 
                 SerializableLocation foundPointOne = foundPortal.getRegion().getPoint1(), foundPointTwo = foundPortal.getRegion().getPoint2();
                 final int x = (int) ((foundPointOne.getX() + foundPointTwo.getX()) / 2), y = (int) ((foundPointOne.getY() + foundPointTwo.getY()) / 2), z = (int) ((foundPointOne.getZ() + foundPointTwo.getZ()) / 2);
 
-                World world = pluginInstance.getServer().getWorld(foundPointOne.getWorldName());
+                World world = getPluginInstance().getServer().getWorld(foundPointOne.getWorldName());
                 if (world == null) {
-                    player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                            + Objects.requireNonNull(pluginInstance.getLangConfig().getString("world-invalid-message")).replace("{name}", foundPointOne.getWorldName())));
+                    player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                            + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("world-invalid-message")).replace("{name}", foundPointOne.getWorldName())));
                     return;
                 }
 
                 portal.setTeleportLocation(new Location(world, x + 0.5, y + 0.5, z + 0.5, player.getLocation().getYaw(), player.getLocation().getPitch()));
-                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                        + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-link-message"))
+                portal.save();
+                player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-link-message"))
                         .replace("{name}", portal.getPortalId()).replace("{other}", foundPortal.getPortalId())));
             } else
-                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                        + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
+                player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
         } else
-            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                    + pluginInstance.getLangConfig().getString("must-be-player-message")));
+            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + getPluginInstance().getLangConfig().getString("must-be-player-message")));
     }
 
     private void initiateRelocate(CommandSender sender, String portalName) {
         if (sender instanceof Player) {
             Player player = (Player) sender;
             if (!player.hasPermission("simpleportals.relocate") || !player.hasPermission("simpleportals.rl")) {
-                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                        + pluginInstance.getLangConfig().getString("no-permission-message")));
+                player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                        + getPluginInstance().getLangConfig().getString("no-permission-message")));
                 return;
             }
 
-            Region region = pluginInstance.getManager().getCurrentSelection(player);
+            Region region = getPluginInstance().getManager().getCurrentSelection(player);
             if (region == null || region.getPoint1() == null || region.getPoint2() == null) {
-                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                        + pluginInstance.getLangConfig().getString("selected-region-invalid-message")));
+                player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                        + getPluginInstance().getLangConfig().getString("selected-region-invalid-message")));
                 return;
             }
 
-            Portal portal = pluginInstance.getManager().getPortalById(portalName);
+            Portal portal = null;
+
+            try {
+                portal = getPluginInstance().getManager().getPortal(portalName);
+            } catch (PortalFormException e) {
+                e.printStackTrace();
+                getPluginInstance().log(Level.WARNING, e.getMessage());
+            }
+
             if (portal != null) {
                 portal.setRegion(region);
-                pluginInstance.getManager().clearCurrentSelection(player);
+                portal.save();
+                getPluginInstance().getManager().clearCurrentSelection(player);
                 portal.displayRegion(player);
-                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                        + Objects.requireNonNull(pluginInstance.getLangConfig().getString("region-relocated-message")).replace("{name}", portal.getPortalId())));
+                player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("region-relocated-message")).replace("{name}", portal.getPortalId())));
             } else
-                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                        + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
+                player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
         } else
-            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                    + pluginInstance.getLangConfig().getString("must-be-player-message")));
+            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + getPluginInstance().getLangConfig().getString("must-be-player-message")));
     }
 
     private void initiatePortalRegion(CommandSender sender, String portalName) {
         if (sender instanceof Player) {
             Player player = (Player) sender;
             if (!player.hasPermission("simpleportals.showregion") || !player.hasPermission("simpleportals.sr")) {
-                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                        + pluginInstance.getLangConfig().getString("no-permission-message")));
+                player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                        + getPluginInstance().getLangConfig().getString("no-permission-message")));
                 return;
             }
 
-            Portal portal = pluginInstance.getManager().getPortalById(portalName);
+            Portal portal = null;
+
+            try {
+                portal = getPluginInstance().getManager().getPortal(portalName);
+            } catch (PortalFormException e) {
+                e.printStackTrace();
+                getPluginInstance().log(Level.WARNING, e.getMessage());
+            }
+
             if (portal != null) {
                 portal.displayRegion(player);
-                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                        + Objects.requireNonNull(pluginInstance.getLangConfig().getString("region-displayed-message")).replace("{name}", portal.getPortalId())));
+                player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("region-displayed-message")).replace("{name}", portal.getPortalId())));
             } else
-                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                        + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
+                player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
         } else
-            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                    + pluginInstance.getLangConfig().getString("must-be-player-message")));
+            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + getPluginInstance().getLangConfig().getString("must-be-player-message")));
     }
 
     private void initiateInfo(CommandSender sender) {
         if (!sender.hasPermission("simpleportals.info")) {
-            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                    + pluginInstance.getLangConfig().getString("no-permission-message")));
+            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + getPluginInstance().getLangConfig().getString("no-permission-message")));
             return;
         }
 
-        sender.sendMessage(pluginInstance.getManager().colorText("&d&m-----------------------------"));
+        sender.sendMessage(getPluginInstance().getManager().colorText("&d&m-----------------------------"));
         sender.sendMessage("");
-        sender.sendMessage(pluginInstance.getManager().colorText(" &7Plugin Name:&r &bSimplePortals"));
-        sender.sendMessage(pluginInstance.getManager().colorText(" &7Author(s):&r &cXZot1K"));
-        sender.sendMessage(pluginInstance.getManager().colorText(" &7Plugin Version:&r &a" + pluginInstance.getDescription().getVersion()));
+        sender.sendMessage(getPluginInstance().getManager().colorText(" &7Plugin Name:&r &bSimplePortals"));
+        sender.sendMessage(getPluginInstance().getManager().colorText(" &7Author(s):&r &cXZot1K"));
+        sender.sendMessage(getPluginInstance().getManager().colorText(" &7Plugin Version:&r &a" + getPluginInstance().getDescription().getVersion()));
         sender.sendMessage("");
-        sender.sendMessage(pluginInstance.getManager().colorText("&d&m-----------------------------"));
+        sender.sendMessage(getPluginInstance().getManager().colorText("&d&m-----------------------------"));
     }
 
     private void initiateReload(CommandSender sender) {
         if (!sender.hasPermission("simpleportals.reload")) {
-            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                    + pluginInstance.getLangConfig().getString("no-permission-message")));
+            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + getPluginInstance().getLangConfig().getString("no-permission-message")));
             return;
         }
 
-        pluginInstance.reloadConfigs();
-        pluginInstance.getManager().savePortals();
-        pluginInstance.getManager().loadPortals();
-        sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                + pluginInstance.getLangConfig().getString("reload-message")));
+        getPluginInstance().reloadConfigs();
+        sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                + getPluginInstance().getLangConfig().getString("reload-message")));
     }
 
     private void initiateList(CommandSender sender) {
         if (!sender.hasPermission("simpleportals.list")) {
-            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                    + pluginInstance.getLangConfig().getString("no-permission-message")));
+            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + getPluginInstance().getLangConfig().getString("no-permission-message")));
             return;
         }
 
-        List<String> portalNames = new ArrayList<>();
-        for (int i = -1; ++i < pluginInstance.getManager().getPortals().size(); )
-            portalNames.add(pluginInstance.getManager().getPortals().get(i).getPortalId());
-        sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                + Objects.requireNonNull(pluginInstance.getLangConfig().getString("list-message"))
+        List<String> portalNames = getPluginInstance().getManager().getPortalNames();
+        sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("list-message"))
                 .replace("{list}", portalNames.toString())));
     }
 
     private void initiateSwitchServerSet(CommandSender sender, String portalName, String serverName) {
         if (!sender.hasPermission("simpleportals.switchserver") || !sender.hasPermission("simpleportals.ss")) {
-            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                    + pluginInstance.getLangConfig().getString("no-permission-message")));
+            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + getPluginInstance().getLangConfig().getString("no-permission-message")));
             return;
         }
 
-        Portal portal = pluginInstance.getManager().getPortalById(portalName);
+        Portal portal = null;
+
+        try {
+            portal = getPluginInstance().getManager().getPortal(portalName);
+        } catch (PortalFormException e) {
+            e.printStackTrace();
+            getPluginInstance().log(Level.WARNING, e.getMessage());
+        }
+
         if (portal != null) {
             portal.setServerSwitchName(serverName);
-            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                    + Objects.requireNonNull(pluginInstance.getLangConfig().getString("switch-server-set-message"))
+            portal.save();
+            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("switch-server-set-message"))
                     .replace("{name}", portal.getPortalId()).replace("{server}", serverName)));
         } else
-            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                    + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
+            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
     }
 
     private void initiatePortalDeletion(CommandSender sender, String portalName) {
         if (!sender.hasPermission("simpleportals.delete")) {
-            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                    + pluginInstance.getLangConfig().getString("no-permission-message")));
+            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + getPluginInstance().getLangConfig().getString("no-permission-message")));
             return;
         }
 
-        Portal portal = pluginInstance.getManager().getPortalById(portalName);
-        if (portal != null) {
-            if (sender instanceof Player) pluginInstance.getManager().clearAllVisuals((Player) sender);
-            portal.delete();
-            portal.unregister();
-            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                    + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-deleted-message"))
+        Portal portal = null;
+
+        try {
+            portal = getPluginInstance().getManager().getPortal(portalName);
+        } catch (PortalFormException e) {
+            e.printStackTrace();
+            getPluginInstance().log(Level.WARNING, e.getMessage());
+        }
+
+        if (sender instanceof Player) getPluginInstance().getManager().clearAllVisuals((Player) sender);
+        if (portal.delete()) {
+            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-deleted-message"))
                     .replace("{name}", portal.getPortalId())));
         } else
-            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                    + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
+            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
     }
 
     private void initiatePortalCreation(CommandSender sender, String portalName) {
@@ -587,47 +724,49 @@ public class Commands implements CommandExecutor {
             Player player = (Player) sender;
 
             if (!player.hasPermission("simpleportals.create")) {
-                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                        + pluginInstance.getLangConfig().getString("no-permission-message")));
+                player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                        + getPluginInstance().getLangConfig().getString("no-permission-message")));
                 return;
             }
 
-            Portal portal = pluginInstance.getManager().getPortalAtLocation(player.getLocation());
+            Portal portal = getPluginInstance().getManager().getPortalAtLocation(player.getLocation());
             if (portal != null) {
-                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                        + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-location-exists-message")).replace("{name}", portal.getPortalId())));
+                player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-location-exists-message")).replace("{name}", portal.getPortalId())));
                 return;
             }
 
-            if (pluginInstance.getManager().doesPortalExist(portalName)) {
-                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                        + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-exists-message")).replace("{name}", portalName)));
+            if (getPluginInstance().getManager().doesPortalExist(portalName)) {
+                player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-exists-message")).replace("{name}", portalName)));
                 return;
             }
 
-            Region region = pluginInstance.getManager().getCurrentSelection(player);
+            Region region = getPluginInstance().getManager().getCurrentSelection(player);
             if (region == null || region.getPoint1() == null || region.getPoint2() == null) {
-                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                        + pluginInstance.getLangConfig().getString("selected-region-invalid-message")));
+                player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                        + getPluginInstance().getLangConfig().getString("selected-region-invalid-message")));
                 return;
             }
 
             if (!region.getPoint1().getWorldName().equalsIgnoreCase(region.getPoint2().getWorldName())) {
-                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                        + pluginInstance.getLangConfig().getString("not-same-world-message")));
+                player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                        + getPluginInstance().getLangConfig().getString("not-same-world-message")));
                 return;
             }
 
-            Portal newPortal = new Portal(pluginInstance, portalName, region);
-            newPortal.register();
+            Portal newPortal = new Portal(getPluginInstance(), portalName, region);
+            newPortal.setTeleportLocation(player.getLocation().clone());
+            newPortal.save();
+
             newPortal.displayRegion(player);
-            pluginInstance.getManager().clearCurrentSelection(player);
-            player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                    + Objects.requireNonNull(pluginInstance.getLangConfig().getString("portal-created-message"))
+            getPluginInstance().getManager().clearCurrentSelection(player);
+            player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-created-message"))
                     .replace("{name}", newPortal.getPortalId())));
         } else
-            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                    + pluginInstance.getLangConfig().getString("must-be-player-message")));
+            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + getPluginInstance().getLangConfig().getString("must-be-player-message")));
     }
 
     private void initiateSelectionMode(CommandSender sender) {
@@ -635,18 +774,18 @@ public class Commands implements CommandExecutor {
             Player player = (Player) sender;
 
             if (!player.hasPermission("simpleportals.selectionmode") && !player.hasPermission("simpleportals.sm")) {
-                player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                        + pluginInstance.getLangConfig().getString("no-permission-message")));
+                player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                        + getPluginInstance().getLangConfig().getString("no-permission-message")));
                 return;
             }
 
-            pluginInstance.getManager().setSelectionMode(player, !pluginInstance.getManager().isInSelectionMode(player));
-            player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                    + Objects.requireNonNull(pluginInstance.getLangConfig().getString("selection-mode-message"))
-                    .replace("{status}", pluginInstance.getManager().isInSelectionMode(player) ? "Enabled" : "Disabled")));
+            getPluginInstance().getManager().setSelectionMode(player, !getPluginInstance().getManager().isInSelectionMode(player));
+            player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("selection-mode-message"))
+                    .replace("{status}", getPluginInstance().getManager().isInSelectionMode(player) ? "Enabled" : "Disabled")));
         } else
-            sender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                    + pluginInstance.getLangConfig().getString("must-be-player-message")));
+            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + getPluginInstance().getLangConfig().getString("must-be-player-message")));
     }
 
     private void setupHelpPageMap() {
@@ -683,14 +822,14 @@ public class Commands implements CommandExecutor {
         try {
             page = Integer.parseInt(pageString);
         } catch (Exception ignored) {
-            commandSender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                    + Objects.requireNonNull(pluginInstance.getLangConfig().getString("invalid-page-message")).replace("{pages}", String.valueOf(getHelpPageMap().size()))));
+            commandSender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("invalid-page-message")).replace("{pages}", String.valueOf(getHelpPageMap().size()))));
             return;
         }
 
         if (getHelpPageMap().isEmpty() || !getHelpPageMap().containsKey(page)) {
-            commandSender.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                    + Objects.requireNonNull(pluginInstance.getLangConfig().getString("invalid-page-message")).replace("{pages}", String.valueOf(getHelpPageMap().size()))));
+            commandSender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("invalid-page-message")).replace("{pages}", String.valueOf(getHelpPageMap().size()))));
             return;
         }
 
@@ -698,21 +837,23 @@ public class Commands implements CommandExecutor {
             Player player = (Player) commandSender;
             List<String> pageLines = getHelpPageMap().get(page);
 
-            player.sendMessage(pluginInstance.getManager().colorText("\n&e&m---------------&d[ &bSP Help &e(&a" + page + "&e) &d]&e&m---------------"));
+            player.sendMessage(getPluginInstance().getManager().colorText("\n&e&m---------------&d[ &bSP Help &e(&a" + page + "&e) &d]&e&m---------------"));
             for (int i = -1; ++i < pageLines.size(); )
-                player.sendMessage(pluginInstance.getManager().colorText(pageLines.get(i)));
+                player.sendMessage(getPluginInstance().getManager().colorText(pageLines.get(i)));
 
             if (page < getHelpPageMap().size() && page > 1) {
                 // page is both below the max page and above 1
-                TextComponent footerMessage1 = new TextComponent(pluginInstance.getManager().colorText("&e&m-------&r&d[")),
-                        footerExtra1 = new TextComponent(pluginInstance.getManager().colorText(" &b(Previous Page)")),
-                        footerExtra2 = new TextComponent(pluginInstance.getManager().colorText(" &b(Next Page) ")),
-                        footerEnd = new TextComponent(pluginInstance.getManager().colorText("&d]&e&m--------\n"));
+                TextComponent footerMessage1 = new TextComponent(getPluginInstance().getManager().colorText("&e&m-------&r&d[")),
+                        footerExtra1 = new TextComponent(getPluginInstance().getManager().colorText(" &b(Previous Page)")),
+                        footerExtra2 = new TextComponent(getPluginInstance().getManager().colorText(" &b(Next Page) ")),
+                        footerEnd = new TextComponent(getPluginInstance().getManager().colorText("&d]&e&m--------\n"));
 
                 footerExtra1.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/portals help " + (page - 1)));
-                footerExtra1.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[]{new TextComponent(pluginInstance.getManager().colorText("&aClicking this will open the help menu at page &e" + (page - 1) + "&a."))}));
+                footerExtra1.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                        new BaseComponent[]{new TextComponent(getPluginInstance().getManager().colorText("&aClicking this will open the help menu at page &e" + (page - 1) + "&a."))}));
                 footerExtra2.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/portals help " + (page + 1)));
-                footerExtra2.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[]{new TextComponent(pluginInstance.getManager().colorText("&aClicking this will open the help menu at page &e" + (page + 1) + "&a."))}));
+                footerExtra2.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                        new BaseComponent[]{new TextComponent(getPluginInstance().getManager().colorText("&aClicking this will open the help menu at page &e" + (page + 1) + "&a."))}));
 
                 footerMessage1.addExtra(footerExtra1);
                 footerMessage1.addExtra(footerExtra2);
@@ -721,36 +862,36 @@ public class Commands implements CommandExecutor {
                 player.spigot().sendMessage(footerMessage1);
             } else if (page < getHelpPageMap().size() && page <= 1) {
                 // page is less than or = to 1
-                TextComponent footerMessage = new TextComponent(pluginInstance.getManager().colorText("&e&m---------------&r&d[")),
-                        footerExtra = new TextComponent(pluginInstance.getManager().colorText(" &b(Next Page) ")),
-                        footerEnd = new TextComponent(pluginInstance.getManager().colorText("&d]&e&m---------------\n"));
+                TextComponent footerMessage = new TextComponent(getPluginInstance().getManager().colorText("&e&m---------------&r&d[")),
+                        footerExtra = new TextComponent(getPluginInstance().getManager().colorText(" &b(Next Page) ")),
+                        footerEnd = new TextComponent(getPluginInstance().getManager().colorText("&d]&e&m---------------\n"));
 
                 footerExtra.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/portals help " + (page + 1)));
-                footerExtra.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[]{new TextComponent(pluginInstance.getManager().colorText("&aClicking this will open the help menu at page &e" + (page + 1) + "&a."))}));
+                footerExtra.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[]{new TextComponent(getPluginInstance().getManager().colorText("&aClicking this will open the help menu at page &e" + (page + 1) + "&a."))}));
                 footerMessage.addExtra(footerExtra);
                 footerMessage.addExtra(footerEnd);
 
                 player.spigot().sendMessage(footerMessage);
             } else if (page >= getHelpPageMap().size() && page > 1) {
                 // page at/above max page and greater that 1
-                TextComponent footerMessage = new TextComponent(pluginInstance.getManager().colorText("&d[&e&m------------&r&d]")),
-                        footerExtra = new TextComponent(pluginInstance.getManager().colorText(" &b(Previous Page) ")),
-                        footerEnd = new TextComponent(pluginInstance.getManager().colorText("&d]&e&m-------------\n"));
+                TextComponent footerMessage = new TextComponent(getPluginInstance().getManager().colorText("&d[&e&m------------&r&d]")),
+                        footerExtra = new TextComponent(getPluginInstance().getManager().colorText(" &b(Previous Page) ")),
+                        footerEnd = new TextComponent(getPluginInstance().getManager().colorText("&d]&e&m-------------\n"));
 
                 footerExtra.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/portals help " + (page - 1)));
-                footerExtra.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[]{new TextComponent(pluginInstance.getManager().colorText("&aClicking this will open the help menu at page &e" + (page - 1) + "&a."))}));
+                footerExtra.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[]{new TextComponent(getPluginInstance().getManager().colorText("&aClicking this will open the help menu at page &e" + (page - 1) + "&a."))}));
                 footerMessage.addExtra(footerExtra);
                 footerMessage.addExtra(footerEnd);
 
                 player.spigot().sendMessage(footerMessage);
             } else
-                player.sendMessage(pluginInstance.getManager().colorText("&d[&e&m---------------------------------------&r&d]\n"));
+                player.sendMessage(getPluginInstance().getManager().colorText("&d[&e&m---------------------------------------&r&d]\n"));
         } else {
             List<String> pageLines = getHelpPageMap().get(page);
-            commandSender.sendMessage(pluginInstance.getManager().colorText("&d[&e&m-------------&r&d] &bSP Help &e(&a" + page + "&e) &d[&e&m-------------&r&d]"));
+            commandSender.sendMessage(getPluginInstance().getManager().colorText("&d[&e&m-------------&r&d] &bSP Help &e(&a" + page + "&e) &d[&e&m-------------&r&d]"));
             for (int i = -1; ++i < pageLines.size(); )
-                commandSender.sendMessage(pluginInstance.getManager().colorText(pageLines.get(i)));
-            commandSender.sendMessage(pluginInstance.getManager().colorText("&d[&e&m---------------------------------------&r&d]\n"));
+                commandSender.sendMessage(getPluginInstance().getManager().colorText(pageLines.get(i)));
+            commandSender.sendMessage(getPluginInstance().getManager().colorText("&d[&e&m---------------------------------------&r&d]\n"));
         }
     }
 
@@ -760,5 +901,9 @@ public class Commands implements CommandExecutor {
 
     private void setHelpPageMap(HashMap<Integer, List<String>> helpPageMap) {
         this.helpPageMap = helpPageMap;
+    }
+
+    private SimplePortals getPluginInstance() {
+        return pluginInstance;
     }
 }
