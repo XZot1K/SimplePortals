@@ -62,7 +62,7 @@ public class Portal {
      */
     public boolean delete() {
         File file = new File(getPluginInstance().getDataFolder(), "/portals/" + getPortalId() + ".yml");
-        if (file.exists()) {
+        if (file != null && file.exists()) {
             file.delete();
             return true;
         }

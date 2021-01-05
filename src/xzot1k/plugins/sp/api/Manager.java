@@ -5,6 +5,7 @@
 package xzot1k.plugins.sp.api;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -639,14 +640,13 @@ public class Manager {
      */
     public List<String> getPortalNames() {
         return new ArrayList<String>() {{
-            File file = new File(getPluginInstance().getDataFolder(), "/portals");
-            File[] listFiles = file.listFiles();
-            if (listFiles != null && listFiles.length > 0)
-                for (int i = -1; ++i < listFiles.length; ) {
-                    File foundFile = listFiles[i];
-                    if (foundFile != null && foundFile.getName().toLowerCase().endsWith(".yml"))
-                        add(foundFile.getName().replaceAll("(?i)\\.yml", ""));
-                }
+            for (Portal portal : getPortalMap().values()) {
+                final int x = (int) ((portal.getRegion().getPoint1().getX() + portal.getRegion().getPoint2().getX()) / 2),
+                        y = (int) ((portal.getRegion().getPoint1().getY() + portal.getRegion().getPoint2().getY()) / 2),
+                        z = (int) ((portal.getRegion().getPoint1().getZ() + portal.getRegion().getPoint2().getZ()) / 2);
+                add((portal.isDisabled() ? ChatColor.RED : ChatColor.GREEN) + portal.getPortalId() + " (World: "
+                        + portal.getRegion().getPoint1().getWorldName() + " X: " + x + " Y: " + y + " Z: " + z + ")");
+            }
         }};
     }
 

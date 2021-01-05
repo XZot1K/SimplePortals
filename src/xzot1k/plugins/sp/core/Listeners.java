@@ -98,7 +98,7 @@ public class Listeners implements Listener {
                     String message = cooldownFail ? pluginInstance.getLangConfig().getString("enter-cooldown-message") : pluginInstance.getLangConfig().getString("enter-no-permission-message");
                     if (message != null && !message.equalsIgnoreCase(""))
                         e.getPlayer().sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                                + message.replace("{time}", String.valueOf(pluginInstance.getManager().getCooldownTimeLeft(e.getPlayer(), "normal", -1)))));
+                                + message.replace("{time}", String.valueOf(pluginInstance.getManager().getCooldownTimeLeft(e.getPlayer(), "normal", pluginInstance.getConfig().getInt("portal-cooldown-duration"))))));
                     return;
                 }
 

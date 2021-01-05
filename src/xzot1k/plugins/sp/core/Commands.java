@@ -554,9 +554,10 @@ public class Commands implements CommandExecutor {
         }
 
         List<String> portalNames = getPluginInstance().getManager().getPortalNames();
-        sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
-                + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("list-message"))
-                .replace("{list}", portalNames.toString())));
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(getPluginInstance().getLangConfig().getString("prefix")).append(getPluginInstance().getLangConfig().getString("portal-list-message"));
+        for (String portalName : portalNames) stringBuilder.append("\n").append(portalName);
+        sender.sendMessage(getPluginInstance().getManager().colorText(stringBuilder.toString()));
     }
 
     private void initiateSwitchServerSet(CommandSender sender, String portalName, String serverName) {
