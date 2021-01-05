@@ -53,6 +53,7 @@ public class Portal {
         setTitle(getPluginInstance().getLangConfig().getString("portal-title-message"));
         setSubTitle(getPluginInstance().getLangConfig().getString("portal-subtitle-message"));
         setBarMessage(getPluginInstance().getLangConfig().getString("portal-bar-message"));
+        getPluginInstance().getManager().getPortalMap().put(getPortalId(), this);
     }
 
     /**
@@ -61,6 +62,7 @@ public class Portal {
      * @return Whether the process was successful.
      */
     public boolean delete() {
+        getPluginInstance().getManager().getPortalMap().remove(getPortalId());
         File file = new File(getPluginInstance().getDataFolder(), "/portals/" + getPortalId() + ".yml");
         if (file != null && file.exists()) {
             file.delete();
