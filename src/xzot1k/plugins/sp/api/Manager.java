@@ -130,7 +130,12 @@ public class Manager {
                 File file = listFiles[i];
                 if (file == null || !file.getName().toLowerCase().endsWith(".yml")) continue;
 
-                final Portal portal = getPortal(file.getName().replaceAll("(?i)\\.yml", ""));
+                Portal portal = null;
+                try {
+                    portal = getPortalFromFile(file.getName().replaceAll("(?i)\\.yml", ""));
+                } catch (PortalFormException e) {
+                    e.printStackTrace();
+                }
                 getPortalMap().put(portal.getPortalId(), portal);
             }
     }
