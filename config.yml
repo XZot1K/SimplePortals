@@ -1,4 +1,6 @@
-# If this is enabled when the player is teleport they will keep their current Yaw and Pitch.
+# If this is enabled, the management task loading and prioritizing the file form of the portals will be utilized.
+management-task: true
+# If this is enabled, when the player is teleport they will keep their current Yaw and Pitch.
 keep-teleport-head-axis: false
 # If this is enabled, all players will be able to use all portals.
 bypass-portal-permissions: true

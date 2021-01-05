@@ -16,16 +16,15 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import xzot1k.plugins.sp.SimplePortals;
-import xzot1k.plugins.sp.api.exceptions.PortalFormException;
 import xzot1k.plugins.sp.api.objects.Portal;
 import xzot1k.plugins.sp.api.objects.Region;
 import xzot1k.plugins.sp.api.objects.SerializableLocation;
+import xzot1k.plugins.sp.core.tasks.ManagementTask;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
-import java.util.logging.Level;
 
 public class Commands implements CommandExecutor {
 
@@ -138,16 +137,8 @@ public class Commands implements CommandExecutor {
             return;
         }
 
-        Portal portal = null;
-
-        try {
-            portal = getPluginInstance().getManager().getPortal(portalName);
-        } catch (PortalFormException e) {
-            e.printStackTrace();
-            getPluginInstance().log(Level.WARNING, e.getMessage());
-        }
-
-        if (portal == null) {
+        Portal portal = getPluginInstance().getManager().getPortal(portalName);
+        if (portal != null) {
             sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                     + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
             return;
@@ -170,16 +161,8 @@ public class Commands implements CommandExecutor {
             return;
         }
 
-        Portal portal = null;
-
-        try {
-            portal = getPluginInstance().getManager().getPortal(portalName);
-        } catch (PortalFormException e) {
-            e.printStackTrace();
-            getPluginInstance().log(Level.WARNING, e.getMessage());
-        }
-
-        if (portal == null) {
+        Portal portal = getPluginInstance().getManager().getPortal(portalName);
+        if (portal != null) {
             sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                     + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
             return;
@@ -206,16 +189,8 @@ public class Commands implements CommandExecutor {
             return;
         }
 
-        Portal portal = null;
-
-        try {
-            portal = getPluginInstance().getManager().getPortal(portalName);
-        } catch (PortalFormException e) {
-            e.printStackTrace();
-            getPluginInstance().log(Level.WARNING, e.getMessage());
-        }
-
-        if (portal == null) {
+        Portal portal = getPluginInstance().getManager().getPortal(portalName);
+        if (portal != null) {
             sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                     + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
             return;
@@ -242,16 +217,8 @@ public class Commands implements CommandExecutor {
             return;
         }
 
-        Portal portal = null;
-
-        try {
-            portal = getPluginInstance().getManager().getPortal(portalName);
-        } catch (PortalFormException e) {
-            e.printStackTrace();
-            getPluginInstance().log(Level.WARNING, e.getMessage());
-        }
-
-        if (portal == null) {
+        Portal portal = getPluginInstance().getManager().getPortal(portalName);
+        if (portal != null) {
             sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                     + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
             return;
@@ -276,16 +243,8 @@ public class Commands implements CommandExecutor {
         }
 
         Player player = (Player) sender;
-        Portal portal = null;
-
-        try {
-            portal = getPluginInstance().getManager().getPortal(portalName);
-        } catch (PortalFormException e) {
-            e.printStackTrace();
-            getPluginInstance().log(Level.WARNING, e.getMessage());
-        }
-
-        if (portal == null) {
+        Portal portal = getPluginInstance().getManager().getPortal(portalName);
+        if (portal != null) {
             sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                     + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
             return;
@@ -326,16 +285,8 @@ public class Commands implements CommandExecutor {
             return;
         }
 
-        Portal portal = null;
-
-        try {
-            portal = getPluginInstance().getManager().getPortal(args[1]);
-        } catch (PortalFormException e) {
-            e.printStackTrace();
-            getPluginInstance().log(Level.WARNING, e.getMessage());
-        }
-
-        if (portal == null) {
+        Portal portal = getPluginInstance().getManager().getPortal(args[1]);
+        if (portal != null) {
             sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                     + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}", args[1])));
             return;
@@ -373,15 +324,7 @@ public class Commands implements CommandExecutor {
                 return;
             }
 
-            Portal portal = null;
-
-            try {
-                portal = getPluginInstance().getManager().getPortal(args[1]);
-            } catch (PortalFormException e) {
-                e.printStackTrace();
-                getPluginInstance().log(Level.WARNING, e.getMessage());
-            }
-
+            Portal portal = getPluginInstance().getManager().getPortal(args[1]);
             if (portal != null) {
                 StringBuilder enteredCommand = new StringBuilder(args[2]);
                 if (args.length > 3) for (int i = 2; ++i < args.length; ) enteredCommand.append(" ").append(args[i]);
@@ -409,15 +352,7 @@ public class Commands implements CommandExecutor {
                 return;
             }
 
-            Portal portal = null;
-
-            try {
-                portal = getPluginInstance().getManager().getPortal(portalName);
-            } catch (PortalFormException e) {
-                e.printStackTrace();
-                getPluginInstance().log(Level.WARNING, e.getMessage());
-            }
-
+            Portal portal = getPluginInstance().getManager().getPortal(portalName);
             if (portal != null) {
                 portal.getCommands().clear();
                 portal.save();
@@ -441,15 +376,7 @@ public class Commands implements CommandExecutor {
                 return;
             }
 
-            Portal portal = null;
-
-            try {
-                portal = getPluginInstance().getManager().getPortal(portalName);
-            } catch (PortalFormException e) {
-                e.printStackTrace();
-                getPluginInstance().log(Level.WARNING, e.getMessage());
-            }
-
+            Portal portal = getPluginInstance().getManager().getPortal(portalName);
             if (portal != null) {
                 portal.setCommandsOnly(!portal.isCommandsOnly());
                 portal.save();
@@ -474,15 +401,7 @@ public class Commands implements CommandExecutor {
                 return;
             }
 
-            Portal portal = null;
-
-            try {
-                portal = getPluginInstance().getManager().getPortal(portalName);
-            } catch (PortalFormException e) {
-                e.printStackTrace();
-                getPluginInstance().log(Level.WARNING, e.getMessage());
-            }
-
+            Portal portal = getPluginInstance().getManager().getPortal(portalName);
             if (portal != null) {
                 portal.setTeleportLocation(player.getLocation());
                 portal.save();
@@ -506,27 +425,11 @@ public class Commands implements CommandExecutor {
                 return;
             }
 
-            Portal portal = null;
-
-            try {
-                portal = getPluginInstance().getManager().getPortal(portalName);
-            } catch (PortalFormException e) {
-                e.printStackTrace();
-                getPluginInstance().log(Level.WARNING, e.getMessage());
-            }
-
+            Portal portal = getPluginInstance().getManager().getPortal(portalName);
             if (portal != null) {
 
-                Portal foundPortal = null;
-
-                try {
-                    foundPortal = getPluginInstance().getManager().getPortal(otherPortalName);
-                } catch (PortalFormException e) {
-                    e.printStackTrace();
-                    getPluginInstance().log(Level.WARNING, e.getMessage());
-                }
-
-                if (foundPortal == null) {
+                Portal foundPortal = getPluginInstance().getManager().getPortal(otherPortalName);
+                if (foundPortal != null) {
                     player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                             + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}", otherPortalName)));
                     return;
@@ -571,15 +474,7 @@ public class Commands implements CommandExecutor {
                 return;
             }
 
-            Portal portal = null;
-
-            try {
-                portal = getPluginInstance().getManager().getPortal(portalName);
-            } catch (PortalFormException e) {
-                e.printStackTrace();
-                getPluginInstance().log(Level.WARNING, e.getMessage());
-            }
-
+            Portal portal = getPluginInstance().getManager().getPortal(portalName);
             if (portal != null) {
                 portal.setRegion(region);
                 portal.save();
@@ -604,15 +499,7 @@ public class Commands implements CommandExecutor {
                 return;
             }
 
-            Portal portal = null;
-
-            try {
-                portal = getPluginInstance().getManager().getPortal(portalName);
-            } catch (PortalFormException e) {
-                e.printStackTrace();
-                getPluginInstance().log(Level.WARNING, e.getMessage());
-            }
-
+            Portal portal = getPluginInstance().getManager().getPortal(portalName);
             if (portal != null) {
                 portal.displayRegion(player);
                 player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
@@ -648,7 +535,13 @@ public class Commands implements CommandExecutor {
             return;
         }
 
-        getPluginInstance().reloadConfigs();
+        if (getPluginInstance().getConfig().getBoolean("management-task")) {
+            getPluginInstance().getManagementTask().cancel();
+            getPluginInstance().reloadConfigs();
+            getPluginInstance().setManagementTask(new ManagementTask(getPluginInstance()));
+            getPluginInstance().getManagementTask().runTaskTimerAsynchronously(getPluginInstance(), 0, 200);
+        } else getPluginInstance().reloadConfigs();
+
         sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                 + getPluginInstance().getLangConfig().getString("reload-message")));
     }
@@ -673,15 +566,7 @@ public class Commands implements CommandExecutor {
             return;
         }
 
-        Portal portal = null;
-
-        try {
-            portal = getPluginInstance().getManager().getPortal(portalName);
-        } catch (PortalFormException e) {
-            e.printStackTrace();
-            getPluginInstance().log(Level.WARNING, e.getMessage());
-        }
-
+        Portal portal = getPluginInstance().getManager().getPortal(portalName);
         if (portal != null) {
             portal.setServerSwitchName(serverName);
             portal.save();
@@ -700,20 +585,16 @@ public class Commands implements CommandExecutor {
             return;
         }
 
-        Portal portal = null;
-
-        try {
-            portal = getPluginInstance().getManager().getPortal(portalName);
-        } catch (PortalFormException e) {
-            e.printStackTrace();
-            getPluginInstance().log(Level.WARNING, e.getMessage());
-        }
-
-        if (sender instanceof Player) getPluginInstance().getManager().clearAllVisuals((Player) sender);
-        if (portal.delete()) {
-            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
-                    + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-deleted-message"))
-                    .replace("{name}", portal.getPortalId())));
+        Portal portal = getPluginInstance().getManager().getPortal(portalName);
+        if (portal != null) {
+            if (sender instanceof Player) getPluginInstance().getManager().clearAllVisuals((Player) sender);
+            if (portal.delete()) {
+                sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-deleted-message"))
+                        .replace("{name}", portal.getPortalId())));
+            } else
+                sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
         } else
             sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                     + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));

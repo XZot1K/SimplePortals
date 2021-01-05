@@ -50,6 +50,7 @@ public class Manager {
     private final HashMap<UUID, TaskHolder> visualTasks;
     private final HashMap<UUID, SerializableLocation> smartTransferMap;
     private final HashMap<UUID, String> portalLinkMap;
+    private final HashMap<String, Portal> portalMap;
 
     private Random random;
     private ParticleHandler particleHandler;
@@ -58,6 +59,7 @@ public class Manager {
 
     public Manager(SimplePortals pluginInstance) {
         this.pluginInstance = pluginInstance;
+        portalMap = new HashMap<>();
         currentSelections = new HashMap<>();
         selectionMode = new HashMap<>();
         playerPortalCooldowns = new HashMap<>();
@@ -116,6 +118,20 @@ public class Manager {
             getPluginInstance().log(Level.INFO, "There was an issue obtaining proper packets for " + getPluginInstance().getServerVersion()
                     + ". (Error: " + e.getMessage() + ")");
         }
+    }
+
+    public void loadPortals() {
+        final File portalDirectory = new File(getPluginInstance().getDataFolder(), "/portals");
+        File[] listFiles = portalDirectory.listFiles();
+
+        if (listFiles != null && listFiles.length > 0)
+            for (int i = -1; ++i < listFiles.length; ) {
+                File file = listFiles[i];
+                if (file == null || !file.getName().toLowerCase().endsWith(".yml")) continue;
+
+                final Portal portal = getPortal(file.getName().replaceAll("(?i)\\.yml", ""));
+                getPortalMap().put(portal.getPortalId(), portal);
+            }
     }
 
     /**
@@ -336,27 +352,30 @@ public class Manager {
      * @return The portal found (Can return NULL).
      */
     public Portal getPortalAtLocation(Location location) {
-        final File portalDirectory = new File(getPluginInstance().getDataFolder(), "/portals");
-        File[] listFiles = portalDirectory.listFiles();
-
-        if (listFiles != null && listFiles.length > 0)
-            for (int i = -1; ++i < listFiles.length; ) {
-                File file = listFiles[i];
-                if (file == null || !file.getName().toLowerCase().endsWith(".yml")) continue;
-
-                try {
-                    Portal portal = getPortal(file.getName().replaceAll("(?i)\\.yml", ""));
-                    if (portal.getRegion().isInRegion(location)) return portal;
-                } catch (PortalFormException e) {
-                    e.printStackTrace();
-                    getPluginInstance().log(Level.WARNING, e.getMessage());
-                }
-            }
-
+        for (Portal portal : getPortalMap().values())
+            if (portal != null && getPortalMap().containsKey(portal.getPortalId())
+                    && portal.getRegion().isInRegion(location)) return portal;
         return null;
     }
 
-    public Portal getPortal(String portalId) throws PortalFormException {
+    /**
+     * Gets portal from the instance.
+     *
+     * @param portalId The portal Id.
+     * @return The portal object instance.
+     */
+    public Portal getPortal(String portalId) {
+        return ((!getPortalMap().isEmpty() && getPortalMap().containsKey(portalId)) ? getPortalMap().get(portalId) : null);
+    }
+
+    /**
+     * Obtains portal from file.
+     *
+     * @param portalId The portal id.
+     * @return The portal object
+     * @throws PortalFormException Failed to form the portal.
+     */
+    public Portal getPortalFromFile(String portalId) throws PortalFormException {
         File file = new File(getPluginInstance().getDataFolder(), "/portals/" + portalId + ".yml");
         if (file == null || !file.exists()) return null;
         FileConfiguration yaml = YamlConfiguration.loadConfiguration(file);
@@ -397,7 +416,7 @@ public class Manager {
      * @return Whether the portal object exists.
      */
     public boolean doesPortalExist(String portalName) {
-        return new File(getPluginInstance().getDataFolder(), "/portals/" + portalName + ".yml").exists();
+        return (!getPortalMap().isEmpty() && getPortalMap().containsKey(portalName));
     }
 
     /**
@@ -691,4 +710,7 @@ public class Manager {
         return pluginInstance;
     }
 
+    public HashMap<String, Portal> getPortalMap() {
+        return portalMap;
+    }
 }

@@ -32,15 +32,8 @@ public class Listeners implements Listener {
 
     @EventHandler
     public void onBlockFromTo(BlockFromToEvent e) {
-        Portal portalFrom = pluginInstance.getManager().getPortalAtLocation(e.getBlock().getLocation());
-        if (portalFrom != null && !portalFrom.isDisabled()) {
-            e.setCancelled(true);
-            return;
-        }
-
-        Portal portalTo = pluginInstance.getManager().getPortalAtLocation(e.getToBlock().getLocation());
-        if (portalTo != null && !portalTo.isDisabled())
-            e.setCancelled(true);
+        Portal portal = pluginInstance.getManager().getPortalAtLocation(e.getBlock().getLocation());
+        if (portal != null && !portal.isDisabled()) e.setCancelled(true);
     }
 
     @EventHandler
@@ -214,10 +207,7 @@ public class Listeners implements Listener {
         }
 
         Portal portal = pluginInstance.getManager().getPortalAtLocation(e.getFrom());
-        if (portal != null && !portal.isDisabled()) {
-            e.setCancelled(true);
-            e.setCanCreatePortal(false);
-        }
+        if (portal != null && !portal.isDisabled()) e.setCancelled(true);
     }
 
     @EventHandler

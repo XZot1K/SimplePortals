@@ -13,6 +13,7 @@ import xzot1k.plugins.sp.api.Manager;
 import xzot1k.plugins.sp.core.Commands;
 import xzot1k.plugins.sp.core.Listeners;
 import xzot1k.plugins.sp.core.TabCompleter;
+import xzot1k.plugins.sp.core.tasks.ManagementTask;
 import xzot1k.plugins.sp.core.utils.Metrics;
 import xzot1k.plugins.sp.core.utils.UpdateChecker;
 
@@ -26,7 +27,7 @@ public class SimplePortals extends JavaPlugin {
     private Manager manager;
     private String serverVersion;
 
-
+    private ManagementTask managementTask;
     private FileConfiguration langConfig;
     private File langFile;
     private boolean prismaInstalled;
@@ -34,7 +35,7 @@ public class SimplePortals extends JavaPlugin {
     @Override
     public void onEnable() {
         pluginInstance = this;
-        setServerVersion(pluginInstance.getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3]);
+        setServerVersion(getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3]);
 
         File file = new File(getDataFolder(), "/config.yml");
         if (file.exists()) {
@@ -53,12 +54,17 @@ public class SimplePortals extends JavaPlugin {
 
         PluginCommand command = getCommand("simpleportals");
         if (command != null) {
-            command.setTabCompleter(new TabCompleter(getPluginInstance()));
-            command.setExecutor(new Commands(getPluginInstance()));
+            command.setTabCompleter(new TabCompleter(this));
+            command.setExecutor(new Commands(this));
         }
 
-        getServer().getPluginManager().registerEvents(new Listeners(pluginInstance), this);
+        getServer().getPluginManager().registerEvents(new Listeners(this), this);
         getManager().convertFromPortalsFile();
+
+        if (getConfig().getBoolean("management-task")) {
+            setManagementTask(new ManagementTask(this));
+            getManagementTask().runTaskTimerAsynchronously(this, 0, 200);
+        }
 
         try {
             final UpdateChecker updateChecker = new UpdateChecker(this, 56772);
@@ -260,5 +266,13 @@ public class SimplePortals extends JavaPlugin {
 
     private void setPrismaInstalled(boolean prismaInstalled) {
         this.prismaInstalled = prismaInstalled;
+    }
+
+    public ManagementTask getManagementTask() {
+        return managementTask;
+    }
+
+    public void setManagementTask(ManagementTask managementTask) {
+        this.managementTask = managementTask;
     }
 }

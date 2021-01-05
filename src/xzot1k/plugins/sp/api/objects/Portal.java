@@ -66,7 +66,6 @@ public class Portal {
             file.delete();
             return true;
         }
-
         return false;
     }
 
@@ -102,7 +101,6 @@ public class Portal {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
     /**
