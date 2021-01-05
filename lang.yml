@@ -7,7 +7,7 @@ portal-exists-message: "&cThe portal &e{name} &calready exists. Please use the &
 selected-region-invalid-message: "&cPlease check your selected region. It seems one of your points or the entire region is invalid."
 portal-invalid-message: "&cThe portal &e{name} &cdoes not exist."
 world-invalid-message: "&cThe world &e{name} &cdoes not exist."
-selection-mode-message: "&aSelection mode has be &e{status}&a!"
+selection-mode-message: "&aSelection mode has be &e{status}&a! Within selection mode, use &eLeft &aand &eRight &aclick to create a cuboid selection."
 not-same-world-message: "&cBoth points within your selection must be in the same world."
 portal-created-message: "&aThe portal &e{name} &ahas been successfully created!"
 portal-deleted-message: "&aThe portal &e{name} &ahas been successfully deleted!"
