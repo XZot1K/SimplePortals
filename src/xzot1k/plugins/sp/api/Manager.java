@@ -641,11 +641,16 @@ public class Manager {
     /**
      * Gets a list of all found portal names.
      *
+     * @param withCoordinates adds coordinates to the end of names.
      * @return The list of portal name/ids.
      */
-    public List<String> getPortalNames() {
+    public List<String> getPortalNames(boolean withCoordinates) {
         return new ArrayList<String>() {{
             for (Portal portal : getPortalMap().values()) {
+                if (withCoordinates) {
+                    add(portal.getPortalId());
+                    continue;
+                }
                 final int x = (int) ((portal.getRegion().getPoint1().getX() + portal.getRegion().getPoint2().getX()) / 2),
                         y = (int) ((portal.getRegion().getPoint1().getY() + portal.getRegion().getPoint2().getY()) / 2),
                         z = (int) ((portal.getRegion().getPoint1().getZ() + portal.getRegion().getPoint2().getZ()) / 2);
