@@ -5,7 +5,7 @@
 package xzot1k.plugins.sp.api.events;
 
 import org.bukkit.Location;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.Entity;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
@@ -15,12 +15,12 @@ public class PortalEnterEvent extends Event implements Cancellable {
 
     private static final HandlerList handlers = new HandlerList();
     private boolean cancelled;
-    private Player player;
-    private Portal portal;
+    private final Entity entity;
+    private final Portal portal;
     private Location targetLocation, initialLocation;
 
-    public PortalEnterEvent(Player player, Portal portal, Location initialLocation, Location targetLocation) {
-        this.player = player;
+    public PortalEnterEvent(Entity entity, Portal portal, Location initialLocation, Location targetLocation) {
+        this.entity = entity;
         this.portal = portal;
         setTargetLocation(targetLocation);
         setInitialLocation(initialLocation);
@@ -49,10 +49,6 @@ public class PortalEnterEvent extends Event implements Cancellable {
         return portal;
     }
 
-    public Player getPlayer() {
-        return player;
-    }
-
     public Location getTargetLocation() {
         return targetLocation;
     }
@@ -67,5 +63,9 @@ public class PortalEnterEvent extends Event implements Cancellable {
 
     public void setInitialLocation(Location initialLocation) {
         this.initialLocation = initialLocation;
+    }
+
+    public Entity getEntity() {
+        return entity;
     }
 }

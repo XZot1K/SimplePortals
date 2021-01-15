@@ -14,9 +14,10 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.entity.Vehicle;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.BlockIterator;
+import org.bukkit.util.Vector;
 import us.eunoians.prisma.ColorProvider;
 import xzot1k.plugins.sp.SimplePortals;
 import xzot1k.plugins.sp.api.enums.PointType;
@@ -38,6 +39,10 @@ import xzot1k.plugins.sp.core.tasks.HighlightTask;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
@@ -58,6 +63,8 @@ public class Manager {
     private TitleHandler titleHandler;
     private BarHandler barHandler;
 
+    private Class<?> mountPacketClass, packetClass, craftPlayerClass, entityClass;
+
     public Manager(SimplePortals pluginInstance) {
         this.pluginInstance = pluginInstance;
         portalMap = new HashMap<>();
@@ -69,6 +76,16 @@ public class Manager {
         portalLinkMap = new HashMap<>();
 
         setRandom(new Random());
+
+        try {
+            packetClass = Class.forName("net.minecraft.server." + getPluginInstance().getServerVersion() + ".Packet");
+            mountPacketClass = Class.forName("net.minecraft.server." + getPluginInstance().getServerVersion() + ".PacketPlayOutMount");
+            craftPlayerClass = Class.forName("org.bukkit.craftbukkit." + getPluginInstance().getServerVersion() + ".entity.CraftPlayer");
+            entityClass = Class.forName("net.minecraft.server." + getPluginInstance().getServerVersion() + ".Entity");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
         setupPackets();
     }
 
@@ -184,7 +201,8 @@ public class Manager {
                         final String pre = message.substring(0, matcher.start()), post = message.substring(matcher.end());
                         matcher = hexPattern.matcher(message = (pre + hex + post));
                     }
-                } catch (IllegalArgumentException ignored) {}
+                } catch (IllegalArgumentException ignored) {
+                }
                 return net.md_5.bungee.api.ChatColor.translateAlternateColorCodes('&', message);
             }
         }
@@ -270,8 +288,8 @@ public class Manager {
      * @param player The player to clear for.
      */
     public void clearCurrentSelection(Player player) {
-        if (!getCurrentSelections().isEmpty())
-            getCurrentSelections().remove(player.getUniqueId());
+        getCurrentSelections().remove(player.getUniqueId());
+        getSelectionMode().remove(player.getUniqueId());
     }
 
     /**
@@ -428,32 +446,89 @@ public class Manager {
     /**
      * Handles general teleportation of a player to a location. (Handles the player's vehicle, if possible)
      *
-     * @param player   The player to teleport.
+     * @param entity   The entity to teleport.
      * @param location The destination.
      */
     @SuppressWarnings("deprecation")
-    public void teleportPlayerWithEntity(Player player, Location location) {
-        if (player.getVehicle() != null && getPluginInstance().getConfig().getBoolean("vehicle-teleportation")) {
-            Entity entity = player.getVehicle();
-            if (getPluginInstance().getServerVersion().startsWith("v1_11") || getPluginInstance().getServerVersion().startsWith("v1_12")
-                    || getPluginInstance().getServerVersion().startsWith("v1_13") || getPluginInstance().getServerVersion().startsWith("v1_14")
-                    || getPluginInstance().getServerVersion().startsWith("v1_15") || getPluginInstance().getServerVersion().startsWith("v1_16"))
-                entity.removePassenger(player);
-            else entity.setPassenger(null);
+    public void teleportWithEntity(Entity entity, Location location) {
+        final boolean vehicleTeleportation = getPluginInstance().getConfig().getBoolean("vehicle-teleportation");
+        boolean isNew = (!getPluginInstance().getServerVersion().startsWith("v1_7") && !getPluginInstance().getServerVersion().startsWith("v1_8")
+                && !getPluginInstance().getServerVersion().startsWith("v1_9") && !getPluginInstance().getServerVersion().startsWith("v1_10"));
 
-            if (entity.getPassengers().contains(player))
-                entity.eject();
+        if (entity instanceof Vehicle && vehicleTeleportation) {
+            final Vehicle vehicle = (Vehicle) entity;
+            Vector newVehicleDirection = vehicle.getVelocity().clone();
 
-            player.teleport(location);
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    entity.teleport(player.getLocation());
-                    entity.addPassenger(player);
+            List<Entity> passengersList = (!vehicle.isEmpty() ? (isNew ? new ArrayList<>(vehicle.getPassengers())
+                    : Collections.singletonList(vehicle.getPassenger())) : Collections.emptyList());
+            vehicle.eject();
+
+
+            entity.teleport(location);
+            for (Entity e : passengersList) e.teleport(location);
+            vehicle.teleport(location);
+
+            getPluginInstance().getServer().getScheduler().runTaskLater(getPluginInstance(), () -> {
+                for (Entity e : passengersList) {
+                    if (isNew) vehicle.addPassenger(e);
+                    else vehicle.setPassenger(e);
+                    if (e instanceof Player) sendMountPacket((Player) e);
                 }
-            }.runTaskLater(getPluginInstance(), 1);
-        } else
-            player.teleport(location);
+
+                vehicle.setVelocity(newVehicleDirection);
+            }, 5);
+            return;
+        }
+
+        if (vehicleTeleportation && entity.getVehicle() != null) {
+            Vehicle vehicle = (Vehicle) entity.getVehicle();
+            Vector newVehicleDirection = vehicle.getVelocity().clone();
+
+            List<Entity> passengersList = (!vehicle.isEmpty() ? (isNew ? new ArrayList<>(vehicle.getPassengers())
+                    : Collections.singletonList(vehicle.getPassenger())) : Collections.emptyList());
+            vehicle.eject();
+
+            for (Entity e : passengersList) e.teleport(location);
+            vehicle.teleport(location);
+
+            getPluginInstance().getServer().getScheduler().runTaskLater(getPluginInstance(), () -> {
+                for (Entity e : passengersList) {
+                    if (isNew) vehicle.addPassenger(e);
+                    else vehicle.setPassenger(e);
+                    if (e instanceof Player) sendMountPacket((Player) e);
+                }
+
+                vehicle.setVelocity(newVehicleDirection);
+            }, 5);
+        } else {
+            Vector newDirection = entity.getLocation().getDirection().clone();
+            location.setDirection(newDirection);
+            entity.teleport(location);
+        }
+    }
+
+    public void sendMountPacket(Player player) {
+        try {
+            Constructor<?> constructor = getMountPacketClass().getDeclaredConstructor(getEntityClass());
+
+            Object castedPlayer = getCraftPlayerClass().cast(player);
+            Method handleMethod = castedPlayer.getClass().getMethod("getHandle");
+            Object entityPlayer = handleMethod.invoke(castedPlayer);
+            Object packet = constructor.newInstance(entityPlayer);
+
+            for (Player foundPlayer : player.getWorld().getPlayers()) {
+                Object foundCastedPlayer = getCraftPlayerClass().cast(foundPlayer);
+                Method foundHandleMethod = foundCastedPlayer.getClass().getMethod("getHandle");
+                Object foundEntityPlayer = foundHandleMethod.invoke(foundCastedPlayer);
+                Field foundConnection = foundEntityPlayer.getClass().getDeclaredField("playerConnection");
+                foundConnection.setAccessible(true);
+                Object connection = foundConnection.get(foundEntityPlayer);
+                Method sendPacket = connection.getClass().getMethod("sendPacket", getPacketClass());
+                sendPacket.invoke(connection, packet);
+            }
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException | NoSuchFieldException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -647,10 +722,11 @@ public class Manager {
     public List<String> getPortalNames(boolean withCoordinates) {
         return new ArrayList<String>() {{
             for (Portal portal : getPortalMap().values()) {
-                if (withCoordinates) {
+                if (!withCoordinates) {
                     add(portal.getPortalId());
                     continue;
                 }
+
                 final int x = (int) ((portal.getRegion().getPoint1().getX() + portal.getRegion().getPoint2().getX()) / 2),
                         y = (int) ((portal.getRegion().getPoint1().getY() + portal.getRegion().getPoint2().getY()) / 2),
                         z = (int) ((portal.getRegion().getPoint1().getZ() + portal.getRegion().getPoint2().getZ()) / 2);
@@ -722,5 +798,21 @@ public class Manager {
 
     public HashMap<String, Portal> getPortalMap() {
         return portalMap;
+    }
+
+    public Class<?> getMountPacketClass() {
+        return mountPacketClass;
+    }
+
+    public Class<?> getEntityClass() {
+        return entityClass;
+    }
+
+    public Class<?> getPacketClass() {
+        return packetClass;
+    }
+
+    public Class<?> getCraftPlayerClass() {
+        return craftPlayerClass;
     }
 }

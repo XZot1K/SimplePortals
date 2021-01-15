@@ -69,7 +69,7 @@ public class SimplePortals extends JavaPlugin {
         try {
             final UpdateChecker updateChecker = new UpdateChecker(this, 56772);
             if (updateChecker.checkForUpdates()) log(Level.INFO, "The version " + getDescription().getVersion()
-                    + " is doesn't match the latest version!");
+                    + " doesn't match the latest version!");
             else log(Level.INFO, "Everything looks like it is up to date!");
         } catch (Exception e) {
             e.printStackTrace();
@@ -226,17 +226,6 @@ public class SimplePortals extends JavaPlugin {
             getLangConfig().save(langFile);
         } catch (IOException e) {
             log(Level.WARNING, e.getMessage());
-        }
-    }
-
-    private void copy(File source, File destination) throws IOException {
-        if (destination.exists()) destination.delete();
-        try (InputStream is = new FileInputStream(source); OutputStream os = new FileOutputStream(destination)) {
-            byte[] buf = new byte[1024];
-            int bytesRead;
-            while ((bytesRead = is.read(buf)) > 0) {
-                os.write(buf, 0, bytesRead);
-            }
         }
     }
 

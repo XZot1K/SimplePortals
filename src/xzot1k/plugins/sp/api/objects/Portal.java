@@ -14,6 +14,7 @@ import org.bukkit.block.BlockState;
 import org.bukkit.block.data.Directional;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 import xzot1k.plugins.sp.SimplePortals;
@@ -165,25 +166,26 @@ public class Portal {
     /**
      * Performs the general action of the portal by teleporting the player and playing effects. (Handles server transfer)
      *
-     * @param player The player to perform actions on.
+     * @param entity The entity to perform actions on.
      */
-    public void performAction(Player player) {
-        if (getServerSwitchName() == null || getServerSwitchName().equalsIgnoreCase("none")) {
+    public void performAction(Entity entity) {
+        if (getServerSwitchName() == null || getServerSwitchName().isEmpty() || getServerSwitchName().equalsIgnoreCase("none")) {
             Location location = getTeleportLocation().asBukkitLocation();
             if (location != null) {
                 if (getPluginInstance().getConfig().getBoolean("keep-teleport-head-axis")) {
-                    location.setYaw(player.getLocation().getYaw());
-                    location.setPitch(player.getLocation().getPitch());
+                    location.setYaw(entity.getLocation().getYaw());
+                    location.setPitch(entity.getLocation().getPitch());
                 }
 
-                getPluginInstance().getManager().teleportPlayerWithEntity(player, location);
-                getPluginInstance().getManager().getPortalLinkMap().put(player.getUniqueId(), getPortalId());
+                getPluginInstance().getManager().teleportWithEntity(entity, location);
+                if (entity instanceof Player)
+                    getPluginInstance().getManager().getPortalLinkMap().put(entity.getUniqueId(), getPortalId());
             }
-        } else {
-            if ((!getPluginInstance().getManager().getSmartTransferMap().isEmpty()
-                    && getPluginInstance().getManager().getSmartTransferMap().containsKey(player.getUniqueId()))) {
+        } else if (entity instanceof Player) {
+            final Player player = (Player) entity;
+            if ((!getPluginInstance().getManager().getSmartTransferMap().isEmpty() && getPluginInstance().getManager().getSmartTransferMap().containsKey(entity.getUniqueId()))) {
                 SerializableLocation serializableLocation = getPluginInstance().getManager().getSmartTransferMap()
-                        .get(player.getUniqueId());
+                        .get(entity.getUniqueId());
 
                 if (getPluginInstance().getManager().isFacingPortal(player, this, 5)) {
                     double currentYaw = serializableLocation.getYaw();
@@ -209,10 +211,9 @@ public class Portal {
                         default:
                             break;
                     }
-
                 }
 
-                getPluginInstance().getManager().teleportPlayerWithEntity(player, serializableLocation.asBukkitLocation());
+                getPluginInstance().getManager().teleportWithEntity(player, serializableLocation.asBukkitLocation());
                 getPluginInstance().getManager().getPortalLinkMap().put(player.getUniqueId(), getPortalId());
             }
 
@@ -221,12 +222,12 @@ public class Portal {
 
         String particleEffect = getPluginInstance().getConfig().getString("teleport-visual-effect");
         if (particleEffect != null && !particleEffect.isEmpty())
-            getPluginInstance().getManager().getParticleHandler().broadcastParticle(player.getLocation(), 1, 2, 1, 0,
+            getPluginInstance().getManager().getParticleHandler().broadcastParticle(entity.getLocation(), 1, 2, 1, 0,
                     particleEffect.toUpperCase().replace(" ", "_").replace("-", "_"), 10);
 
         String soundName = getPluginInstance().getConfig().getString("teleport-sound");
         if (soundName != null && !soundName.isEmpty())
-            player.getWorld().playSound(player.getLocation(), Sound.valueOf(soundName.toUpperCase().replace(" ", "_")
+            entity.getWorld().playSound(entity.getLocation(), Sound.valueOf(soundName.toUpperCase().replace(" ", "_")
                     .replace("-", "_")), 1, 1);
     }
 
@@ -265,7 +266,8 @@ public class Portal {
                                 Method method = block.getClass().getMethod("setData", Byte.class);
                                 if (method != null)
                                     method.invoke(block, (byte) durability);
-                            } catch (Exception ignored) {}
+                            } catch (Exception ignored) {
+                            }
 
                         if (!getPluginInstance().getServerVersion().startsWith("v1_7") && !getPluginInstance().getServerVersion().startsWith("v1_8")
                                 && !getPluginInstance().getServerVersion().startsWith("v1_9") && !getPluginInstance().getServerVersion().startsWith("v1_10")) {

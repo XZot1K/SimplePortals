@@ -35,6 +35,8 @@ portal-cooldown-duration: 5
 throw-velocity: 1.35
 # This is the delay before portal commands are initiated (20 ticks = 1 second).
 command-tick-delay: 5
+# This is how long before the item that was dropped or spawned has its location checked for teleportation.
+item-teleport-delay: 2
 
 # This is the sound that is played when the player teleports.
 # You may need to change this based on your minecraft version.
