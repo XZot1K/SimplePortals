@@ -463,7 +463,6 @@ public class Manager {
                     : Collections.singletonList(vehicle.getPassenger())) : Collections.emptyList());
             vehicle.eject();
 
-
             entity.teleport(location);
             for (Entity e : passengersList) e.teleport(location);
             vehicle.teleport(location);
@@ -475,7 +474,8 @@ public class Manager {
                     if (e instanceof Player) sendMountPacket((Player) e);
                 }
 
-                vehicle.setVelocity(newVehicleDirection);
+                if (getPluginInstance().getConfig().getBoolean("maintain-velocity"))
+                    vehicle.setVelocity(newVehicleDirection);
             }, 5);
             return;
         }
@@ -498,12 +498,14 @@ public class Manager {
                     if (e instanceof Player) sendMountPacket((Player) e);
                 }
 
-                vehicle.setVelocity(newVehicleDirection);
+                if (getPluginInstance().getConfig().getBoolean("maintain-velocity"))
+                    vehicle.setVelocity(newVehicleDirection);
             }, 5);
         } else {
-            Vector newDirection = entity.getLocation().getDirection().clone();
-            location.setDirection(newDirection);
+            Vector newDirection = entity.getVelocity().clone();
             entity.teleport(location);
+            if (getPluginInstance().getConfig().getBoolean("maintain-velocity"))
+                entity.setVelocity(newDirection);
         }
     }
 

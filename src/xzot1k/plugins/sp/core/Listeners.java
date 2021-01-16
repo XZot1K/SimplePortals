@@ -148,15 +148,18 @@ public class Listeners implements Listener {
 
     @EventHandler
     public void onItemSpawn(ItemSpawnEvent e) {
-        pluginInstance.getServer().getScheduler().runTaskLater(pluginInstance,
-                () -> initiatePortalStuff(e.getEntity().getLocation(), e.getLocation(), e.getEntity()), 20L * pluginInstance.getConfig().getInt("item-teleport-delay"));
+        if (pluginInstance.getConfig().getBoolean("item-transfer"))
+            pluginInstance.getServer().getScheduler().runTaskLater(pluginInstance,
+                    () -> initiatePortalStuff(e.getEntity().getLocation(), e.getLocation(), e.getEntity()), 20L * pluginInstance.getConfig().getInt("item-teleport-delay"));
     }
 
     @EventHandler
     public void onItemSpawn(PlayerDropItemEvent e) {
-        final Location startLocation = e.getItemDrop().getLocation().clone();
-        pluginInstance.getServer().getScheduler().runTaskLater(pluginInstance,
-                () -> initiatePortalStuff(e.getItemDrop().getLocation(), startLocation, e.getItemDrop()), 20L * pluginInstance.getConfig().getInt("item-teleport-delay"));
+        if (pluginInstance.getConfig().getBoolean("item-transfer")) {
+            final Location startLocation = e.getItemDrop().getLocation().clone();
+            pluginInstance.getServer().getScheduler().runTaskLater(pluginInstance,
+                    () -> initiatePortalStuff(e.getItemDrop().getLocation(), startLocation, e.getItemDrop()), 20L * pluginInstance.getConfig().getInt("item-teleport-delay"));
+        }
     }
 
     @EventHandler

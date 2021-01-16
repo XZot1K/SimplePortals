@@ -2,6 +2,8 @@
 management-task: true
 # If this is enabled, when the player is teleport they will keep their current Yaw and Pitch.
 keep-teleport-head-axis: false
+# If this option is enabled, velocity will continue through portal transfers for player and all other entities.
+maintain-velocity: true
 # If this is enabled, all players will be able to use all portals.
 bypass-portal-permissions: true
 # If this is enabled, the player can teleport through portals with vehicles, such as Horses and Boats.
@@ -35,6 +37,9 @@ portal-cooldown-duration: 5
 throw-velocity: 1.35
 # This is the delay before portal commands are initiated (20 ticks = 1 second).
 command-tick-delay: 5
+
+# This allows dropped/spawned items to transfer through portals.
+item-transfer: true
 # This is how long before the item that was dropped or spawned has its location checked for teleportation.
 item-teleport-delay: 2
 
