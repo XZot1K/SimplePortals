@@ -268,18 +268,12 @@ public class Portal {
                                 blockState.setBlockData(getPluginInstance().getServer().createBlockData(material));
                                 setBlock(block, material, BlockFace.valueOf(Direction.getYaw(player).name()));
                             } else {
-                                if (block instanceof Directional) {
-                                    Method method = BlockState.class.getMethod("setData", Byte.class);
-                                    method.setAccessible(true);
-                                    method.invoke(block, oppositeDirectionByte(Direction.getYaw(player)));
-                                } else {
-                                    Method method = Block.class.getMethod("setData", Byte.class);
-                                    method.setAccessible(true);
-                                    method.invoke(block, oppositeDirectionByte(Direction.getYaw(player)));
-                                    blockState.update(true, false);
-                                }
+                                Method method = Block.class.getMethod("setData", Byte.class);
+                                method.setAccessible(true);
+                                method.invoke(block, oppositeDirectionByte(Direction.getYaw(player)));
+                                blockState.update(true, false);
                             }
-                        } catch (Exception ignored) {
+                        } catch (NoClassDefFoundError | Exception ignored) {
                         }
                     }
                 }

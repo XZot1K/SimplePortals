@@ -1,14 +1,14 @@
 name: SimplePortals
-version: 1.5.8-B
+version: 1.5.8
 api-version: 1.13
 main: xzot1k.plugins.sp.SimplePortals
 author: XZot1K
 description: A simple yet effective way to create portals for your server!
-softdepend: [Multiverse-Core, MultiWorld, Prisma]
+softdepend: [ Multiverse-Core, MultiWorld, Prisma ]
 commands:
   simpleportals:
     default: op
-    aliases: [portals, portal, sportal, sportals, sp]
+    aliases: [ portals, portal, sportal, sportals, sp ]
 permissions:
   simpleportals.admin:
     default: op
