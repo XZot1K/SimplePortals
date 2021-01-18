@@ -150,7 +150,8 @@ public class Listeners implements Listener {
     public void onItemSpawn(ItemSpawnEvent e) {
         if (pluginInstance.getConfig().getBoolean("item-transfer"))
             pluginInstance.getServer().getScheduler().runTaskLater(pluginInstance,
-                    () -> initiatePortalStuff(e.getEntity().getLocation(), e.getLocation(), e.getEntity()), 20L * pluginInstance.getConfig().getInt("item-teleport-delay"));
+                    () -> initiatePortalStuff(e.getEntity().getLocation(), e.getLocation(), e.getEntity()),
+                    20L * pluginInstance.getConfig().getInt("item-teleport-delay"));
     }
 
     @EventHandler
@@ -158,7 +159,8 @@ public class Listeners implements Listener {
         if (pluginInstance.getConfig().getBoolean("item-transfer")) {
             final Location startLocation = e.getItemDrop().getLocation().clone();
             pluginInstance.getServer().getScheduler().runTaskLater(pluginInstance,
-                    () -> initiatePortalStuff(e.getItemDrop().getLocation(), startLocation, e.getItemDrop()), 20L * pluginInstance.getConfig().getInt("item-teleport-delay"));
+                    () -> initiatePortalStuff(e.getItemDrop().getLocation(), startLocation, e.getItemDrop()),
+                    20L * pluginInstance.getConfig().getInt("item-teleport-delay"));
         }
     }
 

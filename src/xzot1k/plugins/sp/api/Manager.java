@@ -451,7 +451,9 @@ public class Manager {
      */
     @SuppressWarnings("deprecation")
     public void teleportWithEntity(Entity entity, Location location) {
-        final boolean vehicleTeleportation = getPluginInstance().getConfig().getBoolean("vehicle-teleportation");
+        final boolean vehicleTeleportation = getPluginInstance().getConfig().getBoolean("vehicle-teleportation"),
+                entityVelocity = getPluginInstance().getConfig().getBoolean("maintain-entity-velocity"),
+                vehicleVelocity = getPluginInstance().getConfig().getBoolean("maintain-vehicle-velocity");
         boolean isNew = (!getPluginInstance().getServerVersion().startsWith("v1_7") && !getPluginInstance().getServerVersion().startsWith("v1_8")
                 && !getPluginInstance().getServerVersion().startsWith("v1_9") && !getPluginInstance().getServerVersion().startsWith("v1_10"));
 
@@ -464,8 +466,12 @@ public class Manager {
             vehicle.eject();
 
             entity.teleport(location);
+            if (!entityVelocity) entity.setVelocity(new Vector(0, 0, 0));
+
             for (Entity e : passengersList) e.teleport(location);
+
             vehicle.teleport(location);
+            if (!vehicleVelocity) vehicle.setVelocity(new Vector(0, 0, 0));
 
             getPluginInstance().getServer().getScheduler().runTaskLater(getPluginInstance(), () -> {
                 for (Entity e : passengersList) {
@@ -474,8 +480,8 @@ public class Manager {
                     if (e instanceof Player) sendMountPacket((Player) e);
                 }
 
-                if (getPluginInstance().getConfig().getBoolean("maintain-velocity"))
-                    vehicle.setVelocity(newVehicleDirection);
+                if (!vehicleVelocity) vehicle.setVelocity(newVehicleDirection);
+                else vehicle.setVelocity(new Vector(0, 0, 0));
             }, 5);
             return;
         }
@@ -488,8 +494,13 @@ public class Manager {
                     : Collections.singletonList(vehicle.getPassenger())) : Collections.emptyList());
             vehicle.eject();
 
-            for (Entity e : passengersList) e.teleport(location);
+            for (Entity e : passengersList) {
+                e.teleport(location);
+                if (!entityVelocity) e.setVelocity(new Vector(0, 0, 0));
+            }
+
             vehicle.teleport(location);
+            if (!vehicleVelocity) vehicle.setVelocity(new Vector(0, 0, 0));
 
             getPluginInstance().getServer().getScheduler().runTaskLater(getPluginInstance(), () -> {
                 for (Entity e : passengersList) {
@@ -498,14 +509,14 @@ public class Manager {
                     if (e instanceof Player) sendMountPacket((Player) e);
                 }
 
-                if (getPluginInstance().getConfig().getBoolean("maintain-velocity"))
-                    vehicle.setVelocity(newVehicleDirection);
+                if (vehicleVelocity) vehicle.setVelocity(newVehicleDirection);
             }, 5);
         } else {
             Vector newDirection = entity.getVelocity().clone();
+
             entity.teleport(location);
-            if (getPluginInstance().getConfig().getBoolean("maintain-velocity"))
-                entity.setVelocity(newDirection);
+            if (entityVelocity) entity.setVelocity(newDirection);
+            else entity.setVelocity(new Vector(0, 0, 0));
         }
     }
 
