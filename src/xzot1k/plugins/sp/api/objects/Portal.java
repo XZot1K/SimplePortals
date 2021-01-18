@@ -25,10 +25,10 @@ import xzot1k.plugins.sp.core.tasks.RegionTask;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 public class Portal {
 
@@ -251,6 +251,9 @@ public class Portal {
                 highestZ = (int) Math.max(getRegion().getPoint1().getZ(), getRegion().getPoint2().getZ());
 
         final World world = getPluginInstance().getServer().getWorld(getRegion().getPoint1().getWorldName());
+        final boolean isOldVersion = (getPluginInstance().getServerVersion().startsWith("v1_12") || getPluginInstance().getServerVersion().startsWith("v1_11") || getPluginInstance().getServerVersion().startsWith("v1_10")
+                || getPluginInstance().getServerVersion().startsWith("v1_9") || getPluginInstance().getServerVersion().startsWith("v1_8") || getPluginInstance().getServerVersion().startsWith("v1_7"));
+
         for (int x = (lowestX - 1); ++x <= highestX; )
             for (int z = (lowestZ - 1); ++z <= highestZ; )
                 for (int y = (lowestY - 1); ++y <= highestY; ) {
@@ -260,36 +263,31 @@ public class Portal {
                     if (block.getType() == Material.AIR || block.getType() == getLastFillMaterial()) {
                         blockState.setType(material);
 
-                        if (!getPluginInstance().getServerVersion().startsWith("v1_12") && !getPluginInstance().getServerVersion().startsWith("v1_11") && !getPluginInstance().getServerVersion().startsWith("v1_10")
-                                && !getPluginInstance().getServerVersion().startsWith("v1_9") && !getPluginInstance().getServerVersion().startsWith("v1_8") && !getPluginInstance().getServerVersion().startsWith("v1_7"))
-                            try {
+                        try {
+                            if (isOldVersion) {
                                 Method method = block.getClass().getMethod("setData", Byte.class);
-                                if (method != null)
-                                    method.invoke(block, (byte) durability);
-                            } catch (Exception ignored) {
+                                if (method != null) method.invoke(block, (byte) durability);
                             }
 
-                        if (!getPluginInstance().getServerVersion().startsWith("v1_7") && !getPluginInstance().getServerVersion().startsWith("v1_8")
-                                && !getPluginInstance().getServerVersion().startsWith("v1_9") && !getPluginInstance().getServerVersion().startsWith("v1_10")) {
-                            blockState.update(true, false);
-                            blockState.setBlockData(getPluginInstance().getServer().createBlockData(material));
-                            setBlock(block, material, BlockFace.valueOf(Direction.getYaw(player).name()));
-                        } else {
-                            if (block instanceof Directional)
-                                try {
+                            if (!isOldVersion) {
+                                blockState.update(true, false);
+                                blockState.setBlockData(getPluginInstance().getServer().createBlockData(material));
+                                setBlock(block, material, BlockFace.valueOf(Direction.getYaw(player).name()));
+                            } else {
+                                if (block instanceof Directional) {
                                     Method method = BlockState.class.getMethod("setData", Byte.class);
                                     method.setAccessible(true);
                                     method.invoke(block, oppositeDirectionByte(Direction.getYaw(player)));
-                                } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {
+                                } else {
+                                    Method method = Block.class.getMethod("setData", Byte.class);
+                                    method.setAccessible(true);
+                                    method.invoke(block, oppositeDirectionByte(Direction.getYaw(player)));
+                                    blockState.update(true, false);
                                 }
-                            else try {
-                                Method method = Block.class.getMethod("setData", Byte.class);
-                                method.setAccessible(true);
-                                method.invoke(block, oppositeDirectionByte(Direction.getYaw(player)));
-                            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {
                             }
-
-                            blockState.update(true, false);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            getPluginInstance().log(Level.WARNING, "There was an issue setting some materials and data.");
                         }
                     }
                 }
