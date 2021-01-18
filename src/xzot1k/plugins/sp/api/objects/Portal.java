@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
 
 public class Portal {
 
@@ -264,11 +263,6 @@ public class Portal {
                         blockState.setType(material);
 
                         try {
-                            if (isOldVersion) {
-                                Method method = block.getClass().getMethod("setData", Byte.class);
-                                if (method != null) method.invoke(block, (byte) durability);
-                            }
-
                             if (!isOldVersion) {
                                 blockState.update(true, false);
                                 blockState.setBlockData(getPluginInstance().getServer().createBlockData(material));
@@ -285,9 +279,7 @@ public class Portal {
                                     blockState.update(true, false);
                                 }
                             }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            getPluginInstance().log(Level.WARNING, "There was an issue setting some materials and data.");
+                        } catch (Exception ignored) {
                         }
                     }
                 }
