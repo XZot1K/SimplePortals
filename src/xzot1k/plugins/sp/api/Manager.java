@@ -82,9 +82,7 @@ public class Manager {
             mountPacketClass = Class.forName("net.minecraft.server." + getPluginInstance().getServerVersion() + ".PacketPlayOutMount");
             craftPlayerClass = Class.forName("org.bukkit.craftbukkit." + getPluginInstance().getServerVersion() + ".entity.CraftPlayer");
             entityClass = Class.forName("net.minecraft.server." + getPluginInstance().getServerVersion() + ".Entity");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
+        } catch (ClassNotFoundException ignored) {}
 
         setupPackets();
     }
@@ -521,6 +519,7 @@ public class Manager {
     }
 
     public void sendMountPacket(Player player) {
+        if (getMountPacketClass() == null) return;
         try {
             Constructor<?> constructor = getMountPacketClass().getDeclaredConstructor(getEntityClass());
 
@@ -541,6 +540,7 @@ public class Manager {
             }
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException | NoSuchFieldException e) {
             e.printStackTrace();
+            getPluginInstance().log(Level.WARNING, "There was an issue passing a packet to the playing involving mount teleportation.");
         }
     }
 
@@ -751,7 +751,7 @@ public class Manager {
 
     private boolean selectionWorldCheck(Player player, Region region) {
         if (!region.getPoint1().getWorldName().equalsIgnoreCase(region.getPoint2().getWorldName())) {
-            player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+            player.sendMessage(colorText(getPluginInstance().getLangConfig().getString("prefix")
                     + getPluginInstance().getLangConfig().getString("not-same-world-message")));
             return false;
         }

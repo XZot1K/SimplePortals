@@ -57,7 +57,6 @@ public class SimplePortals extends JavaPlugin {
             command.setTabCompleter(new TabCompleter(this));
             command.setExecutor(new Commands(this));
         }
-
         getServer().getPluginManager().registerEvents(new Listeners(this), this);
         getManager().convertFromPortalsFile();
 

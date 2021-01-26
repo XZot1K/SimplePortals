@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 public class Portal {
 
@@ -115,27 +116,27 @@ public class Portal {
         getPluginInstance().getServer().getScheduler().runTaskLater(getPluginInstance(), () -> {
             for (String commandLine : getCommands()) {
                 PortalCommandType portalCommandType = PortalCommandType.CONSOLE;
-                int percentage = 100;
+                double percentage = 100;
                 if (commandLine.contains(":")) {
                     String[] commandLineSplit = commandLine.split(":");
-                    if (commandLineSplit.length == 2) {
-                        PortalCommandType foundPortalCommandType = PortalCommandType.getType(commandLineSplit[1]);
-                        if (foundPortalCommandType != null) portalCommandType = foundPortalCommandType;
-                    } else if (commandLineSplit.length == 3) {
-                        PortalCommandType foundPortalCommandType = PortalCommandType.getType(commandLineSplit[1]);
+                    if (commandLineSplit.length >= 3) {
+                        PortalCommandType foundPortalCommandType = PortalCommandType.getType(commandLineSplit[commandLineSplit.length - 2]);
                         if (foundPortalCommandType != null) portalCommandType = foundPortalCommandType;
 
-                        String foundPercentValue = commandLineSplit[2];
+                        String foundPercentValue = commandLineSplit[(commandLineSplit.length - 4)];
                         if (getPluginInstance().getManager().isNumeric(foundPercentValue))
-                            percentage = Integer.parseInt(foundPercentValue);
+                            percentage = Double.parseDouble(foundPercentValue);
+                    } else if (commandLineSplit.length >= 2) {
+                        PortalCommandType foundPortalCommandType = PortalCommandType.getType(commandLineSplit[commandLineSplit.length - 2]);
+                        if (foundPortalCommandType != null) portalCommandType = foundPortalCommandType;
                     }
                 }
 
 
-                int chance = getPluginInstance().getManager().getRandom(1, 100);
+                double chance = (Math.random() * 100);
                 if (chance < percentage) {
                     commandLine = commandLine.replaceAll("(?i):player", "").replaceAll("(?i):console", "")
-                            .replaceAll("(?i):chat", "").replaceAll("(?i):" + percentage, "");
+                            .replaceAll("(?i):chat", "").replace((":" + percentage), "");
                     switch (portalCommandType) {
 
                         case PLAYER:
@@ -238,8 +239,13 @@ public class Portal {
      * @param durability The durability to modify the material.
      */
     public void fillPortal(Player player, Material material, int durability) {
-        if (!getRegion().getPoint1().getWorldName().equalsIgnoreCase(getRegion().getPoint2().getWorldName())) return;
 
+        final boolean isOldVersion = (getPluginInstance().getServerVersion().startsWith("v1_12") || getPluginInstance().getServerVersion().startsWith("v1_11") || getPluginInstance().getServerVersion().startsWith("v1_10")
+                || getPluginInstance().getServerVersion().startsWith("v1_9") || getPluginInstance().getServerVersion().startsWith("v1_8") || getPluginInstance().getServerVersion().startsWith("v1_7"));
+        if (isOldVersion && (material == Material.WATER || material == Material.LAVA))
+            material = Material.valueOf("STATIONARY_" + material.name());
+
+        if (!getRegion().getPoint1().getWorldName().equalsIgnoreCase(getRegion().getPoint2().getWorldName())) return;
         int lowestX = (int) Math.min(getRegion().getPoint1().getX(), getRegion().getPoint2().getX()),
                 highestX = (int) Math.max(getRegion().getPoint1().getX(), getRegion().getPoint2().getX()),
 
@@ -250,9 +256,6 @@ public class Portal {
                 highestZ = (int) Math.max(getRegion().getPoint1().getZ(), getRegion().getPoint2().getZ());
 
         final World world = getPluginInstance().getServer().getWorld(getRegion().getPoint1().getWorldName());
-        final boolean isOldVersion = (getPluginInstance().getServerVersion().startsWith("v1_12") || getPluginInstance().getServerVersion().startsWith("v1_11") || getPluginInstance().getServerVersion().startsWith("v1_10")
-                || getPluginInstance().getServerVersion().startsWith("v1_9") || getPluginInstance().getServerVersion().startsWith("v1_8") || getPluginInstance().getServerVersion().startsWith("v1_7"));
-
         for (int x = (lowestX - 1); ++x <= highestX; )
             for (int z = (lowestZ - 1); ++z <= highestZ; )
                 for (int y = (lowestY - 1); ++y <= highestY; ) {
@@ -260,21 +263,25 @@ public class Portal {
                     final Block block = location.getBlock();
                     final BlockState blockState = block.getState();
                     if (block.getType() == Material.AIR || block.getType() == getLastFillMaterial()) {
-                        blockState.setType(material);
+                        blockState.setType(Material.AIR);
+                        blockState.update(true, false);
 
+                        blockState.setType(material);
                         try {
-                            if (!isOldVersion) {
-                                blockState.update(true, false);
+                            if (!isOldVersion && (blockState instanceof org.bukkit.block.data.Directional)) {
                                 blockState.setBlockData(getPluginInstance().getServer().createBlockData(material));
                                 setBlock(block, material, BlockFace.valueOf(Direction.getYaw(player).name()));
-                            } else {
-                                Method method = Block.class.getMethod("setData", Byte.class);
+                            } else if (durability > 0) {
+                                Method method = Block.class.getMethod("setData", byte.class);
                                 method.setAccessible(true);
-                                method.invoke(block, oppositeDirectionByte(Direction.getYaw(player)));
-                                blockState.update(true, false);
+                                method.invoke(block, (byte) durability);
                             }
-                        } catch (NoClassDefFoundError | Exception ignored) {
+                        } catch (NoClassDefFoundError | Exception e) {
+                            e.printStackTrace();
+                            getPluginInstance().log(Level.WARNING, "There was an issue filling the portal due to the material entry.");
                         }
+
+                        blockState.update(true, false);
                     }
                 }
 

@@ -331,7 +331,8 @@ public class Commands implements CommandExecutor {
                 portal.getCommands().add(enteredCommand.toString());
                 portal.save();
 
-                String fixedCommand = enteredCommand.toString().replaceAll("(?i):PLAYER", "").replaceAll("(?i):CONSOLE", "");
+                String fixedCommand = enteredCommand.toString().replaceAll("(?i):CHAT", "")
+                        .replaceAll("(?i):PLAYER", "").replaceAll("(?i):CONSOLE", "");
                 player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                         + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-command-added-message"))
                         .replace("{command}", fixedCommand).replace("{name}", portal.getPortalId())));
