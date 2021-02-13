@@ -146,13 +146,13 @@ public class Manager {
                 File file = listFiles[i];
                 if (file == null || !file.getName().toLowerCase().endsWith(".yml")) continue;
 
-                Portal portal = null;
+                Portal portal;
                 try {
-                    portal = getPortalFromFile(file.getName().replaceAll("(?i)\\.yml", ""));
+                    portal = getPortalFromFile(file.getName().toLowerCase().replaceAll("(?i)\\.yml", ""));
+                    getPortalMap().put(portal.getPortalId(), portal);
                 } catch (PortalFormException e) {
                     e.printStackTrace();
                 }
-                getPortalMap().put(portal.getPortalId(), portal);
             }
     }
 
