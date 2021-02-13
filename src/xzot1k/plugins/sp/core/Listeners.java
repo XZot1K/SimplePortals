@@ -124,25 +124,22 @@ public class Listeners implements Listener {
             return;
         }
 
-        Portal portal = pluginInstance.getManager().getPortalAtLocation(e.getFrom());
-        if (portal != null && !portal.isDisabled()) e.setCancelled(true);
-    }
+        if (e.getPlayer().getGameMode() == GameMode.CREATIVE) {
+            for (Portal portal : pluginInstance.getManager().getPortalMap().values()) {
+                SerializableLocation centerPortal = new SerializableLocation(pluginInstance, portal.getRegion().getPoint1().getWorldName(),
+                        ((portal.getRegion().getPoint1().getX() + portal.getRegion().getPoint2().getX()) / 2),
+                        ((portal.getRegion().getPoint1().getY() + portal.getRegion().getPoint2().getY()) / 2),
+                        ((portal.getRegion().getPoint1().getZ() + portal.getRegion().getPoint2().getZ()) / 2), 0, 0);
+                if (centerPortal.distance(e.getFrom(), true) <= 2) e.setCancelled(true);
+            }
 
-    @EventHandler
-    public void onPortalEntryLast(PortalEnterEvent e) {
-        if (e.isCancelled()) return;
-
-        if (pluginInstance.getConfig().getBoolean("block-creative-portal-entrance") && (e.getEntity() instanceof Player
-                && ((Player) e.getEntity()).getGameMode() == GameMode.CREATIVE)) {
-            e.setCancelled(true);
-            e.setTargetLocation(null);
             return;
         }
 
-        Portal portal = pluginInstance.getManager().getPortalAtLocation(e.getInitialLocation());
+        Portal portal = pluginInstance.getManager().getPortalAtLocation(e.getFrom());
         if (portal != null && !portal.isDisabled()) {
             e.setCancelled(true);
-            e.setTargetLocation(null);
+            e.setCanCreatePortal(false);
         }
     }
 
@@ -179,6 +176,7 @@ public class Listeners implements Listener {
 
     private void initiatePortalStuff(Location toLocation, Location fromLocation, Entity entity) {
         final boolean isPlayer = (entity instanceof Player);
+
         Portal portal = pluginInstance.getManager().getPortalAtLocation(toLocation);
         if (portal != null && !portal.isDisabled()) {
             if (isPlayer) {

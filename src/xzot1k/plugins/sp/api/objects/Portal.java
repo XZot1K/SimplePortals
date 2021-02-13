@@ -43,7 +43,7 @@ public class Portal {
     public Portal(SimplePortals pluginInstance, String portalId, Region region) {
         this.pluginInstance = pluginInstance;
         setRegion(region);
-        setPortalId(portalId);
+        setPortalId(portalId.toLowerCase());
         setDisabled(false);
         setCommands(new ArrayList<>());
         setCommandsOnly(false);
@@ -77,7 +77,7 @@ public class Portal {
      */
     public void save() {
         try {
-            File file = new File(getPluginInstance().getDataFolder(), "/portals/" + getPortalId() + ".yml");
+            File file = new File(getPluginInstance().getDataFolder(), "/portals/" + getPortalId().toLowerCase() + ".yml");
             FileConfiguration yaml = YamlConfiguration.loadConfiguration(file);
 
             yaml.set("last-fill-material", getLastFillMaterial().name());
@@ -127,7 +127,7 @@ public class Portal {
                         if (getPluginInstance().getManager().isNumeric(foundPercentValue))
                             percentage = Double.parseDouble(foundPercentValue);
                     } else if (commandLineSplit.length >= 2) {
-                        PortalCommandType foundPortalCommandType = PortalCommandType.getType(commandLineSplit[commandLineSplit.length - 2]);
+                        PortalCommandType foundPortalCommandType = PortalCommandType.getType(commandLineSplit[commandLineSplit.length - 1]);
                         if (foundPortalCommandType != null) portalCommandType = foundPortalCommandType;
                     }
                 }
@@ -374,11 +374,11 @@ public class Portal {
     }
 
     public String getPortalId() {
-        return portalId;
+        return portalId.toLowerCase();
     }
 
     private void setPortalId(String portalId) {
-        this.portalId = portalId;
+        this.portalId = portalId.toLowerCase();
     }
 
     public SerializableLocation getTeleportLocation() {

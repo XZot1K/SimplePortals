@@ -87,6 +87,30 @@ public class SerializableLocation {
         setPitch(Float.parseFloat(args[5]));
     }
 
+    /**
+     * Obtains the distance between the location clone and the Bukkit location.
+     *
+     * @param location   The Bukkit location.
+     * @param checkYAxis Whether or not to calculate utilizing the Y-axis.
+     * @return The distance.
+     */
+    public double distance(Location location, boolean checkYAxis) {
+        return Math.sqrt(Math.pow((getX() - location.getX()), 2)
+                + (checkYAxis ? Math.pow((getY() - location.getY()), 2) : 0) + Math.pow((getZ() - location.getZ()), 2));
+    }
+
+    /**
+     * Obtains the distance between the location clone and another location clone.
+     *
+     * @param location   The location clone.
+     * @param checkYAxis Whether or not to calculate utilizing the Y-axis.
+     * @return The distance.
+     */
+    public double distance(SerializableLocation location, boolean checkYAxis) {
+        return Math.sqrt(Math.pow((getX() - location.getX()), 2)
+                + (checkYAxis ? Math.pow((getY() - location.getY()), 2) : 0) + Math.pow((getZ() - location.getZ()), 2));
+    }
+
     public Location asBukkitLocation() {
         World world = getPluginInstance().getServer().getWorld(getWorldName());
         if (getYaw() == 0 && getPitch() == 0) return new Location(world, getX(), getY(), getZ());

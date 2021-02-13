@@ -82,7 +82,8 @@ public class Manager {
             mountPacketClass = Class.forName("net.minecraft.server." + getPluginInstance().getServerVersion() + ".PacketPlayOutMount");
             craftPlayerClass = Class.forName("org.bukkit.craftbukkit." + getPluginInstance().getServerVersion() + ".entity.CraftPlayer");
             entityClass = Class.forName("net.minecraft.server." + getPluginInstance().getServerVersion() + ".Entity");
-        } catch (ClassNotFoundException ignored) {}
+        } catch (ClassNotFoundException ignored) {
+        }
 
         setupPackets();
     }
@@ -375,7 +376,7 @@ public class Manager {
      */
     public Portal getPortalAtLocation(Location location) {
         for (Portal portal : getPortalMap().values())
-            if (portal != null && getPortalMap().containsKey(portal.getPortalId())
+            if (portal != null && getPortalMap().containsKey(portal.getPortalId().toLowerCase())
                     && portal.getRegion().isInRegion(location)) return portal;
         return null;
     }
@@ -387,7 +388,7 @@ public class Manager {
      * @return The portal object instance.
      */
     public Portal getPortal(String portalId) {
-        return ((!getPortalMap().isEmpty() && getPortalMap().containsKey(portalId)) ? getPortalMap().get(portalId) : null);
+        return ((!getPortalMap().isEmpty() && getPortalMap().containsKey(portalId.toLowerCase())) ? getPortalMap().get(portalId.toLowerCase()) : null);
     }
 
     /**
@@ -398,7 +399,7 @@ public class Manager {
      * @throws PortalFormException Failed to form the portal.
      */
     public Portal getPortalFromFile(String portalId) throws PortalFormException {
-        File file = new File(getPluginInstance().getDataFolder(), "/portals/" + portalId + ".yml");
+        File file = new File(getPluginInstance().getDataFolder(), "/portals/" + portalId.toLowerCase() + ".yml");
         if (file == null || !file.exists()) return null;
         FileConfiguration yaml = YamlConfiguration.loadConfiguration(file);
 
@@ -410,7 +411,7 @@ public class Manager {
                     + "' does NOT equal '" + pointTwo.getWorldName() + "').");
 
         final Region region = new Region(getPluginInstance(), pointOne, pointTwo);
-        final Portal portal = new Portal(getPluginInstance(), file.getName().replaceAll("(?i)\\.yml", ""), region);
+        final Portal portal = new Portal(getPluginInstance(), file.getName().toLowerCase().replaceAll("(?i)\\.yml", ""), region);
         portal.setTeleportLocation(teleportLocation);
         portal.setServerSwitchName(yaml.getString("portal-server"));
         portal.setCommandsOnly(yaml.getBoolean("commands-only"));
@@ -438,7 +439,7 @@ public class Manager {
      * @return Whether the portal object exists.
      */
     public boolean doesPortalExist(String portalName) {
-        return (!getPortalMap().isEmpty() && getPortalMap().containsKey(portalName));
+        return (!getPortalMap().isEmpty() && getPortalMap().containsKey(portalName.toLowerCase()));
     }
 
     /**
@@ -660,7 +661,7 @@ public class Manager {
             }
 
             final Region region = new Region(getPluginInstance(), pointOne, pointTwo);
-            final Portal portal = new Portal(getPluginInstance(), portalId, region);
+            final Portal portal = new Portal(getPluginInstance(), portalId.toLowerCase(), region);
 
             portal.setTeleportLocation(teleportLocation);
             portal.setServerSwitchName(yaml.getString(portalId + ".portal-server"));
@@ -736,14 +737,14 @@ public class Manager {
         return new ArrayList<String>() {{
             for (Portal portal : getPortalMap().values()) {
                 if (!withCoordinates) {
-                    add(portal.getPortalId());
+                    add(portal.getPortalId().toLowerCase());
                     continue;
                 }
 
                 final int x = (int) ((portal.getRegion().getPoint1().getX() + portal.getRegion().getPoint2().getX()) / 2),
                         y = (int) ((portal.getRegion().getPoint1().getY() + portal.getRegion().getPoint2().getY()) / 2),
                         z = (int) ((portal.getRegion().getPoint1().getZ() + portal.getRegion().getPoint2().getZ()) / 2);
-                add((portal.isDisabled() ? ChatColor.RED : ChatColor.GREEN) + portal.getPortalId() + " (World: "
+                add((portal.isDisabled() ? ChatColor.RED : ChatColor.GREEN) + portal.getPortalId().toLowerCase() + " (World: "
                         + portal.getRegion().getPoint1().getWorldName() + " X: " + x + " Y: " + y + " Z: " + z + ")");
             }
         }};
