@@ -6,10 +6,12 @@ package xzot1k.plugins.sp.core;
 
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.PortalType;
 import org.bukkit.Sound;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockFromToEvent;
@@ -105,8 +107,12 @@ public class Listeners implements Listener {
     public void onTeleport(PlayerTeleportEvent e) {
         if (!e.getCause().name().toUpperCase().contains("PORTAL")) return;
 
-        Portal portal = pluginInstance.getManager().getPortalAtLocation(e.getFrom());
-        if (portal != null && !portal.isDisabled()) e.setCancelled(true);
+        PortalType portalType = (e.getCause() == PlayerTeleportEvent.TeleportCause.NETHER_PORTAL) ? PortalType.NETHER
+                : ((e.getCause() == PlayerTeleportEvent.TeleportCause.END_PORTAL) ? PortalType.ENDER : null);
+        if (portalType == null) return;
+
+
+        e.setCancelled(pluginInstance.getManager().handleVanillaPortalReplacements(e.getPlayer(), e.getFrom().getWorld(), portalType));
     }
 
     @EventHandler
@@ -116,7 +122,7 @@ public class Listeners implements Listener {
             initiatePortalStuff(e.getTo(), e.getFrom(), e.getVehicle());
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onPortalEntryFirst(PlayerPortalEvent e) {
         if (pluginInstance.getConfig().getBoolean("block-creative-portal-entrance") && e.getPlayer().getGameMode() == GameMode.CREATIVE) {
             e.setCancelled(true);
@@ -132,7 +138,6 @@ public class Listeners implements Listener {
                         ((portal.getRegion().getPoint1().getZ() + portal.getRegion().getPoint2().getZ()) / 2), 0, 0);
                 if (centerPortal.distance(e.getFrom(), true) <= 2) e.setCancelled(true);
             }
-
             return;
         }
 
@@ -140,6 +145,7 @@ public class Listeners implements Listener {
         if (portal != null && !portal.isDisabled()) {
             e.setCancelled(true);
             e.setCanCreatePortal(false);
+            return;
         }
     }
 

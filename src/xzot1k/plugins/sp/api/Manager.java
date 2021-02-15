@@ -4,10 +4,7 @@
 
 package xzot1k.plugins.sp.api;
 
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -142,13 +139,12 @@ public class Manager {
         File[] listFiles = portalDirectory.listFiles();
 
         if (listFiles != null && listFiles.length > 0)
-            for (int i = -1; ++i < listFiles.length; ) {
-                File file = listFiles[i];
+            for (File file : listFiles) {
                 if (file == null || !file.getName().toLowerCase().endsWith(".yml")) continue;
 
                 Portal portal;
                 try {
-                    portal = getPortalFromFile(file.getName().toLowerCase().replaceAll("(?i)\\.yml", ""));
+                    portal = getPortalFromFile(file.getName().toLowerCase().replace(".yml", ""));
                     getPortalMap().put(portal.getPortalId(), portal);
                 } catch (PortalFormException e) {
                     e.printStackTrace();
@@ -411,7 +407,7 @@ public class Manager {
                     + "' does NOT equal '" + pointTwo.getWorldName() + "').");
 
         final Region region = new Region(getPluginInstance(), pointOne, pointTwo);
-        final Portal portal = new Portal(getPluginInstance(), file.getName().toLowerCase().replaceAll("(?i)\\.yml", ""), region);
+        final Portal portal = new Portal(getPluginInstance(), file.getName().toLowerCase().replace(".yml", ""), region);
         portal.setTeleportLocation(teleportLocation);
         portal.setServerSwitchName(yaml.getString("portal-server"));
         portal.setCommandsOnly(yaml.getBoolean("commands-only"));
@@ -748,6 +744,34 @@ public class Manager {
                         + portal.getRegion().getPoint1().getWorldName() + " X: " + x + " Y: " + y + " Z: " + z + ")");
             }
         }};
+    }
+
+    /**
+     * Handles the vanilla portal teleport location replacements.
+     *
+     * @param player     The player to handle the teleportation for.
+     * @param world      The world where the nether/end portal is located.
+     * @param portalType The type of vanilla portal.
+     * @return Whether actions succeeded.
+     */
+    public boolean handleVanillaPortalReplacements(Player player, World world, PortalType portalType) {
+        for (String line : getPluginInstance().getConfig().getStringList((portalType == PortalType.NETHER ? "nether" : "end") + "-portal-locations")) {
+            if (line == null || line.isEmpty() || !line.contains(":") || !line.contains(",")) continue;
+
+            String[] mainSplit = line.split(":");
+            if (!mainSplit[0].equalsIgnoreCase(world.getName())) continue;
+            String[] subSplit = mainSplit[1].split(",");
+
+            World newWorld = getPluginInstance().getServer().getWorld(subSplit[0]);
+            if (newWorld == null) continue;
+
+            Location location = new Location(world, Double.parseDouble(subSplit[1]), Double.parseDouble(subSplit[2]), Double.parseDouble(subSplit[3]),
+                    Float.parseFloat(subSplit[4]), Float.parseFloat(subSplit[5]));
+            player.teleport(location);
+            return true;
+        }
+
+        return false;
     }
 
     private boolean selectionWorldCheck(Player player, Region region) {

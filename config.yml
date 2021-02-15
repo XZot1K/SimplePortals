@@ -14,6 +14,18 @@ vehicle-teleportation: true
 # IF this is enabled, portal usage for creative mode players will be blocked entirely.
 block-creative-portal-entrance: false
 
+# Adding a world and a location to this list will cause all nether portals in the world to send the player to the specified location.
+# Format: <world portal must be in>:<world of to location>,<x>,<y>,<z>,<yaw>,<pitch>
+nether-portal-locations:
+  - "example_world:world,0,80,0,0,0"
+  - "example_world_the_nether:world,0,80,0,0,0"
+
+# Adding a world and a location to this list will cause all end portals in the world to send the player to the specified location.
+# Format: <world portal must be in>:<world of to location>,<x>,<y>,<z>,<yaw>,<pitch>
+end-portal-locations:
+  - "example_world:world,0,80,0,0,0"
+  - "example_world_the_end:world,0,80,0,0,0"
+
 # The creatures in the list below will be blocked from spawning inside portal regions.
 creature-spawning-blacklist:
   - "PUFFERFISH"

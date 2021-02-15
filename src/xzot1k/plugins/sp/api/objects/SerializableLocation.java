@@ -113,6 +113,8 @@ public class SerializableLocation {
 
     public Location asBukkitLocation() {
         World world = getPluginInstance().getServer().getWorld(getWorldName());
+        if (world == null) return null;
+
         if (getYaw() == 0 && getPitch() == 0) return new Location(world, getX(), getY(), getZ());
         else return new Location(world, getX(), getY(), getZ(), getYaw(), getPitch());
     }
