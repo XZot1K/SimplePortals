@@ -103,7 +103,7 @@ public class Listeners implements Listener {
         pluginInstance.getManager().getSmartTransferMap().remove(e.getPlayer().getUniqueId());
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onTeleport(PlayerTeleportEvent e) {
         if (!e.getCause().name().toUpperCase().contains("PORTAL")) return;
 
@@ -145,7 +145,6 @@ public class Listeners implements Listener {
         if (portal != null && !portal.isDisabled()) {
             e.setCancelled(true);
             e.setCanCreatePortal(false);
-            return;
         }
     }
 

@@ -141,13 +141,14 @@ public class Manager {
         if (listFiles != null && listFiles.length > 0)
             for (File file : listFiles) {
                 if (file == null || !file.getName().toLowerCase().endsWith(".yml")) continue;
+                file.renameTo(new File(getPluginInstance().getDataFolder(), "/portals/" + file.getName().toLowerCase()));
 
-                Portal portal;
                 try {
-                    portal = getPortalFromFile(file.getName().toLowerCase().replace(".yml", ""));
+                    Portal portal = getPortalFromFile(file.getName().toLowerCase().replace(".yml", ""));
                     getPortalMap().put(portal.getPortalId(), portal);
                 } catch (PortalFormException e) {
-                    e.printStackTrace();
+                    getPluginInstance().log(Level.WARNING, "The file \"" + file.getName()
+                            + "\" has a portal within that was unable to be parsed. Please check this portal.");
                 }
             }
     }
@@ -625,8 +626,8 @@ public class Manager {
     public void convertFromPortalsFile() {
         File portalFile = new File(getPluginInstance().getDataFolder(), "/portals.yml");
         if (!portalFile.exists()) return;
-        FileConfiguration yaml = YamlConfiguration.loadConfiguration(portalFile);
 
+        FileConfiguration yaml = YamlConfiguration.loadConfiguration(portalFile);
         final ConfigurationSection cs = yaml.getConfigurationSection("");
         if (cs == null) return;
 
@@ -681,8 +682,9 @@ public class Manager {
             getPluginInstance().log(Level.INFO, "The portal '" + portalId + "' was converted over to the new file data structure!");
         }
 
+        portalFile.renameTo(new File(getPluginInstance().getDataFolder(), "/portals-backup.yml"));
         getPluginInstance().log(Level.INFO, "The portal file data structure conversion process has completed. "
-                + "Don't forget to remove or move your 'portals.yml' to prevent another conversion process!");
+                + "The file has been renamed to \"portals-backup.yml\".");
     }
 
     /**
@@ -757,7 +759,6 @@ public class Manager {
     public boolean handleVanillaPortalReplacements(Player player, World world, PortalType portalType) {
         for (String line : getPluginInstance().getConfig().getStringList((portalType == PortalType.NETHER ? "nether" : "end") + "-portal-locations")) {
             if (line == null || line.isEmpty() || !line.contains(":") || !line.contains(",")) continue;
-
             String[] mainSplit = line.split(":");
             if (!mainSplit[0].equalsIgnoreCase(world.getName())) continue;
             String[] subSplit = mainSplit[1].split(",");
@@ -765,7 +766,7 @@ public class Manager {
             World newWorld = getPluginInstance().getServer().getWorld(subSplit[0]);
             if (newWorld == null) continue;
 
-            Location location = new Location(world, Double.parseDouble(subSplit[1]), Double.parseDouble(subSplit[2]), Double.parseDouble(subSplit[3]),
+            final Location location = new Location(world, Double.parseDouble(subSplit[1]), Double.parseDouble(subSplit[2]), Double.parseDouble(subSplit[3]),
                     Float.parseFloat(subSplit[4]), Float.parseFloat(subSplit[5]));
             player.teleport(location);
             return true;
