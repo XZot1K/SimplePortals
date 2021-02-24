@@ -4,10 +4,7 @@
 
 package xzot1k.plugins.sp.core;
 
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.PortalType;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -16,6 +13,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.event.entity.EntityPortalEnterEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.event.vehicle.VehicleMoveEvent;
@@ -107,12 +105,29 @@ public class Listeners implements Listener {
     public void onTeleport(PlayerTeleportEvent e) {
         if (!e.getCause().name().toUpperCase().contains("PORTAL")) return;
 
-        PortalType portalType = (e.getCause() == PlayerTeleportEvent.TeleportCause.NETHER_PORTAL) ? PortalType.NETHER
-                : ((e.getCause() == PlayerTeleportEvent.TeleportCause.END_PORTAL) ? PortalType.ENDER : null);
+        PortalType portalType = null;
+        switch (e.getCause()) {
+            case NETHER_PORTAL:
+                portalType = PortalType.NETHER;
+                break;
+            case END_PORTAL:
+            case END_GATEWAY:
+                portalType = PortalType.ENDER;
+                break;
+            default:
+                break;
+        }
+
         if (portalType == null) return;
-
-
         e.setCancelled(pluginInstance.getManager().handleVanillaPortalReplacements(e.getPlayer(), e.getFrom().getWorld(), portalType));
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onPortal(EntityPortalEnterEvent e) {
+        if (!(e.getEntity() instanceof Player) || e.getEntity().getLocation().getWorld().getEnvironment() != World.Environment.THE_END)
+            return;
+        pluginInstance.getServer().getScheduler().runTaskLater(pluginInstance, () ->
+                pluginInstance.getManager().handleVanillaPortalReplacements((Player) e.getEntity(), e.getEntity().getWorld(), PortalType.ENDER), 5);
     }
 
     @EventHandler
@@ -146,6 +161,24 @@ public class Listeners implements Listener {
             e.setCancelled(true);
             e.setCanCreatePortal(false);
         }
+
+        if (!e.getCause().name().toUpperCase().contains("PORTAL")) return;
+
+        PortalType portalType = null;
+        switch (e.getCause()) {
+            case NETHER_PORTAL:
+                portalType = PortalType.NETHER;
+                break;
+            case END_PORTAL:
+            case END_GATEWAY:
+                portalType = PortalType.ENDER;
+                break;
+            default:
+                break;
+        }
+
+        if (portalType == null) return;
+        e.setCancelled(pluginInstance.getManager().handleVanillaPortalReplacements(e.getPlayer(), e.getFrom().getWorld(), portalType));
     }
 
     @EventHandler
