@@ -103,7 +103,12 @@ public class Listeners implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onTeleport(PlayerTeleportEvent e) {
-        if (!e.getCause().name().toUpperCase().contains("PORTAL")) return;
+        vanillaPortalHelper(e);
+    }
+
+    private void vanillaPortalHelper(PlayerTeleportEvent e) {
+        if (!e.getCause().name().toUpperCase().contains("PORTAL") && !e.getCause().name().toUpperCase().contains("GATEWAY"))
+            return;
 
         PortalType portalType = null;
         switch (e.getCause()) {
@@ -122,12 +127,18 @@ public class Listeners implements Listener {
         e.setCancelled(pluginInstance.getManager().handleVanillaPortalReplacements(e.getPlayer(), e.getFrom().getWorld(), portalType));
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onPortal(EntityPortalEnterEvent e) {
         if (!(e.getEntity() instanceof Player) || e.getEntity().getLocation().getWorld().getEnvironment() != World.Environment.THE_END)
             return;
         pluginInstance.getServer().getScheduler().runTaskLater(pluginInstance, () ->
                 pluginInstance.getManager().handleVanillaPortalReplacements((Player) e.getEntity(), e.getEntity().getWorld(), PortalType.ENDER), 5);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPortal(PlayerRespawnEvent e) {
+        if (e.getPlayer().getWorld().getEnvironment() != World.Environment.THE_END) return;
+        e.setRespawnLocation(pluginInstance.getManager().getVanillaPortalReplacement(e.getPlayer().getWorld(), PortalType.ENDER));
     }
 
     @EventHandler
@@ -141,7 +152,11 @@ public class Listeners implements Listener {
     public void onPortalEntryFirst(PlayerPortalEvent e) {
         if (pluginInstance.getConfig().getBoolean("block-creative-portal-entrance") && e.getPlayer().getGameMode() == GameMode.CREATIVE) {
             e.setCancelled(true);
-            e.setCanCreatePortal(false);
+            try {
+                if (e.getClass().getMethod("setCanCreatePortal") != null)
+                    e.setCanCreatePortal(false);
+            } catch (NoSuchMethodException ignored) {
+            }
             return;
         }
 
@@ -159,26 +174,14 @@ public class Listeners implements Listener {
         Portal portal = pluginInstance.getManager().getPortalAtLocation(e.getFrom());
         if (portal != null && !portal.isDisabled()) {
             e.setCancelled(true);
-            e.setCanCreatePortal(false);
+            try {
+                if (e.getClass().getMethod("setCanCreatePortal") != null)
+                    e.setCanCreatePortal(false);
+            } catch (NoSuchMethodException ignored) {
+            }
         }
 
-        if (!e.getCause().name().toUpperCase().contains("PORTAL")) return;
-
-        PortalType portalType = null;
-        switch (e.getCause()) {
-            case NETHER_PORTAL:
-                portalType = PortalType.NETHER;
-                break;
-            case END_PORTAL:
-            case END_GATEWAY:
-                portalType = PortalType.ENDER;
-                break;
-            default:
-                break;
-        }
-
-        if (portalType == null) return;
-        e.setCancelled(pluginInstance.getManager().handleVanillaPortalReplacements(e.getPlayer(), e.getFrom().getWorld(), portalType));
+        vanillaPortalHelper(e);
     }
 
     @EventHandler

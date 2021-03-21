@@ -766,13 +766,37 @@ public class Manager {
             World newWorld = getPluginInstance().getServer().getWorld(subSplit[0]);
             if (newWorld == null) continue;
 
-            final Location location = new Location(world, Double.parseDouble(subSplit[1]), Double.parseDouble(subSplit[2]), Double.parseDouble(subSplit[3]),
+            final Location location = new Location(newWorld, Double.parseDouble(subSplit[1]), Double.parseDouble(subSplit[2]), Double.parseDouble(subSplit[3]),
                     Float.parseFloat(subSplit[4]), Float.parseFloat(subSplit[5]));
             player.teleport(location);
             return true;
         }
 
         return false;
+    }
+
+    /**
+     * Gets the vanilla portal teleport location replacement.
+     *
+     * @param world      The world where the nether/end portal is located.
+     * @param portalType The type of vanilla portal.
+     * @return Whether actions succeeded.
+     */
+    public Location getVanillaPortalReplacement(World world, PortalType portalType) {
+        for (String line : getPluginInstance().getConfig().getStringList((portalType == PortalType.NETHER ? "nether" : "end") + "-portal-locations")) {
+            if (line == null || line.isEmpty() || !line.contains(":") || !line.contains(",")) continue;
+            String[] mainSplit = line.split(":");
+            if (!mainSplit[0].equalsIgnoreCase(world.getName())) continue;
+            String[] subSplit = mainSplit[1].split(",");
+
+            World newWorld = getPluginInstance().getServer().getWorld(subSplit[0]);
+            if (newWorld == null) continue;
+
+            return new Location(newWorld, Double.parseDouble(subSplit[1]), Double.parseDouble(subSplit[2]), Double.parseDouble(subSplit[3]),
+                    Float.parseFloat(subSplit[4]), Float.parseFloat(subSplit[5]));
+        }
+
+        return null;
     }
 
     private boolean selectionWorldCheck(Player player, Region region) {

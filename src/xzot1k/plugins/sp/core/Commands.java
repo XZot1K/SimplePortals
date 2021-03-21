@@ -430,7 +430,7 @@ public class Commands implements CommandExecutor {
             if (portal != null) {
 
                 Portal foundPortal = getPluginInstance().getManager().getPortal(otherPortalName);
-                if (foundPortal != null) {
+                if (foundPortal == null) {
                     player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                             + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}", otherPortalName)));
                     return;
