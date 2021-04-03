@@ -138,7 +138,8 @@ public class Listeners implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPortal(PlayerRespawnEvent e) {
         if (e.getPlayer().getWorld().getEnvironment() != World.Environment.THE_END) return;
-        e.setRespawnLocation(pluginInstance.getManager().getVanillaPortalReplacement(e.getPlayer().getWorld(), PortalType.ENDER));
+        Location respawnLocation = pluginInstance.getManager().getVanillaPortalReplacement(e.getPlayer().getWorld(), PortalType.ENDER);
+        if (respawnLocation != null) e.setRespawnLocation(respawnLocation);
     }
 
     @EventHandler
