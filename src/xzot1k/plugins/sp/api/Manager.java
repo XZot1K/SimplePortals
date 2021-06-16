@@ -12,6 +12,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Vehicle;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.BlockIterator;
 import org.bukkit.util.Vector;
@@ -461,7 +462,7 @@ public class Manager {
                     : Collections.singletonList(vehicle.getPassenger())) : Collections.emptyList());
             vehicle.eject();
 
-            entity.teleport(location);
+            entity.teleport(location, PlayerTeleportEvent.TeleportCause.PLUGIN);
             if (!entityVelocity) entity.setVelocity(new Vector(0, 0, 0));
 
             for (Entity e : passengersList) e.teleport(location);

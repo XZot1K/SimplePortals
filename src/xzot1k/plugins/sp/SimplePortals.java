@@ -72,7 +72,7 @@ public class SimplePortals extends JavaPlugin {
             else log(Level.INFO, "Everything looks like it is up to date!");
         } catch (Exception e) {
             e.printStackTrace();
-            log(Level.INFO, "Unable to check for updates ('" + e.getMessage() + "'.");
+            log(Level.INFO, "Unable to check for updates ('" + e.getMessage() + "').");
         }
 
         new Metrics(this);
