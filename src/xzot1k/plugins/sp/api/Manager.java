@@ -148,8 +148,7 @@ public class Manager {
                     Portal portal = getPortalFromFile(file.getName().toLowerCase().replace(".yml", ""));
                     getPortalMap().put(portal.getPortalId(), portal);
                 } catch (PortalFormException e) {
-                    getPluginInstance().log(Level.WARNING, "The file \"" + file.getName()
-                            + "\" has a portal within that was unable to be parsed. Please check this portal.");
+                    getPluginInstance().log(Level.WARNING, e.getMessage());
                 }
             }
     }
@@ -408,6 +407,10 @@ public class Manager {
             throw new PortalFormException("The portal's point one and point two have mismatching world names ('" + pointTwo.getWorldName()
                     + "' does NOT equal '" + pointTwo.getWorldName() + "').");
 
+        World world = getPluginInstance().getServer().getWorld(pointOne.getWorldName());
+        if (world == null)
+            throw new PortalFormException("The portal \"" + portalId + "\" has a world assigned to it that no longer exists.");
+
         final Region region = new Region(getPluginInstance(), pointOne, pointTwo);
         final Portal portal = new Portal(getPluginInstance(), file.getName().toLowerCase().replace(".yml", ""), region);
         portal.setTeleportLocation(teleportLocation);
@@ -510,7 +513,6 @@ public class Manager {
             }, 5);
         } else {
             Vector newDirection = entity.getVelocity().clone();
-
             entity.teleport(location);
             if (entityVelocity) entity.setVelocity(newDirection);
             else entity.setVelocity(new Vector(0, 0, 0));

@@ -98,9 +98,7 @@ public class SimplePortals extends JavaPlugin {
 
             if (name.equalsIgnoreCase("config")) {
                 String createSound = getConfig().getString("teleport-sound");
-                if (!getServerVersion().startsWith("v1_9") && !getServerVersion().startsWith("v1_10") && !getServerVersion().startsWith("v1_11")
-                        && !getServerVersion().startsWith("v1_12") && !getServerVersion().startsWith("v1_13") && !getServerVersion().startsWith("v1_14")
-                        && !getServerVersion().startsWith("v1_15") && !getServerVersion().startsWith("v1_16")) {
+                if (getServerVersion().startsWith("v1_8") || getServerVersion().startsWith("v1_7")) {
                     if (createSound != null && createSound.equalsIgnoreCase("ENTITY_GHAST_SHOOT")) {
                         getConfig().set("teleport-sound", "GHAST_CHARGE");
                         updateCount++;
