@@ -6,45 +6,31 @@ In order to properly use SimplePortals you will need to be able to retrieve the 
 2. Make sure your plugin can grab the SimplePortals instance from your Main class file like below:  
 
 ```
-import xzot1k.plugins.sp.SimplePortals;
 import org.bukkit.plugin.java.JavaPlugin;
-import java.util.logging.Level;
+import xzot1k.plugins.sp.SimplePortals;
 
-public class Main extends JavaPlugin
-{
+public class Main extends JavaPlugin {
 
-    private satic SimplePortals simplePortals;
+    private SimplePortals simplePortals;
 
     @Override
-    public void onEnable()
-    {
-        if (!isSimplePortalsInstalled())
-        {
-            getServer().getPluginManager().disablePlugin(this);
-            
-            return; // This plugin is now disabled since SimplePortals was not installed.
+    public void onEnable() {
+        if (!isSimplePortalsInstalled()) {
+            getServer().getPluginManager().disablePlugin(this); // disable plugin since SimplePortals is NOT installed.
+            return;
         }
 
         // SimplePortals was found and now can be accessed with the getSimplePortals() getter.
     }
 
     // This method tells you whether SimplePortals is installed or not.
-    private boolean isSimplePortalsInstalled()
-    {
-        SimplePortals simplePortals = (SimplePortals) getServer().getPluginManager().getPlugin("SimplePortals");
-        
-        if(simplePortals != null)
-        {
-            setSimplePortals(simplePortals);
-            return true;
-        }
-
+    private boolean isSimplePortalsInstalled() {
+        if (getServer().getPluginManager().getPlugin("SimplePortals") != null)
+            this.simplePortals = SimplePortals.getPluginInstance();
         return false;
     }
 
-    public static SimplePortals getSimplePortals() { return simplePortals; }
-
-    private static void setSimplePortals(SimplePortals simplePortals) { Main.simplePortals = simplePortals; }
+    public SimplePortals getSimplePortals() { return simplePortals; }
 
 }
 ```
