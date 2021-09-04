@@ -1,0 +1,533 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ArtifactsWorkspaceSettings">
+    <artifacts-to-build>
+      <artifact name="SimplePortals:jar" />
+    </artifacts-to-build>
+  </component>
+  <component name="BranchesTreeState">
+    <expand>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="GROUP_NODE:origin" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+    </expand>
+    <select />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="025e54fe-192b-44bb-8002-fa2e3b7524d9" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/src/xzot1k/plugins/sp/core/Listeners.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/xzot1k/plugins/sp/core/Listeners.java" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Enum" />
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Rebase.Settings">
+    <option name="ONTO" value="refs/remotes/origin/master" />
+  </component>
+  <component name="Git.Settings">
+    <option name="PREVIOUS_COMMIT_AUTHORS">
+      <list>
+        <option value="XZot1K &lt;alexosborne54@gmail.com&gt;" />
+        <option value="Jeremiah Osborne" />
+        <option value="Jeremiah Osborne &lt;alexosborne54@gmail.com&gt;" />
+      </list>
+    </option>
+    <option name="PUSH_AUTO_UPDATE" value="true" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="SIGN_OFF_COMMIT" value="true" />
+    <option name="UPDATE_TYPE" value="REBASE" />
+  </component>
+  <component name="GitSEFilterConfiguration">
+    <file-type-list>
+      <filtered-out-file-type name="LOCAL_BRANCH" />
+      <filtered-out-file-type name="REMOTE_BRANCH" />
+      <filtered-out-file-type name="TAG" />
+      <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
+    </file-type-list>
+  </component>
+  <component name="InvalidFacetManager">
+    <ignored-facets>
+      <facet id="SimplePortals/invalid/Minecraft" />
+    </ignored-facets>
+  </component>
+  <component name="ProjectId" id="1W5RwBHxhiBjVnABHbQNLeYONEG" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
+    <property name="ASKED_SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="aspect.path.notification.shown" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../Test" />
+    <property name="node.js.detected.package.eslint" value="true" />
+    <property name="node.js.detected.package.tslint" value="true" />
+    <property name="node.js.path.for.package.eslint" value="project" />
+    <property name="node.js.path.for.package.tslint" value="project" />
+    <property name="node.js.selected.package.eslint" value="(autodetect)" />
+    <property name="node.js.selected.package.tslint" value="(autodetect)" />
+    <property name="nodejs_package_manager_path" value="npm" />
+    <property name="project.structure.last.edited" value="Artifacts" />
+    <property name="project.structure.proportion" value="0.15" />
+    <property name="project.structure.side.proportion" value="0.2" />
+    <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\alexo\Google Drive\Development\Java Development\Minecraft\Plugins\SimplePortals\src\xzot1k\plugins\sp\core\packets" />
+      <recent name="C:\Users\alexo\Google Drive\Development\Java Development\Minecraft\Plugins\SimplePortals\src\xzot1k\plugins\sp\core\packets\bar" />
+      <recent name="$PROJECT_DIR$/src/xzot1k/plugins/sp/api/enums" />
+    </key>
+    <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="xzot1k.plugins.sp.core.tasks" />
+    </key>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="project-level" UseSingleDictionary="true" transferred="true" />
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="025e54fe-192b-44bb-8002-fa2e3b7524d9" name="Default Changelist" comment="" />
+      <created>1578437705559</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1578437705559</updated>
+      <workItem from="1578437706956" duration="1726000" />
+      <workItem from="1579707675608" duration="16000" />
+      <workItem from="1579707720197" duration="3157000" />
+      <workItem from="1579874455296" duration="1258000" />
+      <workItem from="1580319550134" duration="2278000" />
+      <workItem from="1580394365443" duration="8000" />
+      <workItem from="1580394384067" duration="148000" />
+      <workItem from="1580483406354" duration="48000" />
+      <workItem from="1580571222986" duration="120000" />
+      <workItem from="1580572670138" duration="1431000" />
+      <workItem from="1580661500929" duration="11000" />
+      <workItem from="1581183597935" duration="5000" />
+      <workItem from="1581509211525" duration="473000" />
+      <workItem from="1581611034769" duration="19000" />
+      <workItem from="1582048008894" duration="1864000" />
+      <workItem from="1582066924893" duration="1671000" />
+      <workItem from="1585485380193" duration="184000" />
+      <workItem from="1585922081836" duration="134000" />
+      <workItem from="1585957104401" duration="135000" />
+      <workItem from="1585957408449" duration="234000" />
+      <workItem from="1585957942260" duration="5195000" />
+      <workItem from="1585976280814" duration="485000" />
+      <workItem from="1585976777724" duration="21000" />
+      <workItem from="1585976818084" duration="83000" />
+      <workItem from="1585976913086" duration="354000" />
+      <workItem from="1585977294917" duration="878000" />
+      <workItem from="1586006737903" duration="42000" />
+      <workItem from="1588170739557" duration="716000" />
+      <workItem from="1588359833230" duration="3320000" />
+      <workItem from="1588366301962" duration="1180000" />
+      <workItem from="1588368213625" duration="1368000" />
+      <workItem from="1589562552050" duration="4921000" />
+      <workItem from="1590418342508" duration="107000" />
+      <workItem from="1593206582178" duration="12000" />
+      <workItem from="1593372053593" duration="785000" />
+      <workItem from="1593372912846" duration="140000" />
+      <workItem from="1593373333068" duration="69000" />
+      <workItem from="1593665056023" duration="640000" />
+      <workItem from="1593703648772" duration="510000" />
+      <workItem from="1594576673676" duration="264000" />
+      <workItem from="1594694502513" duration="2779000" />
+      <workItem from="1594704247285" duration="218000" />
+      <workItem from="1596670962421" duration="982000" />
+      <workItem from="1596845688156" duration="1355000" />
+      <workItem from="1600199015236" duration="2005000" />
+      <workItem from="1600205831272" duration="355000" />
+      <workItem from="1600206203725" duration="117000" />
+      <workItem from="1600206350427" duration="391000" />
+      <workItem from="1600206768394" duration="7304000" />
+      <workItem from="1600234325530" duration="1451000" />
+      <workItem from="1600297564537" duration="274000" />
+      <workItem from="1600297889882" duration="164000" />
+      <workItem from="1600350037365" duration="3276000" />
+      <workItem from="1600553948831" duration="1840000" />
+      <workItem from="1600564070698" duration="1204000" />
+      <workItem from="1600615754328" duration="31000" />
+      <workItem from="1600616427802" duration="768000" />
+      <workItem from="1602563310121" duration="142000" />
+      <workItem from="1605225343447" duration="1327000" />
+      <workItem from="1605922362058" duration="2535000" />
+      <workItem from="1606398453925" duration="8007000" />
+      <workItem from="1606491519366" duration="524000" />
+      <workItem from="1606578664081" duration="63000" />
+      <workItem from="1606926579845" duration="820000" />
+      <workItem from="1606927473553" duration="458000" />
+      <workItem from="1606927990594" duration="233000" />
+      <workItem from="1606929075364" duration="101000" />
+      <workItem from="1606929526221" duration="300000" />
+      <workItem from="1608581858265" duration="241000" />
+      <workItem from="1608583071049" duration="87000" />
+      <workItem from="1609794878236" duration="5025000" />
+      <workItem from="1609802600666" duration="902000" />
+      <workItem from="1609803621316" duration="3988000" />
+      <workItem from="1609864874129" duration="684000" />
+      <workItem from="1609885354498" duration="5348000" />
+      <workItem from="1610581764291" duration="75000" />
+      <workItem from="1610583935239" duration="58000" />
+      <workItem from="1610693586612" duration="1435000" />
+      <workItem from="1610731528878" duration="15025000" />
+      <workItem from="1610779283134" duration="1037000" />
+      <workItem from="1611005160643" duration="1187000" />
+      <workItem from="1611009121327" duration="2592000" />
+      <workItem from="1611672782518" duration="166000" />
+      <workItem from="1611672953748" duration="4070000" />
+      <workItem from="1611697952586" duration="1416000" />
+      <workItem from="1611847745056" duration="757000" />
+      <workItem from="1611878694663" duration="4000" />
+      <workItem from="1611880640691" duration="833000" />
+      <workItem from="1611959227242" duration="18000" />
+      <workItem from="1612289616108" duration="896000" />
+      <workItem from="1612635887204" duration="1019000" />
+      <workItem from="1612926450469" duration="4145000" />
+      <workItem from="1612931088686" duration="5000" />
+      <workItem from="1612931120004" duration="1185000" />
+      <workItem from="1612932335872" duration="5017000" />
+      <workItem from="1613177694132" duration="518000" />
+      <workItem from="1613188810704" duration="192000" />
+      <workItem from="1613190800642" duration="302000" />
+      <workItem from="1613198395191" duration="55000" />
+      <workItem from="1613226303379" duration="26000" />
+      <workItem from="1613400530071" duration="2659000" />
+      <workItem from="1613434443202" duration="2205000" />
+      <workItem from="1613453823907" duration="878000" />
+      <workItem from="1614104558817" duration="1510000" />
+      <workItem from="1614108783280" duration="24000" />
+      <workItem from="1614180707938" duration="1707000" />
+      <workItem from="1614190904708" duration="373000" />
+      <workItem from="1614191282454" duration="366000" />
+    </task>
+    <task id="LOCAL-00001" summary="# Fixes&#10;&#10;* Fixed an issue where command identifiers such as :CONSOLE were not being replaced after command execution.&#10;* Resolved a smaller issue with cooldown saving.&#10;&#10;# Changes&#10;&#10;* Separated the cooldown values for portals and the join protection while also implementing a new join protection cooldown value in the &quot;config.yml&quot;.">
+      <created>1578438891397</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1578438891397</updated>
+    </task>
+    <task id="LOCAL-00002" summary="# Fixes&#10;&#10;* Fixed an issue involving some large portal load times.&#10;* Fixed an issue with the update checker.&#10;&#10;# Changes&#10;&#10;* Removed the task update checker and improved the on enable update checker, alongside removing the config option since it is no longer needed.">
+      <created>1580320803065</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1580320803065</updated>
+    </task>
+    <task id="LOCAL-00003" summary="# Fixes&#10;&#10;* Fixed an issue involving some large portal load times.&#10;* Fixed an issue with the update checker.&#10;* Fixed a small configuration updating issue where the sound string would constantly be set regardless of the value.&#10;&#10;# Changes&#10;&#10;* Removed the task update checker and improved the on enable update checker, alongside removing the config option since it is no longer needed.">
+      <created>1580321673096</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1580321673096</updated>
+    </task>
+    <task id="LOCAL-00004" summary="# Fixes&#10;&#10;* Fixed an issue involving negative cooldown values due to a missing configuration key.&#10;* Fixed an issue involving nether/end portal entry inside simple portal regions.">
+      <created>1582067194344</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1582067194344</updated>
+    </task>
+    <task id="LOCAL-00005" summary="⍟ Changes ⍟&#10;&#10;* Removed the “cd-bypass” message. It seems this message became an annoyance more than a feature.&#10;&#10;* Implemented the full tab completion for argument one of the base command. In addition, the tab-completion helps out with the portal command type and percentage.&#10;&#10;* Implemented command percentages. Commands added to portals now follow the format &lt;command&gt;:&lt;portal-command-type&gt;:&lt;percentage&gt;. The portal-command-type can be PLAYER, CONSOLE, or CHAT and the percentage is an integer (0-100). Remember the command portion must NOT include a slash (/) unless two slashes are needed, but it can include spaces.&#10;&#10;* Updated the Portal class to now have a new command invoke method for the developer API.&#10;&#10;⍟ Bug Fixes ⍟&#10;&#10;* Fixed an issue where particle effects would attempt to use 1.13+ classes instead of the native classes for older versions.">
+      <created>1585976518474</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1585976518474</updated>
+    </task>
+    <task id="LOCAL-00006" summary="⍟ Changes ⍟&#10;&#10;* Removed the “cd-bypass” message. It seems this message became an annoyance more than a feature.&#10;&#10;* Implemented the full tab completion for argument one of the base command. In addition, the tab-completion helps out with the portal command type and percentage.&#10;&#10;* Implemented command percentages. Commands added to portals now follow the format &lt;command&gt;:&lt;portal-command-type&gt;:&lt;percentage&gt;. The portal-command-type can be PLAYER, CONSOLE, or CHAT and the percentage is an integer (0-100). Remember the command portion must NOT include a slash (/) unless two slashes are needed, but it can include spaces.&#10;&#10;* Updated the Portal class to now have a new command invoke method for the developer API.&#10;&#10;⍟ Bug Fixes ⍟&#10;&#10;* Fixed an issue where particle effects would attempt to use 1.13+ classes instead of the native classes for older versions.">
+      <created>1585977032072</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1585977032072</updated>
+    </task>
+    <task id="LOCAL-00007" summary="### API Changes ###&#10;&#10;* Swapped to the Spigot ChatComponent API from general JSON support.&#10;* Implemented new JavaDoc comments everywhere. &#10;* Updated the Portal class to now have a new command invoke method.&#10;* Added the new &quot;Direction&quot; enumeration class. This is used for general direction identification.&#10;&#10;### Plugin Changes ###&#10;&#10;* The plugin now requires Spigot or a fork of spigot containing the ChatComponent API.&#10;* Removed the “cd-bypass” message. It seems this message became an annoyance more than a feature.&#10;* Implemented the &quot;command-tick-delay&quot; option in the &quot;config.yml&quot;. This will provide control over when exactly commands are ran after entering a portal.&#10;* Implemented the full tab completion for argument one of the base commands. In addition, the tab-completion helps out with the portal command type and percentage.&#10;* Implemented command percentages. Commands added to portals now follow the format &lt;command&gt;:&lt;portal-command-type&gt;:&lt;percentage&gt;. The portal-command-type can be PLAYER, CONSOLE, or CHAT and the percentage is an integer (0-100). Remember the command portion must NOT include a slash (/) unless two slashes are needed, but it can include spaces.&#10;* There are now two portal entry events, one at LOWEST and the other on MONITOR. The monitor check will only trigger if the event is NOT cancelled from the lowest. This is to prevent other plugins from using poor mechanics to modify nether portals.&#10;* Implemented a toggleable feature in the config “portal-throwback” which will now always throw a player back using the throwback velocity defined in the configuration when using the portal.&#10;* All particle animation has been swapped to a new asynchronous layout.">
+      <created>1589567634828</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1589567634828</updated>
+    </task>
+    <task id="LOCAL-00008" summary="### API Changes ###&#10;&#10;* Swapped to the Spigot ChatComponent API from general JSON support.&#10;* Implemented new JavaDoc comments everywhere. &#10;* Updated the Portal class to now have a new command invoke method.&#10;* Added the new &quot;Direction&quot; enumeration class. This is used for general direction identification.&#10;&#10;### Plugin Changes ###&#10;&#10;* The plugin now requires Spigot or a fork of spigot containing the ChatComponent API.&#10;* Removed the “cd-bypass” message. It seems this message became an annoyance more than a feature.&#10;* Implemented the &quot;command-tick-delay&quot; option in the &quot;config.yml&quot;. This will provide control over when exactly commands are ran after entering a portal.&#10;* Implemented the full tab completion for argument one of the base commands. In addition, the tab-completion helps out with the portal command type and percentage.&#10;* Implemented command percentages. Commands added to portals now follow the format &lt;command&gt;:&lt;portal-command-type&gt;:&lt;percentage&gt;. The portal-command-type can be PLAYER, CONSOLE, or CHAT and the percentage is an integer (0-100). Remember the command portion must NOT include a slash (/) unless two slashes are needed, but it can include spaces.&#10;* There are now two portal entry events, one at LOWEST and the other on MONITOR. The monitor check will only trigger if the event is NOT cancelled from the lowest. This is to prevent other plugins from using poor mechanics to modify nether portals.&#10;* Implemented a toggleable feature in the config “portal-throwback” which will now always throw a player back using the throwback velocity defined in the configuration when using the portal.&#10;* All particle animation has been swapped to a new asynchronous layout.">
+      <created>1589567914506</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1589567914506</updated>
+    </task>
+    <task id="LOCAL-00009" summary="### API Changes ###&#10;&#10;* Swapped to the Spigot ChatComponent API from general JSON support.&#10;* Implemented new JavaDoc comments everywhere. &#10;* Updated the Portal class to now have a new command invoke method.&#10;* Added the new &quot;Direction&quot; enumeration class. This is used for general direction identification.&#10;&#10;### Plugin Changes ###&#10;&#10;* Implemented 1.16_R1 support for general packets and checks.&#10;* The plugin now requires Spigot or a fork of spigot containing the ChatComponent API.&#10;* Removed the “cd-bypass” message. It seems this message became an annoyance more than a feature.&#10;* Implemented the &quot;command-tick-delay&quot; option in the &quot;config.yml&quot;. This will provide control over when exactly commands are ran after entering a portal.&#10;* Implemented the full tab completion for argument one of the base commands. In addition, the tab-completion helps out with the portal command type and percentage.&#10;* Implemented command percentages. Commands added to portals now follow the format &lt;command&gt;:&lt;portal-command-type&gt;:&lt;percentage&gt;. The portal-command-type can be PLAYER, CONSOLE, or CHAT and the percentage is an integer (0-100). Remember the command portion must NOT include a slash (/) unless two slashes are needed, but it can include spaces.&#10;* There are now two portal entry events, one at LOWEST and the other on MONITOR. The monitor check will only trigger if the event is NOT cancelled from the lowest. This is to prevent other plugins from using poor mechanics to modify nether portals.&#10;* Implemented a toggleable feature in the config “portal-throwback” which will now always throw a player back using the throwback velocity defined in the configuration when using the portal.&#10;* All particle animation has been swapped to a new asynchronous layout.">
+      <created>1593703749885</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1593703749885</updated>
+    </task>
+    <task id="LOCAL-00010" summary="### Plugin Changes ###&#10;&#10;* Fixed an issue where invalid settings for a portal will cause it to fail.&#10;&#10;* Fixed an issue involving some particle issues.&#10;&#10;* Fixed an issue with cooldown displays.">
+      <created>1594700557633</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1594700557633</updated>
+    </task>
+    <task id="LOCAL-00011" summary="### Plugin Changes ###&#10;&#10;* Resolved an issue involving portal permissions, requiring multiple permissions to access a portal.">
+      <created>1596680447778</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1596680447778</updated>
+    </task>
+    <task id="LOCAL-00012" summary="### Plugin Changes ###&#10;&#10;* Flipped some permission check methods to simplify the process and resolve a potential issue.&#10;&#10;* Swapped the bypass permissions configuration option to enable by default.">
+      <created>1596845936789</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1596845936789</updated>
+    </task>
+    <task id="LOCAL-00013" summary="* Implemented full 1.16.3 support even though it was already technically supported.&#10;&#10;* Implemented an individual portal message, action bar message, title, and sub-title along side the &quot;/portals message &lt;name&gt; &lt;text&gt;&quot; command for them.&#10;&#10;* Implemented portal linking which can be used by the command &quot;/portals setlocation &lt;name&gt; &lt;name&gt;&quot;, where the first &lt;name&gt; is the portal to set the location for and the other being the destination in its center of the region.&#10;&#10;* Added full auto-updating packets and swapped to a reliance of Spigot-API.">
+      <created>1600214885652</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1600214885652</updated>
+    </task>
+    <task id="LOCAL-00014" summary="* Resolved an issue with JSON coloring for the help command.&#10;&#10;* Resolved a portal loading issue for newer features.">
+      <created>1600235511794</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1600235511794</updated>
+    </task>
+    <task id="LOCAL-00015" summary="* Resolved an issue where the selection mode command would not obey by a single permission node.&#10;&#10;* Directional support based on a player direction has been implemented for the fill portal command!&#10;&#10;* Implemented fade in/out alongside display time options to the “config.yml”.&#10;&#10;* Future proofed some of the code so not a lot needs to be done IF any when newer versions come out.">
+      <created>1600352692079</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1600352692079</updated>
+    </task>
+    <task id="LOCAL-00016" summary="* Added the new &quot;/portals dm &lt;name&gt;&quot; command which will disable all messages associated to the defined portal.&#10;&#10;* Added the &quot;message&quot; and &quot;dm&quot; commands to the tab completion along with any tweaks for them.">
+      <created>1600615343004</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1600615343004</updated>
+    </task>
+    <task id="LOCAL-00017" summary="* Fixed the &quot;/portal &lt;enable/disable&gt; &lt;name&gt;&quot; commands by separating them entirely and giving them separate messages.&#10;&#10;* Fixed some delay issues with nether portal materials.">
+      <created>1605924540566</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1605924540566</updated>
+    </task>
+    <task id="LOCAL-00018" summary="# API Changes&#10;&#10;- Portals are no longer loaded into the plugin instance. After noticing several users attempting to modify data files while the plugin is live and expecting an outcome, the data storage system has been revamped to handle data directly out of the files to allow these actions.&#10;- Due to the removal of the loaded portals, several API methods and general usages were either reworked or completely removed. Specifically anything having to do with getting a portal was changed.&#10;&#10;# Plugin Changes&#10;&#10;- Portals are no longer instanced, this could potentially impact performance slightly; however, this new system enables countless cases of extra versatility.&#10;- Portals are now saved in their own personal YAML files.&#10;- The portal creation command now sets the default teleport location (location the portal goes to) using the exact player location when the command was used.&#10;- Separated an additional piece of the /portals enable &lt;name&gt; and /portals disable &lt;name&gt; commands to resolve some situational issues.">
+      <created>1606491772642</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1606491772642</updated>
+    </task>
+    <task id="LOCAL-00019" summary="# API Changes&#10;&#10;- Portals are now loaded into instance form and now load directly from their associated file every 10 seconds.&#10;- Some API related methods were tampered with to reflect the above change.&#10;&#10;# Plugin Changes&#10;&#10;- The liquid movement listening event is now utilized only through instance form portals and the initial block is the only point checked before the event is cancelled.">
+      <created>1609804932695</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1609804932695</updated>
+    </task>
+    <task id="LOCAL-00020" summary="# API Changes&#10;&#10;- Portals are now loaded into instance form and now load directly from their associated file every 10 seconds.&#10;- Some API related methods were tampered with to reflect the above change.&#10;&#10;# Plugin Changes&#10;&#10;- The liquid movement listening event is now utilized only through instance form portals and the initial block is the only point checked before the event is cancelled.&#10;- The selection mode message was changed to better describe how to create the selection.">
+      <created>1609807263106</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1609807263106</updated>
+    </task>
+    <task id="LOCAL-00021" summary="# API Changes&#10;&#10;- Portals are now loaded into instance form and now load directly from their associated file every 10 seconds.&#10;- Some API related methods were tampered with to reflect the above change.&#10;&#10;# Plugin Changes&#10;&#10;- The liquid movement listening event is now utilized only through instance form portals and the initial block is the only point checked before the event is cancelled.&#10;- The selection mode message was changed to better describe how to create the selection.&#10;- The portal list command has a new message with a new key and sends detailed averaged region coordinate information alongside whether the portal is enabled or disabled (RED or GREEN).&#10;- Fixed an issue with a cooldown placeholder.">
+      <created>1609808588582</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1609808588582</updated>
+    </task>
+    <task id="LOCAL-00022" summary="# Plugin Changes&#10;&#10;- Fixed an issue with the new portal loading system causing some issues.">
+      <created>1609865177984</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1609865177984</updated>
+    </task>
+    <task id="LOCAL-00023" summary="# Plugin Changes&#10;&#10;- Adjusted some areas causing new registration not to function properly.&#10;- Fixed some syncing issues with the file form of portals.">
+      <created>1609886403244</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1609886403244</updated>
+    </task>
+    <task id="LOCAL-00024" summary="# API Changes&#10;&#10;- Adjusted &quot;getPortalNames&quot; method to take a new parameter for coordinate information.&#10;&#10;# Plugin Changes&#10;&#10;- Adjusted some areas causing new registration not to function properly.&#10;- Fixed some syncing issues with the file form of portals.&#10;- Fixed an issue causing some check to be inverted causing some portals to not show up as existing.">
+      <created>1609892458392</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1609892458392</updated>
+    </task>
+    <task id="LOCAL-00025" summary="# API Changes&#10;&#10;- Removed the &quot;copy&quot; method from the &quot;SimplePortals&quot; class.&#10;- The &quot;PortalEnterEvent&quot; now requires an &quot;Entity&quot; parameter rather than a &quot;Player&quot; parameter.&#10;- The &quot;performAction&quot; method within the &quot;Portal&quot; class now requires an &quot;Entity&quot; parameter rather than a &quot;Player&quot; parameter.&#10;- The &quot;teleportPlayerWithEntity&quot; method was reworked with new parameters and renamed to &quot;teleportWithEntity&quot;.&#10;&#10;&#10;# Plugin Changes&#10;&#10;- Implemented a new portal system to allow vehicles and entities to pass through portals (including dropped/spawned items).&#10;- Fixed an issue with the disable messages command.&#10;- Fixed tab completion including coordinate data.&#10;- Fixed selection mode not disabling after portal manipulation such as creation or relocation.">
+      <created>1610746784947</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1610746784947</updated>
+    </task>
+    <task id="LOCAL-00026" summary="# Plugin Changes&#10;&#10;- Adjusted the fill command to handle per-version methods correctly.">
+      <created>1611005510141</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1611005510141</updated>
+    </task>
+    <task id="LOCAL-00027" summary="# Plugin Changes&#10;&#10;- Adjusted the fill command to handle per-version methods correctly.">
+      <created>1611009778260</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1611009778260</updated>
+    </task>
+    <task id="LOCAL-00028" summary="# Plugin Changes&#10;&#10;- The config option &quot;maintain-vehicle-velocity&quot; was split into two new options &quot;maintain-vehicle-velocity&quot; and &quot;maintain-entity-velocity&quot; which both now handle and resolve some velocity based issues.">
+      <created>1611011255608</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1611011255608</updated>
+    </task>
+    <task id="LOCAL-00029" summary="# Plugin Changes&#10;&#10;- The config option &quot;maintain-vehicle-velocity&quot; was split into two new options &quot;maintain-vehicle-velocity&quot; and &quot;maintain-entity-velocity&quot; which both now handle and resolve some velocity based issues.">
+      <created>1611011489515</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1611011489515</updated>
+    </task>
+    <task id="LOCAL-00030" summary="# Plugin Changes&#10;&#10;- When adding a commands to a portal you may now fully use colons and spaces. In addition, the percentage feature was swapped locations so the percentage now comes before the end CONSOLE, PLAYER, or CHAT. The ending IS REQUIRED to utilize the percentage feature. &lt;Format: /portals addcmd command:percentage:type&gt;">
+      <created>1611676653036</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1611676653036</updated>
+    </task>
+    <task id="LOCAL-00031" summary="# Plugin Changes&#10;&#10;- All portal name/ids have been forced to lowercase. This will prevent file reading-related issues when utilizing commands.&#10;- Updated the method at which vanilla portals are cancelled to help prevent the creative mode instant teleportation to the nether or end.">
+      <created>1613177948085</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1613177948085</updated>
+    </task>
+    <task id="LOCAL-00032" summary="# Plugin Changes&#10;&#10;- All portal name/ids have been forced to lowercase. This will prevent file reading-related issues when utilizing commands.&#10;- Updated the method at which vanilla portals are cancelled to help prevent the creative mode instant teleportation to the nether or end.">
+      <created>1613188906938</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1613188906938</updated>
+    </task>
+    <task id="LOCAL-00033" summary="# Plugin Changes&#10;&#10;- Added two new lists in the &quot;config.yml&quot; allowing nether and end portals to have their teleport locations globally per-world to be replaced with their own individual destinations.">
+      <created>1613404646129</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1613404646129</updated>
+    </task>
+    <task id="LOCAL-00034" summary="# Plugin Changes&#10;&#10;- Adjusted the portal loader to lowercase everything at all times including renaming the existing portal files to ensure everything is in the correct syntax.&#10;- The &quot;portals.yml&quot; converter now renames the file to prevent issues for those whom forget to remove the file after conversion.&#10;- Adjusted some coordinate features in case of any miscalculation via parse.">
+      <created>1614105776293</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1614105776293</updated>
+    </task>
+    <task id="LOCAL-00035" summary="# Plugin Changes&#10;&#10;- Resolves an issue with the end portal override when coming from the end environment worlds.">
+      <created>1614182069323</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1614182069323</updated>
+    </task>
+    <option name="localTasksCounter" value="36" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="UnknownFeatures">
+    <option featureType="com.intellij.facetType" implementationName="minecraft" />
+  </component>
+  <component name="UpdateCopyrightCheckinHandler">
+    <option name="UPDATE_COPYRIGHT" value="true" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
+    <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
+    <MESSAGE value="### API Changes ###&#10;&#10;* Swapped to the Spigot ChatComponent API from general JSON support.&#10;* Implemented new JavaDoc comments everywhere. &#10;* Updated the Portal class to now have a new command invoke method.&#10;* Added the new &quot;Direction&quot; enumeration class. This is used for general direction identification.&#10;&#10;### Plugin Changes ###&#10;&#10;* The plugin now requires Spigot or a fork of spigot containing the ChatComponent API.&#10;* Removed the “cd-bypass” message. It seems this message became an annoyance more than a feature.&#10;* Implemented the &quot;command-tick-delay&quot; option in the &quot;config.yml&quot;. This will provide control over when exactly commands are ran after entering a portal.&#10;* Implemented the full tab completion for argument one of the base commands. In addition, the tab-completion helps out with the portal command type and percentage.&#10;* Implemented command percentages. Commands added to portals now follow the format &lt;command&gt;:&lt;portal-command-type&gt;:&lt;percentage&gt;. The portal-command-type can be PLAYER, CONSOLE, or CHAT and the percentage is an integer (0-100). Remember the command portion must NOT include a slash (/) unless two slashes are needed, but it can include spaces.&#10;* There are now two portal entry events, one at LOWEST and the other on MONITOR. The monitor check will only trigger if the event is NOT cancelled from the lowest. This is to prevent other plugins from using poor mechanics to modify nether portals.&#10;* Implemented a toggleable feature in the config “portal-throwback” which will now always throw a player back using the throwback velocity defined in the configuration when using the portal.&#10;* All particle animation has been swapped to a new asynchronous layout." />
+    <MESSAGE value="### API Changes ###&#10;&#10;* Swapped to the Spigot ChatComponent API from general JSON support.&#10;* Implemented new JavaDoc comments everywhere. &#10;* Updated the Portal class to now have a new command invoke method.&#10;* Added the new &quot;Direction&quot; enumeration class. This is used for general direction identification.&#10;&#10;### Plugin Changes ###&#10;&#10;* Implemented 1.16_R1 support for general packets and checks.&#10;* The plugin now requires Spigot or a fork of spigot containing the ChatComponent API.&#10;* Removed the “cd-bypass” message. It seems this message became an annoyance more than a feature.&#10;* Implemented the &quot;command-tick-delay&quot; option in the &quot;config.yml&quot;. This will provide control over when exactly commands are ran after entering a portal.&#10;* Implemented the full tab completion for argument one of the base commands. In addition, the tab-completion helps out with the portal command type and percentage.&#10;* Implemented command percentages. Commands added to portals now follow the format &lt;command&gt;:&lt;portal-command-type&gt;:&lt;percentage&gt;. The portal-command-type can be PLAYER, CONSOLE, or CHAT and the percentage is an integer (0-100). Remember the command portion must NOT include a slash (/) unless two slashes are needed, but it can include spaces.&#10;* There are now two portal entry events, one at LOWEST and the other on MONITOR. The monitor check will only trigger if the event is NOT cancelled from the lowest. This is to prevent other plugins from using poor mechanics to modify nether portals.&#10;* Implemented a toggleable feature in the config “portal-throwback” which will now always throw a player back using the throwback velocity defined in the configuration when using the portal.&#10;* All particle animation has been swapped to a new asynchronous layout." />
+    <MESSAGE value="### Plugin Changes ###&#10;&#10;* Fixed an issue where invalid settings for a portal will cause it to fail.&#10;&#10;* Fixed an issue involving some particle issues.&#10;&#10;* Fixed an issue with cooldown displays." />
+    <MESSAGE value="### Plugin Changes ###&#10;&#10;* Resolved an issue involving portal permissions, requiring multiple permissions to access a portal." />
+    <MESSAGE value="### Plugin Changes ###&#10;&#10;* Flipped some permission check methods to simplify the process and resolve a potential issue.&#10;&#10;* Swapped the bypass permissions configuration option to enable by default." />
+    <MESSAGE value="* Implemented full 1.16.3 support even though it was already technically supported.&#10;&#10;* Implemented an individual portal message, action bar message, title, and sub-title along side the &quot;/portals message &lt;name&gt; &lt;text&gt;&quot; command for them.&#10;&#10;* Implemented portal linking which can be used by the command &quot;/portals setlocation &lt;name&gt; &lt;name&gt;&quot;, where the first &lt;name&gt; is the portal to set the location for and the other being the destination in its center of the region.&#10;&#10;* Added full auto-updating packets and swapped to a reliance of Spigot-API." />
+    <MESSAGE value="* Resolved an issue with JSON coloring for the help command.&#10;&#10;* Resolved a portal loading issue for newer features." />
+    <MESSAGE value="* Resolved an issue where the selection mode command would not obey by a single permission node.&#10;&#10;* Directional support based on a player direction has been implemented for the fill portal command!&#10;&#10;* Implemented fade in/out alongside display time options to the “config.yml”.&#10;&#10;* Future proofed some of the code so not a lot needs to be done IF any when newer versions come out." />
+    <MESSAGE value="* Added the new &quot;/portals dm &lt;name&gt;&quot; command which will disable all messages associated to the defined portal.&#10;&#10;* Added the &quot;message&quot; and &quot;dm&quot; commands to the tab completion along with any tweaks for them." />
+    <MESSAGE value="* Fixed the &quot;/portal &lt;enable/disable&gt; &lt;name&gt;&quot; commands by separating them entirely and giving them separate messages.&#10;&#10;* Fixed some delay issues with nether portal materials." />
+    <MESSAGE value="# API Changes&#10;&#10;- Portals are no longer loaded into the plugin instance. After noticing several users attempting to modify data files while the plugin is live and expecting an outcome, the data storage system has been revamped to handle data directly out of the files to allow these actions.&#10;- Due to the removal of the loaded portals, several API methods and general usages were either reworked or completely removed. Specifically anything having to do with getting a portal was changed.&#10;&#10;# Plugin Changes&#10;&#10;- Portals are no longer instanced, this could potentially impact performance slightly; however, this new system enables countless cases of extra versatility.&#10;- Portals are now saved in their own personal YAML files.&#10;- The portal creation command now sets the default teleport location (location the portal goes to) using the exact player location when the command was used.&#10;- Separated an additional piece of the /portals enable &lt;name&gt; and /portals disable &lt;name&gt; commands to resolve some situational issues." />
+    <MESSAGE value="# API Changes&#10;&#10;- Portals are now loaded into instance form and now load directly from their associated file every 10 seconds.&#10;- Some API related methods were tampered with to reflect the above change.&#10;&#10;# Plugin Changes&#10;&#10;- The liquid movement listening event is now utilized only through instance form portals and the initial block is the only point checked before the event is cancelled." />
+    <MESSAGE value="# API Changes&#10;&#10;- Portals are now loaded into instance form and now load directly from their associated file every 10 seconds.&#10;- Some API related methods were tampered with to reflect the above change.&#10;&#10;# Plugin Changes&#10;&#10;- The liquid movement listening event is now utilized only through instance form portals and the initial block is the only point checked before the event is cancelled.&#10;- The selection mode message was changed to better describe how to create the selection." />
+    <MESSAGE value="# API Changes&#10;&#10;- Portals are now loaded into instance form and now load directly from their associated file every 10 seconds.&#10;- Some API related methods were tampered with to reflect the above change.&#10;&#10;# Plugin Changes&#10;&#10;- The liquid movement listening event is now utilized only through instance form portals and the initial block is the only point checked before the event is cancelled.&#10;- The selection mode message was changed to better describe how to create the selection.&#10;- The portal list command has a new message with a new key and sends detailed averaged region coordinate information alongside whether the portal is enabled or disabled (RED or GREEN).&#10;- Fixed an issue with a cooldown placeholder." />
+    <MESSAGE value="# Plugin Changes&#10;&#10;- Fixed an issue with the new portal loading system causing some issues." />
+    <MESSAGE value="# Plugin Changes&#10;&#10;- Adjusted some areas causing new registration not to function properly.&#10;- Fixed some syncing issues with the file form of portals." />
+    <MESSAGE value="# API Changes&#10;&#10;- Adjusted &quot;getPortalNames&quot; method to take a new parameter for coordinate information.&#10;&#10;# Plugin Changes&#10;&#10;- Adjusted some areas causing new registration not to function properly.&#10;- Fixed some syncing issues with the file form of portals.&#10;- Fixed an issue causing some check to be inverted causing some portals to not show up as existing." />
+    <MESSAGE value="# API Changes&#10;&#10;- Removed the &quot;copy&quot; method from the &quot;SimplePortals&quot; class.&#10;- The &quot;PortalEnterEvent&quot; now requires an &quot;Entity&quot; parameter rather than a &quot;Player&quot; parameter.&#10;- The &quot;performAction&quot; method within the &quot;Portal&quot; class now requires an &quot;Entity&quot; parameter rather than a &quot;Player&quot; parameter.&#10;- The &quot;teleportPlayerWithEntity&quot; method was reworked with new parameters and renamed to &quot;teleportWithEntity&quot;.&#10;&#10;&#10;# Plugin Changes&#10;&#10;- Implemented a new portal system to allow vehicles and entities to pass through portals (including dropped/spawned items).&#10;- Fixed an issue with the disable messages command.&#10;- Fixed tab completion including coordinate data.&#10;- Fixed selection mode not disabling after portal manipulation such as creation or relocation." />
+    <MESSAGE value="# Plugin Changes&#10;&#10;- Adjusted the fill command to handle per-version methods correctly." />
+    <MESSAGE value="# Plugin Changes&#10;&#10;- The config option &quot;maintain-vehicle-velocity&quot; was split into two new options &quot;maintain-vehicle-velocity&quot; and &quot;maintain-entity-velocity&quot; which both now handle and resolve some velocity based issues." />
+    <MESSAGE value="# Plugin Changes&#10;&#10;- When adding a commands to a portal you may now fully use colons and spaces. In addition, the percentage feature was swapped locations so the percentage now comes before the end CONSOLE, PLAYER, or CHAT. The ending IS REQUIRED to utilize the percentage feature. &lt;Format: /portals addcmd command:percentage:type&gt;" />
+    <MESSAGE value="# Plugin Changes&#10;&#10;- All portal name/ids have been forced to lowercase. This will prevent file reading-related issues when utilizing commands.&#10;- Updated the method at which vanilla portals are cancelled to help prevent the creative mode instant teleportation to the nether or end." />
+    <MESSAGE value="# Plugin Changes&#10;&#10;- Added two new lists in the &quot;config.yml&quot; allowing nether and end portals to have their teleport locations globally per-world to be replaced with their own individual destinations." />
+    <MESSAGE value="# Plugin Changes&#10;&#10;- Adjusted the portal loader to lowercase everything at all times including renaming the existing portal files to ensure everything is in the correct syntax.&#10;- The &quot;portals.yml&quot; converter now renames the file to prevent issues for those whom forget to remove the file after conversion.&#10;- Adjusted some coordinate features in case of any miscalculation via parse." />
+    <MESSAGE value="# Plugin Changes&#10;&#10;- Resolves an issue with the end portal override when coming from the end environment worlds." />
+    <option name="LAST_COMMIT_MESSAGE" value="# Plugin Changes&#10;&#10;- Resolves an issue with the end portal override when coming from the end environment worlds." />
+    <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
+    <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
+    <option name="REARRANGE_BEFORE_PROJECT_COMMIT" value="true" />
+  </component>
+</project>
