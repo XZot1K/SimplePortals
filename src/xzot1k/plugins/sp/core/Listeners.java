@@ -107,6 +107,17 @@ public class Listeners implements Listener {
         if (!e.getCause().name().toUpperCase().contains("PORTAL") && !e.getCause().name().toUpperCase().contains("GATEWAY"))
             return;
 
+
+        /*
+         * We don't want players to be teleported to another world if they use the other end city portals - that should only happen with the main portal.
+         * At least one dude complained about that on the discord.
+         * The main portal in the middle teleportation is already handled with  public void onPortal(EntityPortalEnterEvent e) {
+         * So this can safely be disabled?
+         */
+        if(e.getCause().equals(PlayerTeleportEvent.TeleportCause.END_GATEWAY)){
+            return;
+        }
+
         PortalType portalType = null;
         switch (e.getCause()) {
             case NETHER_PORTAL:

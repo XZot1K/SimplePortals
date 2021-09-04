@@ -71,11 +71,11 @@
     <orderEntry type="module-library" scope="PROVIDED">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../Dependencies/Server Jars/1.17.jar!/" />
+          <root url="jar://$MODULE_DIR$/../../Dependencies/Server Jars/spigot-1.17.1.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES>
-          <root url="jar://$MODULE_DIR$/../../Dependencies/Server Jars/1.17.jar!/" />
+          <root url="jar://$MODULE_DIR$/../../Dependencies/Server Jars/spigot-1.17.1.jar!/" />
         </SOURCES>
       </library>
     </orderEntry>

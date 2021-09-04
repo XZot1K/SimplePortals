@@ -6,6 +6,7 @@ package xzot1k.plugins.sp.core;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.util.StringUtil;
 import xzot1k.plugins.sp.SimplePortals;
 import xzot1k.plugins.sp.api.enums.PortalCommandType;
 
@@ -17,15 +18,21 @@ public class TabCompleter implements org.bukkit.command.TabCompleter {
 
     private SimplePortals pluginInstance;
 
+    final List<String> values;
+    final List<String> partialValues;
+
     public TabCompleter(SimplePortals pluginInstance) {
         setPluginInstance(pluginInstance);
+        values = new ArrayList<>();
+        partialValues = new ArrayList<>();
     }
 
     @Override
     public List<String> onTabComplete(CommandSender commandSender, Command command, String label, String[] args) {
 
         if (command.getName().equalsIgnoreCase("simpleportals")) {
-            List<String> values = new ArrayList<>();
+            values.clear();
+            partialValues.clear();
             if (args.length == 1) {
 
                 values.add("switchserver");
@@ -46,10 +53,11 @@ public class TabCompleter implements org.bukkit.command.TabCompleter {
                 values.add("disable");
                 values.add("message");
                 values.add("disablemessages");
+                values.add("list");
 
-            } else if (args.length == 2 || (args.length == 3 && (args[0].equalsIgnoreCase("setlocation") || args[0].equalsIgnoreCase("sl"))))
+            } else if (args.length == 2 || (args.length == 3 && (args[0].equalsIgnoreCase("setlocation") || args[0].equalsIgnoreCase("sl")))    ){
                 values.addAll(getPluginInstance().getManager().getPortalNames(false));
-            else if (args.length == 3) {
+            } else if (args.length == 3) {
                 int colonCount = 0;
                 for (char character : args[2].toCharArray()) if (character == ':') colonCount++;
 
@@ -70,8 +78,12 @@ public class TabCompleter implements org.bukkit.command.TabCompleter {
                     values.add(String.valueOf(i));
             }
 
-            if (values.size() > 0) Collections.sort(values);
-            return values;
+            StringUtil.copyPartialMatches(args[args.length - 1], values, partialValues);
+
+
+
+            //if (values.size() > 0) Collections.sort(values);
+            return partialValues;
         }
 
         return null;
