@@ -40,91 +40,97 @@ public class Commands implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (command.getName().equalsIgnoreCase("simpleportals")) {
+            if(sender.hasPermission("simpleportals.use")){
+                if (args.length >= 3 && (args[0].equalsIgnoreCase("addcommand") || args[0].equalsIgnoreCase("addcmd"))) {
+                    addCommand(sender, args);
+                    return true;
+                } else if (args.length >= 3 && (args[0].equalsIgnoreCase("message"))) {
+                    setMessage(sender, args);
+                    return true;
+                }
 
-            if (args.length >= 3 && (args[0].equalsIgnoreCase("addcommand") || args[0].equalsIgnoreCase("addcmd"))) {
-                addCommand(sender, args);
+                switch (args.length) {
+                    case 1:
+                        if (args[0].equalsIgnoreCase("selectionmode") || args[0].equalsIgnoreCase("sm")) {
+                            initiateSelectionMode(sender);
+                            return true;
+                        } else if (args[0].equalsIgnoreCase("list")) {
+                            initiateList(sender);
+                            return true;
+                        } else if (args[0].equalsIgnoreCase("reload")) {
+                            initiateReload(sender);
+                            return true;
+                        } else if (args[0].equalsIgnoreCase("info")) {
+                            initiateInfo(sender);
+                            return true;
+                        }
+
+                        break;
+                    case 2:
+                        if (args[0].equalsIgnoreCase("disablemessages") || args[0].equalsIgnoreCase("dm")) {
+                            initiateDisableMessages(sender, args[1]);
+                            return true;
+                        } else if (args[0].equalsIgnoreCase("create")) {
+                            initiatePortalCreation(sender, args[1]);
+                            return true;
+                        } else if (args[0].equalsIgnoreCase("enable")) {
+                            initiateEnable(sender, args[1]);
+                            return true;
+                        } else if (args[0].equalsIgnoreCase("disable")) {
+                            initiateDisable(sender, args[1]);
+                            return true;
+                        } else if (args[0].equalsIgnoreCase("commands") || args[0].equalsIgnoreCase("cmds")) {
+                            sendPortalCommands(sender, args[1]);
+                            return true;
+                        } else if (args[0].equalsIgnoreCase("delete")) {
+                            initiatePortalDeletion(sender, args[1]);
+                            return true;
+                        } else if (args[0].equalsIgnoreCase("setlocation") || args[0].equalsIgnoreCase("sl")) {
+                            initiatePortalLocationSet(sender, args[1]);
+                            return true;
+                        } else if (args[0].equalsIgnoreCase("showregion") || args[0].equalsIgnoreCase("sr")) {
+                            initiatePortalRegion(sender, args[1]);
+                            return true;
+                        } else if (args[0].equalsIgnoreCase("relocate") || args[0].equalsIgnoreCase("rl")) {
+                            initiateRelocate(sender, args[1]);
+                            return true;
+                        } else if (args[0].equalsIgnoreCase("clearcommands") || args[0].equalsIgnoreCase("clearcmds")) {
+                            clearCommands(sender, args[1]);
+                            return true;
+                        } else if (args[0].equalsIgnoreCase("togglecommandsonly") || args[0].equalsIgnoreCase("tco")) {
+                            toggleCommandOnly(sender, args[1]);
+                            return true;
+                        } else if (args[0].equalsIgnoreCase("help")) {
+                            sendHelpPage(sender, args[1]);
+                            return true;
+                        }
+
+                        break;
+                    case 3:
+                        if (args[0].equalsIgnoreCase("switchserver") || args[0].equalsIgnoreCase("ss")) {
+                            initiateSwitchServerSet(sender, args[1], args[2]);
+                            return true;
+                        } else if (args[0].equalsIgnoreCase("fill")) {
+                            initiateFill(sender, args[1], args[2]);
+                            return true;
+                        } else if (args[0].equalsIgnoreCase("setlocation") || args[0].equalsIgnoreCase("sl")) {
+                            initiatePortalLocationSet(sender, args[1], args[2]);
+                            return true;
+                        }
+
+                        break;
+                    default:
+                        break;
+                }
+
+                sendHelpPage(sender, "1");
                 return true;
-            } else if (args.length >= 3 && (args[0].equalsIgnoreCase("message"))) {
-                setMessage(sender, args);
-                return true;
+            }else{
+                sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                        + getPluginInstance().getLangConfig().getString("no-permission-message")));
+                return false;
             }
 
-            switch (args.length) {
-                case 1:
-                    if (args[0].equalsIgnoreCase("selectionmode") || args[0].equalsIgnoreCase("sm")) {
-                        initiateSelectionMode(sender);
-                        return true;
-                    } else if (args[0].equalsIgnoreCase("list")) {
-                        initiateList(sender);
-                        return true;
-                    } else if (args[0].equalsIgnoreCase("reload")) {
-                        initiateReload(sender);
-                        return true;
-                    } else if (args[0].equalsIgnoreCase("info")) {
-                        initiateInfo(sender);
-                        return true;
-                    }
-
-                    break;
-                case 2:
-                    if (args[0].equalsIgnoreCase("disablemessages") || args[0].equalsIgnoreCase("dm")) {
-                        initiateDisableMessages(sender, args[1]);
-                        return true;
-                    } else if (args[0].equalsIgnoreCase("create")) {
-                        initiatePortalCreation(sender, args[1]);
-                        return true;
-                    } else if (args[0].equalsIgnoreCase("enable")) {
-                        initiateEnable(sender, args[1]);
-                        return true;
-                    } else if (args[0].equalsIgnoreCase("disable")) {
-                        initiateDisable(sender, args[1]);
-                        return true;
-                    } else if (args[0].equalsIgnoreCase("commands") || args[0].equalsIgnoreCase("cmds")) {
-                        sendPortalCommands(sender, args[1]);
-                        return true;
-                    } else if (args[0].equalsIgnoreCase("delete")) {
-                        initiatePortalDeletion(sender, args[1]);
-                        return true;
-                    } else if (args[0].equalsIgnoreCase("setlocation") || args[0].equalsIgnoreCase("sl")) {
-                        initiatePortalLocationSet(sender, args[1]);
-                        return true;
-                    } else if (args[0].equalsIgnoreCase("showregion") || args[0].equalsIgnoreCase("sr")) {
-                        initiatePortalRegion(sender, args[1]);
-                        return true;
-                    } else if (args[0].equalsIgnoreCase("relocate") || args[0].equalsIgnoreCase("rl")) {
-                        initiateRelocate(sender, args[1]);
-                        return true;
-                    } else if (args[0].equalsIgnoreCase("clearcommands") || args[0].equalsIgnoreCase("clearcmds")) {
-                        clearCommands(sender, args[1]);
-                        return true;
-                    } else if (args[0].equalsIgnoreCase("togglecommandsonly") || args[0].equalsIgnoreCase("tco")) {
-                        toggleCommandOnly(sender, args[1]);
-                        return true;
-                    } else if (args[0].equalsIgnoreCase("help")) {
-                        sendHelpPage(sender, args[1]);
-                        return true;
-                    }
-
-                    break;
-                case 3:
-                    if (args[0].equalsIgnoreCase("switchserver") || args[0].equalsIgnoreCase("ss")) {
-                        initiateSwitchServerSet(sender, args[1], args[2]);
-                        return true;
-                    } else if (args[0].equalsIgnoreCase("fill")) {
-                        initiateFill(sender, args[1], args[2]);
-                        return true;
-                    } else if (args[0].equalsIgnoreCase("setlocation") || args[0].equalsIgnoreCase("sl")) {
-                        initiatePortalLocationSet(sender, args[1], args[2]);
-                        return true;
-                    }
-
-                    break;
-                default:
-                    break;
-            }
-
-            sendHelpPage(sender, "1");
-            return true;
         }
 
         return false;

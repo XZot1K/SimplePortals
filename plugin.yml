@@ -1,5 +1,5 @@
 name: SimplePortals
-version: 1.6.6
+version: 1.6.7
 api-version: 1.13
 main: xzot1k.plugins.sp.SimplePortals
 author: XZot1K
@@ -9,11 +9,13 @@ commands:
   simpleportals:
     default: op
     aliases: [ portals, portal, sportal, sportals, sp ]
+    permission: simpleportals.use
 permissions:
   simpleportals.admin:
     default: op
     description: Gives the player permission to everything in the plugin.
     children:
+      simpleportals.use: true
       simpleportals.showregion: true
       simpleportals.setlocation: true
       simpleportals.info: true
@@ -84,3 +86,6 @@ permissions:
   simpleportals.dm:
     default: op
     description: Allows the sender to use the disable messages command for portals.
+  simpleportals.use:
+    default: op
+    description: Allows the sender to use the basic /simpleportals command.
