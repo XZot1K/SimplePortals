@@ -25,8 +25,10 @@ public class Main extends JavaPlugin {
 
     // This method tells you whether SimplePortals is installed or not.
     private boolean isSimplePortalsInstalled() {
-        if (getServer().getPluginManager().getPlugin("SimplePortals") != null)
+        if (getServer().getPluginManager().getPlugin("SimplePortals") != null) {
             this.simplePortals = SimplePortals.getPluginInstance();
+            return true;
+        }
         return false;
     }
 
