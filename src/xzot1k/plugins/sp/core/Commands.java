@@ -116,6 +116,9 @@ public class Commands implements CommandExecutor {
                         } else if (args[0].equalsIgnoreCase("setlocation") || args[0].equalsIgnoreCase("sl")) {
                             initiatePortalLocationSet(sender, args[1], args[2]);
                             return true;
+                        }else if (args[0].equalsIgnoreCase("cooldown") || args[0].equalsIgnoreCase("cd")) {
+                            initiatePortalCooldown(sender, args[1], args[2]);
+                            return true;
                         }
 
                         break;
@@ -135,6 +138,7 @@ public class Commands implements CommandExecutor {
 
         return false;
     }
+
 
     private void initiateDisableMessages(CommandSender sender, String portalName) {
         if (!sender.hasPermission("simpleportals.dm")) {
@@ -465,6 +469,36 @@ public class Commands implements CommandExecutor {
                     + getPluginInstance().getLangConfig().getString("must-be-player-message")));
     }
 
+    private void initiatePortalCooldown(CommandSender sender, String portalName, String cooldownInSeconds) {
+        if (!sender.hasPermission("simpleportals.changecooldown") ) {
+            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + getPluginInstance().getLangConfig().getString("no-permission-message")));
+            return;
+        }
+
+        Portal portal = getPluginInstance().getManager().getPortal(portalName);
+        if (portal != null) {
+            int cooldownInSecondsInt;
+            try{
+                cooldownInSecondsInt = Integer.parseInt(cooldownInSeconds);
+            }catch (NumberFormatException e){
+                sender.sendMessage("§cInvalid cooldown entered! Please enter just a number.");
+                return;
+            }
+
+            portal.setCooldown(cooldownInSecondsInt);
+            portal.save();
+
+            sender.sendMessage("§aCooldown of portal §b" + portal.getPortalId() + " §asuccessfully set to §e" + cooldownInSecondsInt + " seconds§a.");
+
+        } else{
+            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
+        }
+
+    }
+
+
     private void initiateRelocate(CommandSender sender, String portalName) {
         if (sender instanceof Player) {
             Player player = (Player) sender;
@@ -723,10 +757,11 @@ public class Commands implements CommandExecutor {
         page2Lines.add("&e/portals relocate <name> &7- relocates the portal to a selected region.");
         getHelpPageMap().put(2, page2Lines);
 
-        page3Lines.add("&e/portals <togglecommandonly/tco> <name> &7- toggles command only mode for a portal.");
+        page3Lines.add("&e/portals <togglecommandsonly/tco> <name> &7- toggles command only mode for a portal.");
         page3Lines.add("&e/portals <commands/cmds> <name> &7- provides a list of all commands on the defined warp in the order they were added.");
         page3Lines.add("&e/portals <enable/disable> <name> &7- enables/disabled the portal entirely untiled toggled again.");
         page3Lines.add("&e/portals message <name> <text> &7- sets the message of the portal to the entered text. Refer to documentation for message types.");
+        page3Lines.add("&e/portals <cooldown/cd> <name> <seconds> &7- sets a cooldown until the teleportation happens after you entered the portal");
         getHelpPageMap().put(3, page3Lines);
     }
 

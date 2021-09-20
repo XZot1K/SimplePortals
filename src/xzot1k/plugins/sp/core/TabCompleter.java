@@ -47,13 +47,15 @@ public class TabCompleter implements org.bukkit.command.TabCompleter {
                 values.add("relocate");
                 values.add("addcommand");
                 values.add("clearcommands");
-                values.add("togglecommandonly");
+                values.add("togglecommandsonly");
                 values.add("commands");
                 values.add("enable");
                 values.add("disable");
                 values.add("message");
                 values.add("disablemessages");
                 values.add("list");
+                values.add("cooldown");
+
 
             } else if (args.length == 2 || (args.length == 3 && (args[0].equalsIgnoreCase("setlocation") || args[0].equalsIgnoreCase("sl")))  ){
                 //The portal name should not be completed for every argument
@@ -61,13 +63,34 @@ public class TabCompleter implements org.bukkit.command.TabCompleter {
                     values.addAll(getPluginInstance().getManager().getPortalNames(false));
                 }
             } else if (args.length == 3) {
-                int colonCount = 0;
-                for (char character : args[2].toCharArray()) if (character == ':') colonCount++;
+                if(args[0].equalsIgnoreCase("cooldown")){
+                    for(int i=0; i<=12; i++){
+                        values.add(""+i);
+                    }
+                }else{
+                    int colonCount = 0;
+                    for (char character : args[2].toCharArray()){
+                        if (character == ':'){
+                            colonCount++;
+                        }
+                    }
 
-                if (colonCount == 1) for (PortalCommandType portalCommandType : PortalCommandType.values())
-                    values.add(portalCommandType.name());
-                else if (colonCount == 2) for (int i = 0; ++i < 100; )
-                    values.add(String.valueOf(i));
+                    if (colonCount == 1){
+                        for (PortalCommandType portalCommandType : PortalCommandType.values()){
+                            values.add(portalCommandType.name());
+                        }
+                        //Return immediately, because copyPartialMatches breaks this for some reason
+                        return values;
+                    }else if (colonCount == 2){
+                        for (int i = 0; ++i < 100; ){
+                            values.add(String.valueOf(i));
+                        }
+                        //Return immediately, because copyPartialMatches breaks this for some reason
+                        return values;
+
+                    }
+                }
+
             } else if (args.length == 4 && (args[0].equalsIgnoreCase("setlocation") || args[0].equalsIgnoreCase("sl"))) {
                 int colonCount = 0;
                 for (char character : args[2].toCharArray()) if (character == ':') colonCount++;
@@ -79,6 +102,10 @@ public class TabCompleter implements org.bukkit.command.TabCompleter {
                     values.add("NORMAL");
                 } else if (colonCount == 2) for (int i = 0; ++i < 100; )
                     values.add(String.valueOf(i));
+
+                //Return immediately, because copyPartialMatches breaks this for some reason
+                return values;
+
             }
 
             StringUtil.copyPartialMatches(args[args.length - 1], values, partialValues);

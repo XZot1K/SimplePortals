@@ -56,6 +56,8 @@ public class Manager {
     private final HashMap<UUID, String> portalLinkMap;
     private final HashMap<String, Portal> portalMap;
 
+    private final HashMap<UUID, Portal> playersAndPortalsInTeleportation;
+
     private Random random;
     private ParticleHandler particleHandler;
     private TitleHandler titleHandler;
@@ -72,6 +74,8 @@ public class Manager {
         visualTasks = new HashMap<>();
         smartTransferMap = new HashMap<>();
         portalLinkMap = new HashMap<>();
+
+        playersAndPortalsInTeleportation = new HashMap<>();
 
         setRandom(new Random());
 
@@ -413,10 +417,12 @@ public class Manager {
 
         final Region region = new Region(getPluginInstance(), pointOne, pointTwo);
         final Portal portal = new Portal(getPluginInstance(), file.getName().toLowerCase().replace(".yml", ""), region);
+
         portal.setTeleportLocation(teleportLocation);
         portal.setServerSwitchName(yaml.getString("portal-server"));
         portal.setCommandsOnly(yaml.getBoolean("commands-only"));
         portal.setCommands(yaml.getStringList("commands"));
+        portal.setCooldown(yaml.getInt("cooldown", 0));
 
         String materialName = yaml.getString("last-fill-material");
         if (materialName != null && !materialName.equalsIgnoreCase("")) {
@@ -667,6 +673,7 @@ public class Manager {
             portal.setServerSwitchName(yaml.getString(portalId + ".portal-server"));
             portal.setCommandsOnly(yaml.getBoolean(portalId + ".commands-only"));
             portal.setCommands(yaml.getStringList(portalId + ".commands"));
+            portal.setCooldown(yaml.getInt("cooldown", 0));
 
             String materialName = yaml.getString(portalId + ".last-fill-material");
             if (materialName != null && !materialName.equalsIgnoreCase("")) {
@@ -680,6 +687,7 @@ public class Manager {
             if (yaml.contains(portalId + ".sub-title")) portal.setSubTitle(yaml.getString(portalId + ".sub-title"));
             if (yaml.contains(portalId + ".bar-message"))
                 portal.setBarMessage(yaml.getString(portalId + ".bar-message"));
+
 
             portal.save();
             getPluginInstance().log(Level.INFO, "The portal '" + portalId + "' was converted over to the new file data structure!");
@@ -876,6 +884,10 @@ public class Manager {
 
     public HashMap<UUID, String> getPortalLinkMap() {
         return portalLinkMap;
+    }
+
+    public HashMap<UUID, Portal> getplayersAndPortalsInTeleportation(){
+        return playersAndPortalsInTeleportation;
     }
 
     private SimplePortals getPluginInstance() {

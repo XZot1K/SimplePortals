@@ -4,10 +4,7 @@
 
 package xzot1k.plugins.sp.api.objects;
 
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Sound;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
@@ -28,6 +25,9 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 
 public class Portal {
@@ -39,14 +39,22 @@ public class Portal {
     private boolean commandsOnly, disabled;
     private List<String> commands;
     private Material lastFillMaterial;
+    private int cooldown; //in seconds - nether-portal-like cooldown
+
+    private final List<UUID> entitiesInCooldown;
 
     public Portal(SimplePortals pluginInstance, String portalId, Region region) {
         this.pluginInstance = pluginInstance;
+
+        entitiesInCooldown = new ArrayList<>();
+
         setRegion(region);
         setPortalId(portalId.toLowerCase());
         setDisabled(false);
         setCommands(new ArrayList<>());
         setCommandsOnly(false);
+        setCooldown(0);
+
         setLastFillMaterial(Material.AIR);
         if (getRegion() != null && getRegion().getPoint1() != null)
             setTeleportLocation(getRegion().getPoint1().asBukkitLocation().clone().add(0, 2, 0));
@@ -99,6 +107,7 @@ public class Portal {
             yaml.set("title", getTitle());
             yaml.set("sub-title", getSubTitle());
             yaml.set("bar-message", getBarMessage());
+            yaml.set("cooldown", getCooldown());
 
             yaml.save(file);
         } catch (IOException e) {
@@ -137,6 +146,7 @@ public class Portal {
                 if (chance < percentage) {
                     commandLine = commandLine.replaceAll("(?i):player", "").replaceAll("(?i):console", "")
                             .replaceAll("(?i):chat", "").replace((":" + percentage), "");
+
                     switch (portalCommandType) {
 
                         case PLAYER:
@@ -169,6 +179,12 @@ public class Portal {
      * @param entity The entity to perform actions on.
      */
     public void performAction(Entity entity) {
+
+        //Cancel if entity is already in any teleporting cooldown
+        if(getPluginInstance().getManager().getplayersAndPortalsInTeleportation().containsKey(entity.getUniqueId())){
+            return;
+        }
+
         if (getServerSwitchName() == null || getServerSwitchName().isEmpty() || getServerSwitchName().equalsIgnoreCase("none")) {
             Location location = getTeleportLocation().asBukkitLocation();
             if (location != null) {
@@ -177,9 +193,57 @@ public class Portal {
                     location.setPitch(entity.getLocation().getPitch());
                 }
 
-                getPluginInstance().getManager().teleportWithEntity(entity, location);
-                if (entity instanceof Player)
-                    getPluginInstance().getManager().getPortalLinkMap().put(entity.getUniqueId(), getPortalId());
+
+                if(getCooldown() != 0){
+                    addEntityInCooldown(entity.getUniqueId());
+                    AtomicInteger ticksPassed = new AtomicInteger(0);
+
+                    AtomicBoolean done = new AtomicBoolean(false);
+                    int task = getPluginInstance().getServer().getScheduler().scheduleSyncRepeatingTask(getPluginInstance(), () -> {
+                        if(!entitiesInCooldown.contains(entity.getUniqueId())){
+                            ticksPassed.set(getCooldown()*20);
+                            done.set(true);
+                            return;
+                        }
+                        ticksPassed.addAndGet(2);
+                        double rem = getCooldown() - (ticksPassed.intValue() / 20f);
+                        rem = Math.floor(rem * 10) / 10;
+
+                        if (rem <= 0 && !done.get()) {
+                            done.set(true);
+
+                            getPluginInstance().getManager().teleportWithEntity(entity, location);
+                            if (entity instanceof Player){
+                                ((Player)entity).sendTitle("§eTeleporting...", "§aTeleporting...", 0, 40, 10);
+                                getPluginInstance().getManager().getPortalLinkMap().put(entity.getUniqueId(), getPortalId());
+                            }
+                            removeEntityInCooldown(entity.getUniqueId());
+
+
+                        } else {
+                            if (rem > 0) {
+                                if (entity instanceof Player) {
+                                    ((Player) entity).sendTitle("§eTeleporting...", rem + "§7 seconds remaining...", 0, 40, 0);
+                                    // player.getWorld().spawnParticle(Particle.SPELL_WITCH, player.getLocation().getX(), player.getLocation().getY() + 0.5, player.getLocation().getZ(), 10, 0, 1, 0.5, 0.1);
+                                }
+                            }
+                        }
+
+
+                    }, 0, 2);
+
+                    getPluginInstance().getServer().getScheduler().scheduleSyncDelayedTask(getPluginInstance(), () -> {
+                        Bukkit.getScheduler().cancelTask(task);
+                    }, getCooldown()* 20L+1);
+
+                }else{
+                    getPluginInstance().getManager().teleportWithEntity(entity, location);
+                    if (entity instanceof Player){
+                        getPluginInstance().getManager().getPortalLinkMap().put(entity.getUniqueId(), getPortalId());
+                    }
+                }
+
+
             }
         } else if (entity instanceof Player) {
             final Player player = (Player) entity;
@@ -213,8 +277,51 @@ public class Portal {
                     }
                 }
 
-                getPluginInstance().getManager().teleportWithEntity(player, serializableLocation.asBukkitLocation());
-                getPluginInstance().getManager().getPortalLinkMap().put(player.getUniqueId(), getPortalId());
+                if(getCooldown() != 0){
+                    AtomicInteger ticksPassed = new AtomicInteger(0);
+                    addEntityInCooldown(player.getUniqueId());
+                    AtomicBoolean done = new AtomicBoolean(false);
+                    int task = getPluginInstance().getServer().getScheduler().scheduleSyncRepeatingTask(getPluginInstance(), () -> {
+                        if(!entitiesInCooldown.contains(entity.getUniqueId())){
+                            ticksPassed.set(getCooldown()*20);
+                            done.set(true);
+                            return;
+                        }
+                        ticksPassed.addAndGet(2);
+                        double rem = getCooldown() - (ticksPassed.intValue() / 20f);
+                        rem = Math.floor(rem * 10) / 10;
+                        //sender.sendMessage("§d" + rem);
+
+                        if (rem <= 0 && !done.get()) {
+                            done.set(true);
+                            player.sendTitle("§eTeleporting...", "§aTeleporting...", 0, 40, 10);
+
+                            getPluginInstance().getManager().teleportWithEntity(player, serializableLocation.asBukkitLocation());
+                            getPluginInstance().getManager().getPortalLinkMap().put(player.getUniqueId(), getPortalId());
+                            removeEntityInCooldown(player.getUniqueId());
+
+                        } else {
+                            if (rem > 0) {
+                                player.sendTitle("§eTeleporting...", rem + "§7 seconds remaining...", 0, 40, 0);
+                               // player.getWorld().spawnParticle(Particle.SPELL_WITCH, player.getLocation().getX(), player.getLocation().getY() + 0.5, player.getLocation().getZ(), 10, 0, 1, 0.5, 0.1);
+
+                            }
+
+                        }
+
+
+                    }, 0, 2);
+
+                    getPluginInstance().getServer().getScheduler().scheduleSyncDelayedTask(getPluginInstance(), () -> {
+                        Bukkit.getScheduler().cancelTask(task);
+
+                    }, getCooldown()* 20L+1);
+                }else{
+                    getPluginInstance().getManager().teleportWithEntity(player, serializableLocation.asBukkitLocation());
+                    getPluginInstance().getManager().getPortalLinkMap().put(player.getUniqueId(), getPortalId());
+                }
+
+
             }
 
             getPluginInstance().getManager().switchServer(player, getServerSwitchName());
@@ -230,6 +337,8 @@ public class Portal {
             entity.getWorld().playSound(entity.getLocation(), Sound.valueOf(soundName.toUpperCase().replace(" ", "_")
                     .replace("-", "_")), 1, 1);
     }
+
+
 
     /**
      * Attempts to fill a portals region with the passed material and durability.
@@ -465,7 +574,25 @@ public class Portal {
         this.barMessage = barMessage;
     }
 
+    public int getCooldown(){
+        return cooldown;
+    }
+
+    public void setCooldown(int cooldown){
+        this.cooldown = cooldown;
+    }
+
     private SimplePortals getPluginInstance() {
         return pluginInstance;
+    }
+
+    public void addEntityInCooldown(final UUID uuid){
+        entitiesInCooldown.add(uuid);
+        getPluginInstance().getManager().getplayersAndPortalsInTeleportation().put(uuid, this);
+    }
+
+    public void removeEntityInCooldown(final UUID uuid){
+        entitiesInCooldown.remove(uuid);
+        getPluginInstance().getManager().getplayersAndPortalsInTeleportation().remove(uuid);
     }
 }

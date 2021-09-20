@@ -74,8 +74,11 @@ public class Listeners implements Listener {
     @EventHandler
     public void onMove(PlayerMoveEvent e) {
         if (e.getTo() == null) return;
-        if (e.getFrom().getBlockX() != e.getTo().getBlockX() || e.getFrom().getBlockY() != e.getTo().getBlockY() || e.getFrom().getBlockZ() != e.getTo().getBlockZ())
+
+        if (e.getFrom().getBlockX() != e.getTo().getBlockX() || e.getFrom().getBlockY() != e.getTo().getBlockY() || e.getFrom().getBlockZ() != e.getTo().getBlockZ()){
             initiatePortalStuff(e.getTo(), e.getFrom(), e.getPlayer());
+        }
+
     }
 
     @EventHandler
@@ -234,6 +237,21 @@ public class Listeners implements Listener {
         final boolean isPlayer = (entity instanceof Player);
 
         Portal portal = pluginInstance.getManager().getPortalAtLocation(toLocation);
+
+        //Cancel ongoing teleportations if entity steps out of the portal
+        if(portal == null){
+            final Portal foundPortal = pluginInstance.getManager().getplayersAndPortalsInTeleportation().get(entity.getUniqueId());
+            if(foundPortal != null){
+                foundPortal.removeEntityInCooldown(entity.getUniqueId());
+                if (isPlayer){
+                    ((Player)entity).sendTitle("§cTeleportation cancelled", "§7You stepped out of the portal", 0, 40, 0);
+
+                }
+
+            }
+
+        }
+
         if (portal != null && !portal.isDisabled()) {
             if (isPlayer) {
                 final Player player = (Player) entity;
@@ -254,6 +272,7 @@ public class Listeners implements Listener {
                         || pluginInstance.getManager().isPlayerOnCooldown(player, "join-protection", pluginInstance.getConfig().getInt("join-protection-cooldown"))) && !canBypassCooldown),
                         permissionFail = !pluginInstance.getConfig().getBoolean("bypass-portal-permissions") && (!player.hasPermission("simpleportals.portal." + portal.getPortalId())
                                 && !player.hasPermission("simpleportals.portals." + portal.getPortalId()) && !player.hasPermission("simpleportals.portal.*") && !player.hasPermission("simpleportals.portals.*"));
+
                 if (cooldownFail || permissionFail) {
                     double tv = pluginInstance.getConfig().getDouble("throw-velocity");
                     if (!(tv <= -1))
