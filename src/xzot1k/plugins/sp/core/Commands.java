@@ -682,21 +682,21 @@ public class Commands implements CommandExecutor {
         List<String> page1Lines = new ArrayList<>(), page2Lines = new ArrayList<>(), page3Lines = new ArrayList<>();
 
         page1Lines.add("&e/portals <selectionmode/sm> &7- toggles selection mode.");
-        page1Lines.add("&e/portals reload &7- reloads the configuration files.");
-        page1Lines.add("&e/portals <switchserver/ss> <name> <server> &7- sets the server for the portal.");
+        page1Lines.add("&e/portals create <name> &7- creates a new portal.");
+        page1Lines.add("&e/portals delete <name> &7- deletes the given portal.");
+        page1Lines.add("&e/portals list &7- shows all available portals.");
         page1Lines.add("&e/portals <showregion/sr> <name> &7- shows the portal's current region.");
         page1Lines.add("&e/portals <setlocation/sl> <name> &7- sets the portal's teleport location.");
         page1Lines.add("&e/portals <setlocation/sl> <name> <name> &7- sets the portal's teleport location to the center of the entered portal.");
-        page1Lines.add("&e/portals info &7- shows plugin information.");
         getHelpPageMap().put(1, page1Lines);
 
-        page2Lines.add("&e/portals create <name> &7- creates a new portal.");
-        page2Lines.add("&e/portals delete <name> &7- deletes the given portal.");
-        page2Lines.add("&e/portals list &7- shows all available portals.");
-        page2Lines.add("&e/portals fill <name> <material:durability> &7- replaces air inside the portals region.");
-        page2Lines.add("&e/portals relocate <name> &7- relocates the portal to a selected region.");
         page2Lines.add("&e/portals <addcommand/addcmd> <name> <command> &7- adds the entered command line to the portal's command list.");
         page2Lines.add("&e/portals <clearcommands/clearcmds> <name> &7- clears all commands from the specified portal.");
+        page2Lines.add("&e/portals reload &7- reloads the configuration files.");
+        page2Lines.add("&e/portals info &7- shows plugin information.");
+        page2Lines.add("&e/portals <switchserver/ss> <name> <server> &7- sets the server for the portal.");
+        page2Lines.add("&e/portals fill <name> <material:durability> &7- replaces air inside the portals region.");
+        page2Lines.add("&e/portals relocate <name> &7- relocates the portal to a selected region.");
         getHelpPageMap().put(2, page2Lines);
 
         page3Lines.add("&e/portals <togglecommandonly/tco> <name> &7- toggles command only mode for a portal.");
