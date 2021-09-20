@@ -55,8 +55,11 @@ public class TabCompleter implements org.bukkit.command.TabCompleter {
                 values.add("disablemessages");
                 values.add("list");
 
-            } else if (args.length == 2 || (args.length == 3 && (args[0].equalsIgnoreCase("setlocation") || args[0].equalsIgnoreCase("sl")))    ){
-                values.addAll(getPluginInstance().getManager().getPortalNames(false));
+            } else if (args.length == 2 || (args.length == 3 && (args[0].equalsIgnoreCase("setlocation") || args[0].equalsIgnoreCase("sl")))  ){
+                //The portal name should not be completed for every argument
+                if( !args[0].equalsIgnoreCase("selectionmode") && !args[0].equalsIgnoreCase("sm")  && !args[0].equalsIgnoreCase("create") && !args[0].equalsIgnoreCase("list")  ){
+                    values.addAll(getPluginInstance().getManager().getPortalNames(false));
+                }
             } else if (args.length == 3) {
                 int colonCount = 0;
                 for (char character : args[2].toCharArray()) if (character == ':') colonCount++;
