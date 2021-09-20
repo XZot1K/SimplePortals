@@ -752,6 +752,26 @@ public class Manager {
     }
 
     /**
+     * Gets the name of the specified portal
+     *
+     * @param withCoordinates adds coordinates to the end of names.
+     * @return The portal name/id.
+     */
+    public String getPortalName(Portal portal, boolean withCoordinates) {
+        final int x = (int) ((portal.getRegion().getPoint1().getX() + portal.getRegion().getPoint2().getX()) / 2),
+                y = (int) ((portal.getRegion().getPoint1().getY() + portal.getRegion().getPoint2().getY()) / 2),
+                z = (int) ((portal.getRegion().getPoint1().getZ() + portal.getRegion().getPoint2().getZ()) / 2);
+        if (!withCoordinates) {
+            return portal.getPortalId().toLowerCase();
+        }else{
+
+            return ((portal.isDisabled() ? ChatColor.RED : ChatColor.GREEN) + portal.getPortalId().toLowerCase() + ChatColor.GRAY + " (World: "
+                    + ChatColor.DARK_GRAY + portal.getRegion().getPoint1().getWorldName() + ChatColor.GRAY + " X: " + ChatColor.DARK_GRAY + x + ChatColor.GRAY + " Y: " + ChatColor.DARK_GRAY + y + ChatColor.GRAY + " Z: " + ChatColor.DARK_GRAY + z + ChatColor.GRAY + ")");
+        }
+
+    }
+
+    /**
      * Handles the vanilla portal teleport location replacements.
      *
      * @param player     The player to handle the teleportation for.

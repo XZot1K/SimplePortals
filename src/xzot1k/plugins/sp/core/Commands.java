@@ -560,11 +560,35 @@ public class Commands implements CommandExecutor {
             return;
         }
 
-        List<String> portalNames = getPluginInstance().getManager().getPortalNames(true);
+        //Old version without clickable text
+
+        /*List<String> portalNames = getPluginInstance().getManager().getPortalNames(true);
         StringBuilder stringBuilder = new StringBuilder();
+        //Info message before portals
         stringBuilder.append(getPluginInstance().getLangConfig().getString("prefix")).append(getPluginInstance().getLangConfig().getString("portal-list-message"));
-        for (String portalName : portalNames) stringBuilder.append("\n").append(portalName);
-        sender.sendMessage(getPluginInstance().getManager().colorText(stringBuilder.toString()));
+        //Actual portals
+        for (final String portalName : portalNames){
+            stringBuilder.append("\n").append(portalName);
+        }
+        sender.sendMessage(getPluginInstance().getManager().colorText(stringBuilder.toString()));*/
+
+        //Old version with clickable text which teleports you
+        final TextComponent message = new TextComponent(getPluginInstance().getManager().colorText( getPluginInstance().getLangConfig().getString("prefix") + getPluginInstance().getLangConfig().getString("portal-list-message") ));
+        for (final String portalName : getPluginInstance().getManager().getPortalMap().keySet()){
+            final Portal portal = getPluginInstance().getManager().getPortalMap().get(portalName);
+            final int x = (int) ((portal.getRegion().getPoint1().getX() + portal.getRegion().getPoint2().getX()) / 2),
+                    y = (int) ((portal.getRegion().getPoint1().getY() + portal.getRegion().getPoint2().getY()) / 2),
+                    z = (int) ((portal.getRegion().getPoint1().getZ() + portal.getRegion().getPoint2().getZ()) / 2);
+
+            final TextComponent portalText = new TextComponent("\n" + getPluginInstance().getManager().getPortalName(portal, true));
+            portalText.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                    new BaseComponent[]{new TextComponent(getPluginInstance().getManager().colorText("&bClick to teleport to the portal &a" + portalName))}));
+            portalText.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tppos " + x + " " + y + " " + z + " 0 0 " + portal.getRegion().getPoint1().getWorldName()));
+            message.addExtra(portalText);
+        }
+
+
+        sender.spigot().sendMessage(message);
     }
 
     private void initiateSwitchServerSet(CommandSender sender, String portalName, String serverName) {
