@@ -146,6 +146,12 @@ public class Listeners implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPortal(PlayerRespawnEvent e) {
         if (e.getPlayer().getWorld().getEnvironment() != World.Environment.THE_END) return;
+
+        //We don't want it to mess with deaths too if that config option is set to false
+        if(!pluginInstance.getConfig().getBoolean("end-portal-locations-handle-death")){
+            return;
+        }
+
         Location respawnLocation = pluginInstance.getManager().getVanillaPortalReplacement(e.getPlayer().getWorld(), PortalType.ENDER);
         if (respawnLocation != null) e.setRespawnLocation(respawnLocation);
     }

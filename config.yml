@@ -26,6 +26,9 @@ end-portal-locations:
   - "example_world:world,0,80,0,0,0"
   - "example_world_the_end:world,0,80,0,0,0"
 
+# Should end-portal-locations handle deaths as well?
+end-portal-locations-handle-death: true
+
 # The creatures in the list below will be blocked from spawning inside portal regions.
 creature-spawning-blacklist:
   - "PUFFERFISH"
