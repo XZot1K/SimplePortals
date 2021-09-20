@@ -56,7 +56,7 @@ public class Manager {
     private final HashMap<UUID, String> portalLinkMap;
     private final HashMap<String, Portal> portalMap;
 
-    private final HashMap<UUID, Portal> playersAndPortalsInTeleportation;
+    private final HashMap<UUID, Portal> entitiesInTeleportationAndPortals;
 
     private Random random;
     private ParticleHandler particleHandler;
@@ -75,7 +75,7 @@ public class Manager {
         smartTransferMap = new HashMap<>();
         portalLinkMap = new HashMap<>();
 
-        playersAndPortalsInTeleportation = new HashMap<>();
+        entitiesInTeleportationAndPortals = new HashMap<>();
 
         setRandom(new Random());
 
@@ -886,8 +886,8 @@ public class Manager {
         return portalLinkMap;
     }
 
-    public HashMap<UUID, Portal> getplayersAndPortalsInTeleportation(){
-        return playersAndPortalsInTeleportation;
+    public HashMap<UUID, Portal> getEntitiesInTeleportationAndPortals(){
+        return entitiesInTeleportationAndPortals;
     }
 
     private SimplePortals getPluginInstance() {

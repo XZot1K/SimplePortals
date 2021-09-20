@@ -240,7 +240,7 @@ public class Listeners implements Listener {
 
         //Cancel ongoing teleportations if entity steps out of the portal
         if(portal == null){
-            final Portal foundPortal = pluginInstance.getManager().getplayersAndPortalsInTeleportation().get(entity.getUniqueId());
+            final Portal foundPortal = pluginInstance.getManager().getEntitiesInTeleportationAndPortals().get(entity.getUniqueId());
             if(foundPortal != null){
                 foundPortal.removeEntityInCooldown(entity.getUniqueId());
                 if (isPlayer){

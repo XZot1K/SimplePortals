@@ -181,7 +181,7 @@ public class Portal {
     public void performAction(Entity entity) {
 
         //Cancel if entity is already in any teleporting cooldown
-        if(getPluginInstance().getManager().getplayersAndPortalsInTeleportation().containsKey(entity.getUniqueId())){
+        if(getPluginInstance().getManager().getEntitiesInTeleportationAndPortals().containsKey(entity.getUniqueId())){
             return;
         }
 
@@ -588,11 +588,11 @@ public class Portal {
 
     public void addEntityInCooldown(final UUID uuid){
         entitiesInCooldown.add(uuid);
-        getPluginInstance().getManager().getplayersAndPortalsInTeleportation().put(uuid, this);
+        getPluginInstance().getManager().getEntitiesInTeleportationAndPortals().put(uuid, this);
     }
 
     public void removeEntityInCooldown(final UUID uuid){
         entitiesInCooldown.remove(uuid);
-        getPluginInstance().getManager().getplayersAndPortalsInTeleportation().remove(uuid);
+        getPluginInstance().getManager().getEntitiesInTeleportationAndPortals().remove(uuid);
     }
 }
