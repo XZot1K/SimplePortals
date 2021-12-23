@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: net.md-5:brigadier:1.0.16-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/net/md-5/brigadier/1.0.16-SNAPSHOT/brigadier-1.0.16-20181219.233212-1.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/net/md-5/brigadier/1.0.16-SNAPSHOT/brigadier-1.0.16-20181219.233212-1-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/net/md-5/brigadier/1.0.16-SNAPSHOT/brigadier-1.0.16-20181219.233212-1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

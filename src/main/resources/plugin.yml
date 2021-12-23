@@ -1,6 +1,6 @@
 name: SimplePortals
 version: '${project.version}'
-api-version: 1.18
+api-version: 1.13
 main: xzot1k.plugins.sp.SimplePortals
 author: XZot1K
 description: A simple yet effective way to create portals for your server!
