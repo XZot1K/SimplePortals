@@ -6,7 +6,7 @@
 
     <groupId>xzot1k.plugins.sp</groupId>
     <artifactId>SimplePortals</artifactId>
-    <version>1.6.8</version>
+    <version>1.6.9</version>
     <packaging>jar</packaging>
 
     <name>SimplePortals</name>

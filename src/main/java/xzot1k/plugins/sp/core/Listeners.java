@@ -24,6 +24,8 @@ import xzot1k.plugins.sp.api.events.PortalEnterEvent;
 import xzot1k.plugins.sp.api.objects.Portal;
 import xzot1k.plugins.sp.api.objects.SerializableLocation;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.List;
 
 public class Listeners implements Listener {
@@ -58,8 +60,7 @@ public class Listeners implements Listener {
             e.setCancelled(true);
 
             if (!pluginInstance.getServerVersion().toLowerCase().startsWith("v1_8"))
-                if (e.getHand() != EquipmentSlot.HAND)
-                    return;
+                if (e.getHand() != EquipmentSlot.HAND) return;
 
             if (pluginInstance.getManager().updateCurrentSelection(e.getPlayer(), e.getClickedBlock().getLocation(), PointType.POINT_TWO)) {
                 pluginInstance.getManager().highlightBlock(e.getClickedBlock(), e.getPlayer(), PointType.POINT_TWO);
@@ -107,31 +108,28 @@ public class Listeners implements Listener {
     }
 
     private void vanillaPortalHelper(PlayerTeleportEvent e) {
-        if (!e.getCause().name().toUpperCase().contains("PORTAL") && !e.getCause().name().toUpperCase().contains("GATEWAY")
-                && !e.getCause().name().equalsIgnoreCase("END_GATEWAY")) // since END_GATEWAY is skipped it is disabled below
-            return;
+        if (!e.getCause().name().toUpperCase().contains("PORTAL") && !e.getCause().name().toUpperCase().contains("GATEWAY")) return;
 
-        PortalType portalType = null;
+        PortalType portalType = PortalType.NETHER;
         switch (e.getCause()) {
             case NETHER_PORTAL:
                 portalType = PortalType.NETHER;
                 break;
             case END_PORTAL:
-           // case END_GATEWAY:
+                // case END_GATEWAY:
                 portalType = PortalType.ENDER;
                 break;
             default:
                 break;
         }
 
-        if (portalType == null) return;
-        e.setCancelled(pluginInstance.getManager().handleVanillaPortalReplacements(e.getPlayer(), e.getFrom().getWorld(), portalType));
+        e.setCancelled(true);
+        pluginInstance.getManager().handleVanillaPortalReplacements(e.getPlayer(), e.getFrom().getWorld(), portalType);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPortal(EntityPortalEnterEvent e) {
-        if (!(e.getEntity() instanceof Player) || e.getEntity().getLocation().getWorld().getEnvironment() != World.Environment.THE_END)
-            return;
+        if (!(e.getEntity() instanceof Player) || e.getLocation().getWorld().getEnvironment() != World.Environment.THE_END) return;
         pluginInstance.getServer().getScheduler().runTaskLater(pluginInstance, () ->
                 pluginInstance.getManager().handleVanillaPortalReplacements((Player) e.getEntity(), e.getEntity().getWorld(), PortalType.ENDER), 5);
     }
@@ -161,10 +159,9 @@ public class Listeners implements Listener {
         if (pluginInstance.getConfig().getBoolean("block-creative-portal-entrance") && e.getPlayer().getGameMode() == GameMode.CREATIVE) {
             e.setCancelled(true);
             try {
-                if (e.getClass().getMethod("setCanCreatePortal") != null)
-                    e.setCanCreatePortal(false);
-            } catch (NoSuchMethodException ignored) {
-            }
+                Method method = e.getClass().getMethod("setCanCreatePortal", Boolean.class);
+                if (method != null) method.invoke(e, false);
+            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {}
             return;
         }
 
@@ -183,10 +180,9 @@ public class Listeners implements Listener {
         if (portal != null && !portal.isDisabled()) {
             e.setCancelled(true);
             try {
-                if (e.getClass().getMethod("setCanCreatePortal") != null)
-                    e.setCanCreatePortal(false);
-            } catch (NoSuchMethodException ignored) {
-            }
+                Method method = e.getClass().getMethod("setCanCreatePortal", Boolean.class);
+                if (method != null) method.invoke(e, false);
+            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {}
         }
 
         vanillaPortalHelper(e);
@@ -225,16 +221,14 @@ public class Listeners implements Listener {
 
     private void initiatePortalStuff(Location toLocation, Location fromLocation, Entity entity) {
         final boolean isPlayer = (entity instanceof Player);
-
         Portal portal = pluginInstance.getManager().getPortalAtLocation(toLocation);
-
-        //Cancel ongoing teleportations if entity steps out of the portal
         if (portal == null) {
             final Portal foundPortal = pluginInstance.getManager().getEntitiesInTeleportationAndPortals().get(entity.getUniqueId());
             if (foundPortal != null) {
                 foundPortal.removeEntityInCooldown(entity.getUniqueId());
                 if (isPlayer) {
-                    ((Player) entity).sendTitle("§cTeleportation cancelled", "§7You stepped out of the portal", 0, 40, 0);
+                    pluginInstance.getManager().getTitleHandler().sendTitle(((Player) entity), "&cTeleportation cancelled",
+                            "&7You stepped out of the portal", 0, 40, 0);
 
                 }
 
@@ -255,9 +249,9 @@ public class Listeners implements Listener {
             pluginInstance.getServer().getPluginManager().callEvent(portalEnterEvent);
             if (portalEnterEvent.isCancelled()) return;
 
-            final boolean canBypassCooldown = entity.hasPermission("simpleportals.cdbypass");
             if (isPlayer) {
                 final Player player = (Player) entity;
+                final boolean canBypassCooldown = player.hasPermission("simpleportals.cdbypass");
                 final boolean cooldownFail = (pluginInstance.getConfig().getBoolean("use-portal-cooldown") && (pluginInstance.getManager().isPlayerOnCooldown(player, "normal", pluginInstance.getConfig().getInt("portal-cooldown-duration"))
                         || pluginInstance.getManager().isPlayerOnCooldown(player, "join-protection", pluginInstance.getConfig().getInt("join-protection-cooldown"))) && !canBypassCooldown),
                         permissionFail = !pluginInstance.getConfig().getBoolean("bypass-portal-permissions") && (!player.hasPermission("simpleportals.portal." + portal.getPortalId())
@@ -278,8 +272,11 @@ public class Listeners implements Listener {
                 }
             }
 
-            if (isPlayer && pluginInstance.getConfig().getBoolean("use-portal-cooldown") && !canBypassCooldown)
-                pluginInstance.getManager().updatePlayerPortalCooldown((Player) entity, "normal");
+            if (isPlayer && pluginInstance.getConfig().getBoolean("use-portal-cooldown")) {
+                final Player player = (Player) entity;
+                final boolean canBypassCooldown = player.hasPermission("simpleportals.cdbypass");
+                if (!canBypassCooldown) pluginInstance.getManager().updatePlayerPortalCooldown((Player) entity, "normal");
+            }
 
             if (isPlayer) portal.invokeCommands((Player) entity, toLocation);
             if (!portal.isCommandsOnly() || portal.getTeleportLocation() == null) {

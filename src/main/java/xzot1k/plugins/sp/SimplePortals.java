@@ -47,6 +47,7 @@ public class SimplePortals extends JavaPlugin {
         saveDefaultConfigs();
         reloadConfigs();
         updateConfigs();
+        getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
 
         setPrismaInstalled(getServer().getPluginManager().getPlugin("Prisma") != null);
         manager = new Manager(this);
@@ -78,6 +79,7 @@ public class SimplePortals extends JavaPlugin {
     @Override
     public void onDisable() {
         getServer().getScheduler().cancelTasks(this);
+        getServer().getMessenger().unregisterOutgoingPluginChannel(this);
     }
 
     private void updateConfigs() {

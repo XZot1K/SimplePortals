@@ -4,6 +4,8 @@
 
 package xzot1k.plugins.sp.api;
 
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
@@ -724,16 +726,16 @@ public class Manager {
      */
     public void switchServer(Player player, String serverName) {
         try {
-            Bukkit.getMessenger().registerOutgoingPluginChannel(getPluginInstance(), "BungeeCord");
-            ByteArrayOutputStream byteArray = new ByteArrayOutputStream();
-            DataOutputStream out = new DataOutputStream(byteArray);
+            ByteArrayOutputStream b = new ByteArrayOutputStream();
+            DataOutputStream out = new DataOutputStream(b);
             out.writeUTF("Connect");
             out.writeUTF(serverName);
-            player.sendPluginMessage(getPluginInstance(), "BungeeCord", byteArray.toByteArray());
+            out.writeShort(b.toByteArray().length);
+            out.write(b.toByteArray());
+            player.sendPluginMessage(getPluginInstance(), "BungeeCord", b.toByteArray());
         } catch (Exception ex) {
             ex.printStackTrace();
-            getPluginInstance().log(Level.WARNING,
-                    "There seems to have been a issue when switching the player to the " + serverName + " server.");
+            getPluginInstance().log(Level.WARNING, "There seems to have been a issue when switching the player to the " + serverName + " server.");
         }
     }
 
@@ -790,7 +792,7 @@ public class Manager {
      */
     public boolean handleVanillaPortalReplacements(Player player, World world, PortalType portalType) {
         for (String line : getPluginInstance().getConfig().getStringList((portalType == PortalType.NETHER ? "nether" : "end") + "-portal-locations")) {
-            if (line == null || line.isEmpty() || !line.contains(":") || !line.contains(",")) continue;
+            if (line == null || !line.contains(":") || !line.contains(",")) continue;
             String[] mainSplit = line.split(":");
             if (!mainSplit[0].equalsIgnoreCase(world.getName())) continue;
             String[] subSplit = mainSplit[1].split(",");
