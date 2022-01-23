@@ -36,13 +36,13 @@ public class Listeners implements Listener {
         this.pluginInstance = pluginInstance;
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBlockFromTo(BlockFromToEvent e) {
         Portal portal = pluginInstance.getManager().getPortalAtLocation(e.getBlock().getLocation());
         if (portal != null && !portal.isDisabled()) e.setCancelled(true);
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onClick(PlayerInteractEvent e) {
         if (e.getAction() == Action.LEFT_CLICK_BLOCK && e.getClickedBlock() != null
                 && pluginInstance.getManager().isInSelectionMode(e.getPlayer())) {
@@ -72,17 +72,13 @@ public class Listeners implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onMove(PlayerMoveEvent e) {
-        if (e.getTo() == null) return;
-
-        if (e.getFrom().getBlockX() != e.getTo().getBlockX() || e.getFrom().getBlockY() != e.getTo().getBlockY() || e.getFrom().getBlockZ() != e.getTo().getBlockZ()) {
-            initiatePortalStuff(e.getTo(), e.getFrom(), e.getPlayer());
-        }
-
+        if (e.getTo() != null && e.getFrom().getBlockX() != e.getTo().getBlockX() || e.getFrom().getBlockY() != e.getTo().getBlockY()
+                || e.getFrom().getBlockZ() != e.getTo().getBlockZ()) initiatePortalStuff(e.getTo(), e.getFrom(), e.getPlayer());
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onJoin(PlayerJoinEvent e) {
         if (pluginInstance.getConfig().getBoolean("join-protection") && pluginInstance.getConfig().getBoolean("use-portal-cooldown")
                 && !e.getPlayer().hasPermission("simpleportals.cdbypass")) {
@@ -92,49 +88,24 @@ public class Listeners implements Listener {
 
             pluginInstance.getManager().updatePlayerPortalCooldown(e.getPlayer(), "join-protection");
             double tv = pluginInstance.getConfig().getDouble("throw-velocity");
-            if (!(tv <= -1))
-                e.getPlayer().setVelocity(e.getPlayer().getLocation().getDirection().setY(e.getPlayer().getLocation().getDirection().getY() / 2).multiply(-tv));
+            if (!(tv <= -1)) e.getPlayer().setVelocity(e.getPlayer().getLocation().getDirection()
+                    .setY(e.getPlayer().getLocation().getDirection().getY() / 2).multiply(-tv));
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onQuit(PlayerQuitEvent e) {
         pluginInstance.getManager().getSmartTransferMap().remove(e.getPlayer().getUniqueId());
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
-    public void onTeleport(PlayerTeleportEvent e) {
-        vanillaPortalHelper(e);
-    }
-
-    private void vanillaPortalHelper(PlayerTeleportEvent e) {
-        if (!e.getCause().name().toUpperCase().contains("PORTAL") && !e.getCause().name().toUpperCase().contains("GATEWAY")) return;
-
-        PortalType portalType = PortalType.NETHER;
-        switch (e.getCause()) {
-            case NETHER_PORTAL:
-                portalType = PortalType.NETHER;
-                break;
-            case END_PORTAL:
-                // case END_GATEWAY:
-                portalType = PortalType.ENDER;
-                break;
-            default:
-                break;
-        }
-
-        e.setCancelled(true);
-        pluginInstance.getManager().handleVanillaPortalReplacements(e.getPlayer(), e.getFrom().getWorld(), portalType);
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPortal(EntityPortalEnterEvent e) {
         if (!(e.getEntity() instanceof Player) || e.getLocation().getWorld().getEnvironment() != World.Environment.THE_END) return;
         pluginInstance.getServer().getScheduler().runTaskLater(pluginInstance, () ->
                 pluginInstance.getManager().handleVanillaPortalReplacements((Player) e.getEntity(), e.getEntity().getWorld(), PortalType.ENDER), 5);
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPortal(PlayerRespawnEvent e) {
         if (e.getPlayer().getWorld().getEnvironment() != World.Environment.THE_END) return;
 
@@ -147,48 +118,49 @@ public class Listeners implements Listener {
         if (respawnLocation != null) e.setRespawnLocation(respawnLocation);
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onMove(VehicleMoveEvent e) {
         if (e.getTo() == null) return;
         if (e.getFrom().getBlockX() != e.getTo().getBlockX() || e.getFrom().getBlockY() != e.getTo().getBlockY() || e.getFrom().getBlockZ() != e.getTo().getBlockZ())
             initiatePortalStuff(e.getTo(), e.getFrom(), e.getVehicle());
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
-    public void onPortalEntryFirst(PlayerPortalEvent e) {
-        if (pluginInstance.getConfig().getBoolean("block-creative-portal-entrance") && e.getPlayer().getGameMode() == GameMode.CREATIVE) {
-            e.setCancelled(true);
-            try {
-                Method method = e.getClass().getMethod("setCanCreatePortal", Boolean.class);
-                if (method != null) method.invoke(e, false);
-            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {}
-            return;
-        }
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onTeleport(PlayerTeleportEvent e) {vanillaPortalHelper(e);}
 
-        if (e.getPlayer().getGameMode() == GameMode.CREATIVE) {
+    @EventHandler(ignoreCancelled = true)
+    public void onPortalEntry(PlayerPortalEvent e) {
+        if (pluginInstance.getConfig().getBoolean("block-creative-portal-entrance") && e.getPlayer().getGameMode() == GameMode.CREATIVE) {
             for (Portal portal : pluginInstance.getManager().getPortalMap().values()) {
                 SerializableLocation centerPortal = new SerializableLocation(pluginInstance, portal.getRegion().getPoint1().getWorldName(),
                         ((portal.getRegion().getPoint1().getX() + portal.getRegion().getPoint2().getX()) / 2),
                         ((portal.getRegion().getPoint1().getY() + portal.getRegion().getPoint2().getY()) / 2),
                         ((portal.getRegion().getPoint1().getZ() + portal.getRegion().getPoint2().getZ()) / 2), 0, 0);
-                if (centerPortal.distance(e.getFrom(), true) <= 2) e.setCancelled(true);
+                if (centerPortal.distance(e.getFrom(), true) <= 2) {
+                    e.setCancelled(true);
+                    try {
+                        Method method = e.getClass().getMethod("setCanCreatePortal", Boolean.class);
+                        if (method != null) method.invoke(e, false);
+                    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {}
+                }
             }
             return;
         }
 
         Portal portal = pluginInstance.getManager().getPortalAtLocation(e.getFrom());
-        if (portal != null && !portal.isDisabled()) {
-            e.setCancelled(true);
-            try {
-                Method method = e.getClass().getMethod("setCanCreatePortal", Boolean.class);
-                if (method != null) method.invoke(e, false);
-            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {}
-        }
+        if (portal == null || portal.isDisabled()) return;
+
+        e.setCancelled(true);
+        try {
+            Method method = e.getClass().getMethod("setCanCreatePortal", Boolean.class);
+            if (method != null) method.invoke(e, false);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored) {}
 
         vanillaPortalHelper(e);
     }
 
-    @EventHandler
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onItemSpawn(ItemSpawnEvent e) {
         if (pluginInstance.getConfig().getBoolean("item-transfer"))
             pluginInstance.getServer().getScheduler().runTaskLater(pluginInstance,
@@ -196,7 +168,7 @@ public class Listeners implements Listener {
                     20L * pluginInstance.getConfig().getInt("item-teleport-delay"));
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onItemSpawn(PlayerDropItemEvent e) {
         if (pluginInstance.getConfig().getBoolean("item-transfer")) {
             final Location startLocation = e.getItemDrop().getLocation().clone();
@@ -206,7 +178,7 @@ public class Listeners implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onSpawn(CreatureSpawnEvent e) {
         List<String> blockedMobs = pluginInstance.getConfig().getStringList("creature-spawning-blacklist");
         for (int i = -1; ++i < blockedMobs.size(); ) {
@@ -229,11 +201,8 @@ public class Listeners implements Listener {
                 if (isPlayer) {
                     pluginInstance.getManager().getTitleHandler().sendTitle(((Player) entity), "&cTeleportation cancelled",
                             "&7You stepped out of the portal", 0, 40, 0);
-
                 }
-
             }
-
         }
 
         if (portal != null && !portal.isDisabled()) {
@@ -252,10 +221,12 @@ public class Listeners implements Listener {
             if (isPlayer) {
                 final Player player = (Player) entity;
                 final boolean canBypassCooldown = player.hasPermission("simpleportals.cdbypass");
-                final boolean cooldownFail = (pluginInstance.getConfig().getBoolean("use-portal-cooldown") && (pluginInstance.getManager().isPlayerOnCooldown(player, "normal", pluginInstance.getConfig().getInt("portal-cooldown-duration"))
-                        || pluginInstance.getManager().isPlayerOnCooldown(player, "join-protection", pluginInstance.getConfig().getInt("join-protection-cooldown"))) && !canBypassCooldown),
-                        permissionFail = !pluginInstance.getConfig().getBoolean("bypass-portal-permissions") && (!player.hasPermission("simpleportals.portal." + portal.getPortalId())
-                                && !player.hasPermission("simpleportals.portals." + portal.getPortalId()) && !player.hasPermission("simpleportals.portal.*") && !player.hasPermission("simpleportals.portals.*"));
+                final boolean cooldownFail = (pluginInstance.getConfig().getBoolean("use-portal-cooldown")
+                        && (pluginInstance.getManager().isPlayerOnCooldown(player, "normal", pluginInstance.getConfig().getInt("portal-cooldown-duration"))
+                        || pluginInstance.getManager().isPlayerOnCooldown(player, "join-protection", pluginInstance.getConfig().getInt("join-protection-cooldown")))
+                        && !canBypassCooldown), permissionFail = !pluginInstance.getConfig().getBoolean("bypass-portal-permissions")
+                        && (!player.hasPermission("simpleportals.portal." + portal.getPortalId()) && !player.hasPermission("simpleportals.portals." + portal.getPortalId())
+                        && !player.hasPermission("simpleportals.portal.*") && !player.hasPermission("simpleportals.portals.*"));
 
                 if (cooldownFail || permissionFail) {
                     double tv = pluginInstance.getConfig().getDouble("throw-velocity");
@@ -302,30 +273,34 @@ public class Listeners implements Listener {
                     final Player player = (Player) entity;
                     if (portal.getMessage() != null && !portal.getMessage().isEmpty())
                         player.sendMessage(pluginInstance.getManager().colorText(portal.getMessage().replace("{name}", portal.getPortalId())
-                                .replace("{time}", String.valueOf(pluginInstance.getManager().getCooldownTimeLeft(player, "normal", pluginInstance.getConfig().getInt("portal-cooldown-duration"))))));
+                                .replace("{time}", String.valueOf(pluginInstance.getManager().getCooldownTimeLeft(player, "normal",
+                                        pluginInstance.getConfig().getInt("portal-cooldown-duration"))))));
 
                     if (portal.getBarMessage() != null && !portal.getBarMessage().isEmpty())
                         pluginInstance.getManager().sendBarMessage(player, portal.getBarMessage().replace("{name}", portal.getPortalId())
-                                .replace("{time}", String.valueOf(pluginInstance.getManager().getCooldownTimeLeft(player, "normal", pluginInstance.getConfig().getInt("portal-cooldown-duration")))));
+                                .replace("{time}", String.valueOf(pluginInstance.getManager().getCooldownTimeLeft(player, "normal",
+                                        pluginInstance.getConfig().getInt("portal-cooldown-duration")))));
 
                     if ((portal.getTitle() != null && !portal.getTitle().isEmpty()) && (portal.getSubTitle() != null && !portal.getSubTitle().isEmpty()))
                         pluginInstance.getManager().sendTitle(player, portal.getTitle().replace("{name}", portal.getPortalId())
-                                        .replace("{time}", String.valueOf(pluginInstance.getManager().getCooldownTimeLeft(player, "normal", pluginInstance.getConfig().getInt("portal-cooldown-duration")))),
+                                        .replace("{time}", String.valueOf(pluginInstance.getManager().getCooldownTimeLeft(player,
+                                                "normal", pluginInstance.getConfig().getInt("portal-cooldown-duration")))),
                                 portal.getSubTitle().replace("{name}", portal.getPortalId())
-                                        .replace("{time}", String.valueOf(pluginInstance.getManager().getCooldownTimeLeft(player, "normal", pluginInstance.getConfig().getInt("portal-cooldown-duration")))));
+                                        .replace("{time}", String.valueOf(pluginInstance.getManager().getCooldownTimeLeft(player,
+                                                "normal", pluginInstance.getConfig().getInt("portal-cooldown-duration")))));
                     else if (portal.getTitle() != null && !portal.getTitle().isEmpty())
                         pluginInstance.getManager().sendTitle(player, portal.getTitle().replace("{name}", portal.getPortalId())
-                                .replace("{time}", String.valueOf(pluginInstance.getManager().getCooldownTimeLeft(player, "normal", pluginInstance.getConfig().getInt("portal-cooldown-duration")))), null);
+                                .replace("{time}", String.valueOf(pluginInstance.getManager().getCooldownTimeLeft(player,
+                                        "normal", pluginInstance.getConfig().getInt("portal-cooldown-duration")))), null);
                     else if (portal.getSubTitle() != null && !portal.getSubTitle().isEmpty())
                         pluginInstance.getManager().sendTitle(player, null, portal.getSubTitle().replace("{name}", portal.getPortalId())
-                                .replace("{time}", String.valueOf(pluginInstance.getManager().getCooldownTimeLeft(player, "normal", pluginInstance.getConfig().getInt("portal-cooldown-duration")))));
-
+                                .replace("{time}", String.valueOf(pluginInstance.getManager().getCooldownTimeLeft(player,
+                                        "normal", pluginInstance.getConfig().getInt("portal-cooldown-duration")))));
                 }
 
                 portal.performAction(entity);
             }
         } else {
-
             if (!isPlayer) return;
             final Player player = (Player) entity;
 
@@ -348,6 +323,25 @@ public class Listeners implements Listener {
 
             pluginInstance.getManager().getSmartTransferMap().put(player.getUniqueId(), new SerializableLocation(pluginInstance, fromLocation));
         }
+    }
+
+    private void vanillaPortalHelper(PlayerTeleportEvent e) {
+        if (!e.getCause().name().toUpperCase().contains("PORTAL") && !e.getCause().name().toUpperCase().contains("GATEWAY")) return;
+
+        PortalType portalType = PortalType.NETHER;
+        switch (e.getCause()) {
+            case NETHER_PORTAL:
+                portalType = PortalType.NETHER;
+                break;
+            case END_PORTAL:
+                // case END_GATEWAY:
+                portalType = PortalType.ENDER;
+                break;
+            default:
+                break;
+        }
+
+        pluginInstance.getManager().handleVanillaPortalReplacements(e.getPlayer(), e.getFrom().getWorld(), portalType);
     }
 
 }

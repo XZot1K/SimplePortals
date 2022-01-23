@@ -772,14 +772,11 @@ public class Manager {
         final int x = (int) ((portal.getRegion().getPoint1().getX() + portal.getRegion().getPoint2().getX()) / 2),
                 y = (int) ((portal.getRegion().getPoint1().getY() + portal.getRegion().getPoint2().getY()) / 2),
                 z = (int) ((portal.getRegion().getPoint1().getZ() + portal.getRegion().getPoint2().getZ()) / 2);
-        if (!withCoordinates) {
-            return portal.getPortalId().toLowerCase();
-        } else {
-
-            return ((portal.isDisabled() ? ChatColor.RED : ChatColor.GREEN) + portal.getPortalId().toLowerCase() + ChatColor.GRAY + " (World: "
-                    + ChatColor.DARK_GRAY + portal.getRegion().getPoint1().getWorldName() + ChatColor.GRAY + " X: " + ChatColor.DARK_GRAY + x + ChatColor.GRAY + " Y: " + ChatColor.DARK_GRAY + y + ChatColor.GRAY + " Z: " + ChatColor.DARK_GRAY + z + ChatColor.GRAY + ")");
-        }
-
+        if (!withCoordinates) return portal.getPortalId().toLowerCase();
+        else return ((portal.isDisabled() ? ChatColor.RED : ChatColor.GREEN) + portal.getPortalId().toLowerCase()
+                + ChatColor.GRAY + " (World: " + ChatColor.DARK_GRAY + portal.getRegion().getPoint1().getWorldName()
+                + ChatColor.GRAY + " X: " + ChatColor.DARK_GRAY + x + ChatColor.GRAY + " Y: " + ChatColor.DARK_GRAY
+                + y + ChatColor.GRAY + " Z: " + ChatColor.DARK_GRAY + z + ChatColor.GRAY + ")");
     }
 
     /**
@@ -818,18 +815,18 @@ public class Manager {
      */
     public Location getVanillaPortalReplacement(World world, PortalType portalType) {
         for (String line : getPluginInstance().getConfig().getStringList((portalType == PortalType.NETHER ? "nether" : "end") + "-portal-locations")) {
-            if (line == null || line.isEmpty() || !line.contains(":") || !line.contains(",")) continue;
+            if (line == null || !line.contains(":") || !line.contains(",")) continue;
+
             String[] mainSplit = line.split(":");
             if (!mainSplit[0].equalsIgnoreCase(world.getName())) continue;
-            String[] subSplit = mainSplit[1].split(",");
 
+            String[] subSplit = mainSplit[1].split(",");
             World newWorld = getPluginInstance().getServer().getWorld(subSplit[0]);
             if (newWorld == null) continue;
 
             return new Location(newWorld, Double.parseDouble(subSplit[1]), Double.parseDouble(subSplit[2]), Double.parseDouble(subSplit[3]),
                     Float.parseFloat(subSplit[4]), Float.parseFloat(subSplit[5]));
         }
-
         return null;
     }
 
