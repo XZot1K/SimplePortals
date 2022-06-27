@@ -4,8 +4,6 @@
 
 package xzot1k.plugins.sp.api;
 
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
@@ -18,7 +16,6 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.BlockIterator;
 import org.bukkit.util.Vector;
-import us.eunoians.prisma.ColorProvider;
 import xzot1k.plugins.sp.SimplePortals;
 import xzot1k.plugins.sp.api.enums.PointType;
 import xzot1k.plugins.sp.api.exceptions.PortalFormException;
@@ -26,14 +23,15 @@ import xzot1k.plugins.sp.api.objects.Portal;
 import xzot1k.plugins.sp.api.objects.Region;
 import xzot1k.plugins.sp.api.objects.SerializableLocation;
 import xzot1k.plugins.sp.core.objects.TaskHolder;
-import xzot1k.plugins.sp.core.packets.bar.*;
+import xzot1k.plugins.sp.core.packets.bar.ABH_Latest;
+import xzot1k.plugins.sp.core.packets.bar.ABH_Old;
+import xzot1k.plugins.sp.core.packets.bar.BarHandler;
 import xzot1k.plugins.sp.core.packets.particles.ParticleHandler;
-import xzot1k.plugins.sp.core.packets.particles.versions.PH1_8R1;
-import xzot1k.plugins.sp.core.packets.particles.versions.PH1_8R2;
-import xzot1k.plugins.sp.core.packets.particles.versions.PH1_8R3;
 import xzot1k.plugins.sp.core.packets.particles.versions.PH_Latest;
+import xzot1k.plugins.sp.core.packets.particles.versions.PH_Old;
 import xzot1k.plugins.sp.core.packets.titles.TitleHandler;
-import xzot1k.plugins.sp.core.packets.titles.versions.*;
+import xzot1k.plugins.sp.core.packets.titles.versions.Titles_Latest;
+import xzot1k.plugins.sp.core.packets.titles.versions.Titles_Old;
 import xzot1k.plugins.sp.core.tasks.HighlightTask;
 
 import java.io.ByteArrayOutputStream;
@@ -96,35 +94,15 @@ public class Manager {
         try {
             switch (getPluginInstance().getServerVersion()) {
                 case "v1_12_R1":
-                    titleHandler = new Titles1_12R1();
-                    break;
                 case "v1_11_R1":
-                    titleHandler = new Titles1_11R1();
-                    break;
                 case "v1_10_R1":
-                    titleHandler = new Titles1_10R1();
-                    break;
                 case "v1_9_R2":
-                    titleHandler = new Titles1_9R2();
-                    break;
                 case "v1_9_R1":
-                    titleHandler = new Titles1_9R1();
-                    barHandler = new ABH1_9R1();
-                    break;
                 case "v1_8_R3":
-                    titleHandler = new Titles1_8R3();
-                    particleHandler = new PH1_8R3(getPluginInstance());
-                    barHandler = new ABH1_8R3();
-                    break;
                 case "v1_8_R2":
-                    titleHandler = new Titles1_8R2();
-                    particleHandler = new PH1_8R2(getPluginInstance());
-                    barHandler = new ABH1_8R2();
-                    break;
-                case "v1_8_R1":
-                    titleHandler = new Titles1_8R1();
-                    particleHandler = new PH1_8R1(getPluginInstance());
-                    barHandler = new ABH1_8R1();
+                    titleHandler = new Titles_Old();
+                    particleHandler = new PH_Old();
+                    barHandler = new ABH_Old();
                     break;
                 default:
                     break;
@@ -193,20 +171,16 @@ public class Manager {
                 && !getPluginInstance().getServerVersion().startsWith("v1_11") && !getPluginInstance().getServerVersion().startsWith("v1_10")
                 && !getPluginInstance().getServerVersion().startsWith("v1_9") && !getPluginInstance().getServerVersion().startsWith("v1_8"))
                 && messageCopy.contains("#")) {
-            if (getPluginInstance().isPrismaInstalled()) messageCopy = ColorProvider.translatePrisma(messageCopy);
-            else {
-                try {
-                    final Pattern hexPattern = Pattern.compile("\\{#([A-Fa-f0-9]){6}}");
-                    Matcher matcher = hexPattern.matcher(message);
-                    while (matcher.find()) {
-                        final net.md_5.bungee.api.ChatColor hex = net.md_5.bungee.api.ChatColor.of(matcher.group().substring(1, matcher.group().length() - 1));
-                        final String pre = message.substring(0, matcher.start()), post = message.substring(matcher.end());
-                        matcher = hexPattern.matcher(message = (pre + hex + post));
-                    }
-                } catch (IllegalArgumentException ignored) {
+            try {
+                final Pattern hexPattern = Pattern.compile("\\{#([A-Fa-f\\d]){6}}");
+                Matcher matcher = hexPattern.matcher(message);
+                while (matcher.find()) {
+                    final net.md_5.bungee.api.ChatColor hex = net.md_5.bungee.api.ChatColor.of(matcher.group().substring(1, matcher.group().length() - 1));
+                    final String pre = message.substring(0, matcher.start()), post = message.substring(matcher.end());
+                    matcher = hexPattern.matcher(message = (pre + hex + post));
                 }
-                return net.md_5.bungee.api.ChatColor.translateAlternateColorCodes('&', message);
-            }
+            } catch (IllegalArgumentException ignored) {}
+            return net.md_5.bungee.api.ChatColor.translateAlternateColorCodes('&', message);
         }
 
         return net.md_5.bungee.api.ChatColor.translateAlternateColorCodes('&', messageCopy);
@@ -378,10 +352,23 @@ public class Manager {
      * @return The portal found (Can return NULL).
      */
     public Portal getPortalAtLocation(Location location) {
-        for (Portal portal : getPortalMap().values())
-            if (portal != null && getPortalMap().containsKey(portal.getPortalId().toLowerCase())
-                    && portal.getRegion().isInRegion(location)) return portal;
+        for (Map.Entry<String, Portal> entry : getPortalMap().entrySet())
+            if (entry.getValue().getRegion().isInRegion(location)) return entry.getValue();
         return null;
+    }
+
+
+    public boolean isPortalNearby(Location location, double radius) {
+
+        for (int x = (int) (location.getBlockX() - radius) - 1; ++x <= location.getBlockX() + radius; ) {
+            for (int y = (int) (location.getBlockY() - radius) - 1; ++y <= location.getBlockY() + radius; ) {
+                for (int z = (int) (location.getBlockZ() - radius) - 1; ++z <= location.getBlockZ() + radius; ) {
+                    if (getPortalAtLocation(location.getWorld().getBlockAt(x, y, z).getLocation()) != null) return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**

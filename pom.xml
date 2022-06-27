@@ -6,7 +6,7 @@
 
     <groupId>xzot1k.plugins.sp</groupId>
     <artifactId>SimplePortals</artifactId>
-    <version>1.6.9</version>
+    <version>1.7.1</version>
     <packaging>jar</packaging>
 
     <name>SimplePortals</name>
@@ -26,6 +26,7 @@
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
+                    <compilerArgument>-proc:none</compilerArgument>
                 </configuration>
             </plugin>
             <plugin>
@@ -71,21 +72,21 @@
     <dependencies>
         <dependency>
             <groupId>org.spigotmc</groupId>
-            <artifactId>spigot</artifactId>
-            <version>1.18.1-R0.1-SNAPSHOT</version>
+            <artifactId>spigot-api</artifactId>
+            <version>1.19-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>net.md-5</groupId>
             <artifactId>bungeecord-api</artifactId>
-            <version>1.18-R0.1-SNAPSHOT</version>
+            <version>1.19-R0.1-SNAPSHOT</version>
             <type>jar</type>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
-            <version>22.0.0</version>
+            <version>23.0.0</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>

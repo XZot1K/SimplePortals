@@ -28,6 +28,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 
+import static org.bukkit.GameMode.CREATIVE;
+
 public class Listeners implements Listener {
 
     private final SimplePortals pluginInstance;
@@ -109,10 +111,8 @@ public class Listeners implements Listener {
     public void onPortal(PlayerRespawnEvent e) {
         if (e.getPlayer().getWorld().getEnvironment() != World.Environment.THE_END) return;
 
-        //We don't want it to mess with deaths too if that config option is set to false
-        if (!pluginInstance.getConfig().getBoolean("end-portal-locations-handle-death")) {
-            return;
-        }
+        // we don't want it to mess with deaths too if that config option is set to false
+        if (!pluginInstance.getConfig().getBoolean("end-portal-locations-handle-death")) return;
 
         Location respawnLocation = pluginInstance.getManager().getVanillaPortalReplacement(e.getPlayer().getWorld(), PortalType.ENDER);
         if (respawnLocation != null) e.setRespawnLocation(respawnLocation);
@@ -130,7 +130,9 @@ public class Listeners implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onPortalEntry(PlayerPortalEvent e) {
-        if (pluginInstance.getConfig().getBoolean("block-creative-portal-entrance") && e.getPlayer().getGameMode() == GameMode.CREATIVE) {
+        if (e.getPlayer().getGameMode() == GameMode.CREATIVE && pluginInstance.getManager().isPortalNearby(e.getFrom(), 5)) e.setCancelled(true);
+
+        if (pluginInstance.getConfig().getBoolean("block-creative-portal-entrance") && e.getPlayer().getGameMode() == CREATIVE) {
             for (Portal portal : pluginInstance.getManager().getPortalMap().values()) {
                 SerializableLocation centerPortal = new SerializableLocation(pluginInstance, portal.getRegion().getPoint1().getWorldName(),
                         ((portal.getRegion().getPoint1().getX() + portal.getRegion().getPoint2().getX()) / 2),
