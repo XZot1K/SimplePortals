@@ -11,7 +11,7 @@ maintain-entity-velocity: true
 bypass-portal-permissions: true
 # If this is enabled, the player can teleport through portals with vehicles, such as Horses and Boats.
 vehicle-teleportation: true
-# IF this is enabled, portal usage for creative mode players will be blocked entirely.
+# If this is enabled, portal usage for creative mode players will be blocked entirely.
 block-creative-portal-entrance: false
 
 # Adding a world and a location to this list will cause all nether portals in the world to send the player to the specified location.

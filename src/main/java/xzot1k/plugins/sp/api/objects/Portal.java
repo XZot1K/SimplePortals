@@ -117,6 +117,72 @@ public class Portal {
     }
 
     /**
+     * @return Gets a safe proper location outside the portal on the shorter depth side.
+     */
+    public Location estimateNearbySafeLocation() {
+
+        SerializableLocation location = new SerializableLocation(getPluginInstance(), getRegion().getPoint1().getWorldName(),
+                ((getRegion().getPoint1().getX() + getRegion().getPoint2().getX()) / 2),
+                (Math.min(getRegion().getPoint1().getY(), getRegion().getPoint2().getY())),
+                ((getRegion().getPoint1().getZ() + getRegion().getPoint2().getZ()) / 2), 0f, 0f);
+
+        final double xMax = Math.max(getRegion().getPoint1().getX(), getRegion().getPoint2().getX()),
+                xMin = Math.min(getRegion().getPoint1().getX(), getRegion().getPoint2().getX()),
+                zMax = Math.max(getRegion().getPoint1().getZ(), getRegion().getPoint2().getZ()),
+                zMin = Math.min(getRegion().getPoint1().getZ(), getRegion().getPoint2().getZ());
+
+        final double xDepth = (xMax - xMin), zDepth = (zMax - zMin);
+
+        if (xDepth >= zDepth) {
+            final boolean isDepthEven = (xDepth % 2 == 0);
+            System.out.println(isDepthEven + " - " + (xDepth % 2));
+            Location newLocation = location.asBukkitLocation().add((!isDepthEven ? 0.5 : 0), 0, (int) -(zDepth + 1));
+            newLocation.setYaw(-180);
+            newLocation.setPitch(0);
+
+            Block block = newLocation.getBlock();
+            if (!(block.getType().name().contains("AIR") || block.getType().name().contains("WATER")
+                    || block.getType().name().contains("LAVA") || block.getType().name().contains("PORTAL")
+                    || block.getType().name().contains("MAGMA") || block.getType().name().contains("CACTUS")))
+                return newLocation.add(0, 1.2, 0);
+
+            newLocation = location.asBukkitLocation().add((!isDepthEven ? 0.5 : 0), 0, (int) (zDepth + 1));
+            newLocation.setYaw(180);
+            newLocation.setPitch(0);
+
+            block = newLocation.getBlock();
+            if (!(block.getType().name().contains("AIR") || block.getType().name().contains("WATER")
+                    || block.getType().name().contains("LAVA") || block.getType().name().contains("PORTAL")
+                    || block.getType().name().contains("MAGMA") || block.getType().name().contains("CACTUS")))
+                return newLocation.add(0, 1.2, 0);
+
+        } else {
+            final boolean isDepthEven = (zDepth % 2 == 0);
+            Location newLocation = location.asBukkitLocation().add((int) -(xDepth + 1), 0, (isDepthEven ? 0.5 : 0));
+            newLocation.setYaw(90);
+            newLocation.setPitch(0);
+
+            Block block = newLocation.getBlock();
+            if (!(block.getType().name().contains("AIR") || block.getType().name().contains("WATER")
+                    || block.getType().name().contains("LAVA") || block.getType().name().contains("PORTAL")
+                    || block.getType().name().contains("MAGMA") || block.getType().name().contains("CACTUS")))
+                return newLocation.add(0, 1.2, 0);
+
+            newLocation = location.asBukkitLocation().add((int) (xDepth + 1), 0, (isDepthEven ? 0.5 : 0));
+            newLocation.setYaw(-90);
+            newLocation.setPitch(0);
+
+            block = newLocation.getBlock();
+            if (!(block.getType().name().contains("AIR") || block.getType().name().contains("WATER")
+                    || block.getType().name().contains("LAVA") || block.getType().name().contains("PORTAL")
+                    || block.getType().name().contains("MAGMA") || block.getType().name().contains("CACTUS")))
+                return newLocation.add(0, 1.2, 0);
+        }
+
+        return null;
+    }
+
+    /**
      * Invokes all commands attached to the portal (includes percentage calculations).
      *
      * @param player            The player to send command based on.
@@ -130,13 +196,21 @@ public class Portal {
                 if (commandLine.contains(":")) {
                     String[] commandLineSplit = commandLine.split(":");
                     if (commandLineSplit.length >= 3) {
-                        PortalCommandType foundPortalCommandType = PortalCommandType.getType(commandLineSplit[commandLineSplit.length - 2]);
-                        if (foundPortalCommandType != null) portalCommandType = foundPortalCommandType;
 
-                        String foundPercentValue = commandLineSplit[(commandLineSplit.length - 4)];
-                        if (getPluginInstance().getManager().isNumeric(foundPercentValue))
+                        String foundPercentValue = commandLineSplit[(commandLineSplit.length - 1)];
+                        if (getPluginInstance().getManager().isNumeric(foundPercentValue)) {
+
                             percentage = Double.parseDouble(foundPercentValue);
-                    } else if (commandLineSplit.length >= 2) {
+
+                            PortalCommandType foundPortalCommandType = PortalCommandType.getType(commandLineSplit[commandLineSplit.length - 2]);
+                            if (foundPortalCommandType != null) portalCommandType = foundPortalCommandType;
+
+                        } else {
+                            PortalCommandType foundPortalCommandType = PortalCommandType.getType(commandLineSplit[commandLineSplit.length - 1]);
+                            if (foundPortalCommandType != null) portalCommandType = foundPortalCommandType;
+                        }
+
+                    } else if (commandLineSplit.length == 2) {
                         PortalCommandType foundPortalCommandType = PortalCommandType.getType(commandLineSplit[commandLineSplit.length - 1]);
                         if (foundPortalCommandType != null) portalCommandType = foundPortalCommandType;
                     }
@@ -224,25 +298,18 @@ public class Portal {
                             if (rem > 0) {
                                 if (entity instanceof Player) {
                                     ((Player) entity).sendTitle("§eTeleporting...", rem + "§7 seconds remaining...", 0, 40, 0);
-                                    // player.getWorld().spawnParticle(Particle.SPELL_WITCH, player.getLocation().getX(), player.getLocation().getY() + 0.5, player.getLocation().getZ(), 10, 0, 1, 0.5, 0.1);
                                 }
                             }
                         }
-
-
                     }, 0, 2);
 
                     getPluginInstance().getServer().getScheduler().scheduleSyncDelayedTask(getPluginInstance(),
-                            () -> Bukkit.getScheduler().cancelTask(task), (getCooldown() * 20L + 1));
+                            () -> getPluginInstance().getServer().getScheduler().cancelTask(task), (getCooldown() * 20L + 1));
 
                 } else {
                     getPluginInstance().getManager().teleportWithEntity(entity, location);
-                    if (entity instanceof Player) {
-                        getPluginInstance().getManager().getPortalLinkMap().put(entity.getUniqueId(), getPortalId());
-                    }
+                    if (entity instanceof Player) getPluginInstance().getManager().getPortalLinkMap().put(entity.getUniqueId(), getPortalId());
                 }
-
-
             }
         } else if (entity instanceof Player) {
             final Player player = (Player) entity;
@@ -313,6 +380,9 @@ public class Portal {
 
             }
 
+            final Location newSafeLocation = estimateNearbySafeLocation();
+            if (newSafeLocation != null) getPluginInstance().getManager().teleportWithEntity(player, newSafeLocation);
+
             getPluginInstance().getManager().switchServer(player, getServerSwitchName());
         }
 
@@ -337,8 +407,13 @@ public class Portal {
      */
     public void fillPortal(Player player, Material material, int durability) {
 
-        final boolean isOldVersion = (getPluginInstance().getServerVersion().startsWith("v1_12") || getPluginInstance().getServerVersion().startsWith("v1_11") || getPluginInstance().getServerVersion().startsWith("v1_10")
-                || getPluginInstance().getServerVersion().startsWith("v1_9") || getPluginInstance().getServerVersion().startsWith("v1_8") || getPluginInstance().getServerVersion().startsWith("v1_7"));
+        final boolean isOldVersion = (getPluginInstance().getServerVersion().startsWith("v1_12")
+                || getPluginInstance().getServerVersion().startsWith("v1_11")
+                || getPluginInstance().getServerVersion().startsWith("v1_10")
+                || getPluginInstance().getServerVersion().startsWith("v1_9")
+                || getPluginInstance().getServerVersion().startsWith("v1_8")
+                || getPluginInstance().getServerVersion().startsWith("v1_7"));
+
         if (isOldVersion && (material == Material.WATER || material == Material.LAVA))
             material = Material.valueOf("STATIONARY_" + material.name());
 
@@ -583,4 +658,5 @@ public class Portal {
         entitiesInCooldown.remove(uuid);
         getPluginInstance().getManager().getEntitiesInTeleportationAndPortals().remove(uuid);
     }
+
 }
