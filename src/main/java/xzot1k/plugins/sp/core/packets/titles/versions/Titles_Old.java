@@ -15,10 +15,13 @@ import java.lang.reflect.Method;
 
 public class Titles_Old implements TitleHandler {
 
-    private Class<?> csClass, titlePacketClass, etaClass, cpClass, packetClass;
+    private Class<?> csClass, cbcClass, titlePacketClass, etaClass, cpClass, packetClass;
 
     public Titles_Old() {
         try {
+            cbcClass = Class.forName("net.minecraft.server."
+                    + SimplePortals.getPluginInstance().getServerVersion() + ".IChatBaseComponent");
+
             csClass = Class.forName("net.minecraft.server."
                     + SimplePortals.getPluginInstance().getServerVersion() + ".IChatBaseComponent$ChatSerializer");
 
@@ -48,23 +51,55 @@ public class Titles_Old implements TitleHandler {
 
     private void send(@NotNull Player player, @NotNull String action, @NotNull String text, int fadeIn, int displayTime, int fadeOut) {
         try {
-            final Object titleAction = etaClass.getDeclaredField(action);
+            final Object titleAction = etaClass.getDeclaredField(action).get(null);
 
             final Method aMethod = csClass.getDeclaredMethod("a", String.class);
-            final String textField = (String) aMethod.invoke(csClass, "{\"text\":\""
-                    + SimplePortals.getPluginInstance().getManager().colorText(text) + "\"}");
 
-            final Constructor<?> pConst = titlePacketClass.getConstructor(etaClass, String.class,
-                    Integer.class, Integer.class, Integer.class);
+            final String coloredText = SimplePortals.getPluginInstance().getManager().colorText(text);
+            final Object textField = aMethod.invoke(csClass, "{\"text\":\"" + coloredText + "\"}");
 
-            final Object packet = pConst.newInstance(titleAction, textField, (fadeIn * 20), (displayTime * 20), (fadeOut * 20));
+
+            Constructor<?> pConst = null;
+            for (Constructor<?> con : titlePacketClass.getConstructors()) {
+
+                if (con.getParameterTypes().length != 5) continue;
+
+                if (con.getParameterTypes()[0] != etaClass || con.getParameterTypes()[1] != cbcClass
+                        && con.getParameterTypes()[2] != int.class
+                        && con.getParameterTypes()[3] != int.class
+                        && con.getParameterTypes()[4] != int.class) continue;
+
+                pConst = con;
+                break;
+            }
+
+            boolean isOld = false;
+            if (pConst == null) {
+                for (Constructor<?> con : titlePacketClass.getConstructors()) {
+
+                    if (con.getParameterTypes().length != 5) continue;
+
+                    if (con.getParameterTypes()[0] != etaClass || con.getParameterTypes()[1] != String.class
+                            && con.getParameterTypes()[2] != int.class
+                            && con.getParameterTypes()[3] != int.class
+                            && con.getParameterTypes()[4] != int.class) continue;
+
+                    pConst = con;
+                    isOld = true;
+                    break;
+                }
+            }
+
+            if (pConst == null) return;
+
+            final Object packet = pConst.newInstance(titleAction, (!isOld ? textField : coloredText), (fadeIn * 20), (displayTime * 20), (fadeOut * 20));
 
             final Object cPlayer = cpClass.cast(player);
             final Object getHandle = cpClass.getDeclaredMethod("getHandle").invoke(cPlayer);
             final Object pConnection = getHandle.getClass().getDeclaredField("playerConnection").get(getHandle);
             final Method sendPacket = pConnection.getClass().getDeclaredMethod("sendPacket", packetClass);
             sendPacket.invoke(pConnection, packet);
-        } catch (NoSuchFieldException | NoSuchMethodException | IllegalAccessException
+        } catch (NoSuchFieldException | NoSuchMethodException | IllegalAccessException | IllegalArgumentException
                  | InvocationTargetException | InstantiationException e) {e.printStackTrace();}
     }
 
