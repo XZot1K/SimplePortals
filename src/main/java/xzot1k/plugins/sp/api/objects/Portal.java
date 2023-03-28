@@ -135,47 +135,45 @@ public class Portal {
 
         if (xDepth >= zDepth) {
             final boolean isDepthEven = (xDepth % 2 == 0);
-            System.out.println(isDepthEven + " - " + (xDepth % 2));
-            Location newLocation = location.asBukkitLocation().add((!isDepthEven ? 0.5 : 0), 0, (int) -(zDepth + 1));
-            newLocation.setYaw(-180);
-            newLocation.setPitch(0);
-
-            Block block = newLocation.getBlock();
-            if (!(block.getType().name().contains("AIR") || block.getType().name().contains("WATER")
-                    || block.getType().name().contains("LAVA") || block.getType().name().contains("PORTAL")
-                    || block.getType().name().contains("MAGMA") || block.getType().name().contains("CACTUS")))
-                return newLocation.add(0, 1.2, 0);
-
-            newLocation = location.asBukkitLocation().add((!isDepthEven ? 0.5 : 0), 0, (int) (zDepth + 1));
+            Location newLocation = location.asBukkitLocation().add((!isDepthEven ? 0.5 : 0), 0, (int) -(zDepth + 1) + 0.5);
             newLocation.setYaw(180);
             newLocation.setPitch(0);
 
+            Block block = newLocation.getBlock();
+            if (block.getType().name().contains("AIR")) {
+                if (block.getRelative(BlockFace.UP).getType().name().contains("AIR"))
+                    return newLocation.add(0, 1.2, 0);
+            }
+
+            newLocation = location.asBukkitLocation().add((!isDepthEven ? 0.5 : 0), 0, ((int) (zDepth + 1)) + 0.5);
+            newLocation.setYaw(0);
+            newLocation.setPitch(0);
+
             block = newLocation.getBlock();
-            if (!(block.getType().name().contains("AIR") || block.getType().name().contains("WATER")
-                    || block.getType().name().contains("LAVA") || block.getType().name().contains("PORTAL")
-                    || block.getType().name().contains("MAGMA") || block.getType().name().contains("CACTUS")))
+            if (block.getType().name().contains("AIR"))
                 return newLocation.add(0, 1.2, 0);
 
         } else {
             final boolean isDepthEven = (zDepth % 2 == 0);
-            Location newLocation = location.asBukkitLocation().add((int) -(xDepth + 1), 0, (isDepthEven ? 0.5 : 0));
+
+            int firstXDepth = (int) -(xDepth + 1);
+
+            Location newLocation = location.asBukkitLocation().add((firstXDepth < 0 ? (firstXDepth + 0.5) : (firstXDepth - 0.5)), 0, (isDepthEven ? 0.5 : 0));
             newLocation.setYaw(90);
             newLocation.setPitch(0);
 
             Block block = newLocation.getBlock();
-            if (!(block.getType().name().contains("AIR") || block.getType().name().contains("WATER")
-                    || block.getType().name().contains("LAVA") || block.getType().name().contains("PORTAL")
-                    || block.getType().name().contains("MAGMA") || block.getType().name().contains("CACTUS")))
-                return newLocation.add(0, 1.2, 0);
+            if (block.getType().name().contains("AIR")) {
+                if (block.getRelative(BlockFace.UP).getType().name().contains("AIR"))
+                    return newLocation.add(0, 1.2, 0);
+            }
 
-            newLocation = location.asBukkitLocation().add((int) (xDepth + 1), 0, (isDepthEven ? 0.5 : 0));
+            newLocation = location.asBukkitLocation().add((int) (xDepth + 1) + 0.5, 0, (isDepthEven ? 0.5 : 0));
             newLocation.setYaw(-90);
             newLocation.setPitch(0);
 
             block = newLocation.getBlock();
-            if (!(block.getType().name().contains("AIR") || block.getType().name().contains("WATER")
-                    || block.getType().name().contains("LAVA") || block.getType().name().contains("PORTAL")
-                    || block.getType().name().contains("MAGMA") || block.getType().name().contains("CACTUS")))
+            if (block.getType().name().contains("AIR"))
                 return newLocation.add(0, 1.2, 0);
         }
 
