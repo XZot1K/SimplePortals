@@ -1,10 +1,21 @@
 <component name="ProjectDictionaryState">
   <dictionary name="alexo">
     <words>
+      <w>addcmd</w>
+      <w>addcommand</w>
       <w>bungeecord</w>
+      <w>clearcmds</w>
+      <w>clearcommands</w>
+      <w>cmds</w>
       <w>craftbukkit</w>
+      <w>disablemessages</w>
       <w>icbc</w>
+      <w>selectionmode</w>
+      <w>setlocation</w>
+      <w>showregion</w>
       <w>spigotmc</w>
+      <w>switchserver</w>
+      <w>togglecommandsonly</w>
     </words>
   </dictionary>
 </component>
