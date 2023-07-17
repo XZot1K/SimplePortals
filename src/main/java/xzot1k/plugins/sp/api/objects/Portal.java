@@ -4,7 +4,9 @@
 
 package xzot1k.plugins.sp.api.objects;
 
-import org.bukkit.*;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
@@ -18,17 +20,15 @@ import org.jetbrains.annotations.NotNull;
 import xzot1k.plugins.sp.SimplePortals;
 import xzot1k.plugins.sp.api.enums.Direction;
 import xzot1k.plugins.sp.api.enums.PortalCommandType;
-import xzot1k.plugins.sp.core.objects.TaskHolder;
 import xzot1k.plugins.sp.core.tasks.RegionTask;
+import xzot1k.plugins.sp.core.tasks.TeleportTask;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 
 public class Portal {
@@ -40,14 +40,11 @@ public class Portal {
     private boolean commandsOnly, disabled;
     private List<String> commands;
     private Material lastFillMaterial;
-    private int cooldown; //in seconds - nether-portal-like cooldown
-
-    private final List<UUID> entitiesInCooldown;
+    private int cooldown, // in seconds - nether-portal-like cooldown
+            delay; // in seconds - nether-portal-like delay
 
     public Portal(SimplePortals pluginInstance, String portalId, Region region) {
         this.pluginInstance = pluginInstance;
-
-        entitiesInCooldown = new ArrayList<>();
 
         setRegion(region);
         setPortalId(portalId.toLowerCase());
@@ -55,6 +52,7 @@ public class Portal {
         setCommands(new ArrayList<>());
         setCommandsOnly(false);
         setCooldown(0);
+        setDelay(0);
 
         setLastFillMaterial(Material.AIR);
         if (getRegion() != null && getRegion().getPoint1() != null)
@@ -109,6 +107,7 @@ public class Portal {
             yaml.set("sub-title", getSubTitle());
             yaml.set("bar-message", getBarMessage());
             yaml.set("cooldown", getCooldown());
+            yaml.set("delay", getDelay());
 
             yaml.save(file);
         } catch (IOException e) {
@@ -158,7 +157,8 @@ public class Portal {
 
             int firstXDepth = (int) -(xDepth + 1);
 
-            Location newLocation = location.asBukkitLocation().add((firstXDepth < 0 ? (firstXDepth + 0.5) : (firstXDepth - 0.5)), 0, (isDepthEven ? 0.5 : 0));
+            Location newLocation = location.asBukkitLocation().add((firstXDepth < 0 ? (firstXDepth + 0.5) : (firstXDepth - 0.5)), 0, (isDepthEven ?
+                    0.5 : 0));
             newLocation.setYaw(90);
             newLocation.setPitch(0);
 
@@ -223,7 +223,8 @@ public class Portal {
                     switch (portalCommandType) {
 
                         case PLAYER:
-                            getPluginInstance().getServer().dispatchCommand(player, commandLine.replace("{x}", String.valueOf(locationForCoords.getX()))
+                            getPluginInstance().getServer().dispatchCommand(player, commandLine.replace("{x}",
+                                            String.valueOf(locationForCoords.getX()))
                                     .replace("{y}", String.valueOf(locationForCoords.getY())).replace("{z}", String.valueOf(locationForCoords.getZ()))
                                     .replace("{world}", locationForCoords.getWorld().getName()).replace("{player}", player.getName()));
                             break;
@@ -235,9 +236,11 @@ public class Portal {
                             break;
 
                         default:
-                            getPluginInstance().getServer().dispatchCommand(getPluginInstance().getServer().getConsoleSender(), commandLine.replace("{x}", String.valueOf(locationForCoords.getX()))
-                                    .replace("{y}", String.valueOf(locationForCoords.getY())).replace("{z}", String.valueOf(locationForCoords.getZ()))
-                                    .replace("{world}", locationForCoords.getWorld().getName()).replace("{player}", player.getName()));
+                            getPluginInstance().getServer().dispatchCommand(getPluginInstance().getServer().getConsoleSender(),
+                                    commandLine.replace("{x}", String.valueOf(locationForCoords.getX()))
+                                            .replace("{y}", String.valueOf(locationForCoords.getY())).replace("{z}",
+                                                    String.valueOf(locationForCoords.getZ()))
+                                            .replace("{world}", locationForCoords.getWorld().getName()).replace("{player}", player.getName()));
                             break;
 
                     }
@@ -253,9 +256,13 @@ public class Portal {
      */
     public void performAction(@NotNull Entity entity) {
 
-        //Cancel if entity is already in any teleporting cooldown
-        if (getPluginInstance().getManager().getEntitiesInTeleportationAndPortals().containsKey(entity.getUniqueId())) {
-            return;
+        final boolean isPlayer = (entity instanceof Player);
+
+        if (isPlayer) {
+            final Player player = (Player) entity;
+            //Cancel if entity is already in any teleporting cooldown
+            if (getPluginInstance().getManager().getEntitiesInTeleportationAndPortals().containsKey(player.getUniqueId())
+                    && getPluginInstance().getManager().getTeleportTasks().containsKey(player.getUniqueId())) return;
         }
 
         if (getServerSwitchName() == null || getServerSwitchName().isEmpty() || getServerSwitchName().equalsIgnoreCase("none")) {
@@ -266,54 +273,36 @@ public class Portal {
                     location.setPitch(entity.getLocation().getPitch());
                 }
 
+                if (isPlayer) {
+                    final Player player = (Player) entity;
 
-                if (getCooldown() != 0) {
-                    addEntityInCooldown(entity.getUniqueId());
-                    AtomicInteger ticksPassed = new AtomicInteger(0);
-                    AtomicBoolean done = new AtomicBoolean(false);
-                    int task = getPluginInstance().getServer().getScheduler().scheduleSyncRepeatingTask(getPluginInstance(), () -> {
-                        if (!entitiesInCooldown.contains(entity.getUniqueId())) {
-                            ticksPassed.set(getCooldown() * 20);
-                            done.set(true);
-                            return;
-                        }
-                        ticksPassed.addAndGet(2);
-                        double rem = getCooldown() - (ticksPassed.intValue() / 20f);
-                        rem = Math.floor(rem * 10) / 10;
+                    if (getDelay() > 0) {
+                        getPluginInstance().getManager().getEntitiesInTeleportationAndPortals().put(player.getUniqueId(), this);
 
-                        if (rem <= 0 && !done.get()) {
-                            done.set(true);
+                        TeleportTask teleportTask = new TeleportTask(player, this, location);
+                        getPluginInstance().getManager().getTeleportTasks().put(player.getUniqueId(), teleportTask);
+                        getPluginInstance().getServer().getScheduler().scheduleSyncDelayedTask(getPluginInstance(), () -> {
+                            if (!teleportTask.isCancelled()) teleportTask.cancel();
+                        }, (getDelay() * 20L + 1));
+                    } else {
+                        getPluginInstance().getManager().playTeleportEffect(entity.getLocation());
+                        getPluginInstance().getManager().teleportWithEntity(entity, location);
+                        getPluginInstance().getManager().getPortalLinkMap().put(entity.getUniqueId(), getPortalId());
+                        getPluginInstance().getManager().playTeleportEffect(location);
 
-                            getPluginInstance().getManager().teleportWithEntity(entity, location);
-                            if (entity instanceof Player) {
-                                ((Player) entity).sendTitle("§eTeleporting...", "§aTeleporting...", 0, 40, 10);
-                                getPluginInstance().getManager().getPortalLinkMap().put(entity.getUniqueId(), getPortalId());
-                            }
-                            removeEntityInCooldown(entity.getUniqueId());
-
-
-                        } else {
-                            if (rem > 0) {
-                                if (entity instanceof Player) {
-                                    ((Player) entity).sendTitle("§eTeleporting...", rem + "§7 seconds remaining...", 0, 40, 0);
-                                }
-                            }
-                        }
-                    }, 0, 2);
-
-                    getPluginInstance().getServer().getScheduler().scheduleSyncDelayedTask(getPluginInstance(),
-                            () -> getPluginInstance().getServer().getScheduler().cancelTask(task), (getCooldown() * 20L + 1));
-
+                        pluginInstance.getManager().getEntitiesInTeleportationAndPortals().remove(player.getUniqueId());
+                    }
                 } else {
+                    getPluginInstance().getManager().playTeleportEffect(entity.getLocation());
                     getPluginInstance().getManager().teleportWithEntity(entity, location);
-                    if (entity instanceof Player) getPluginInstance().getManager().getPortalLinkMap().put(entity.getUniqueId(), getPortalId());
+                    getPluginInstance().getManager().playTeleportEffect(location);
                 }
             }
-        } else if (entity instanceof Player) {
+        } else if (isPlayer) {
             final Player player = (Player) entity;
-            if ((!getPluginInstance().getManager().getSmartTransferMap().isEmpty() && getPluginInstance().getManager().getSmartTransferMap().containsKey(entity.getUniqueId()))) {
-                SerializableLocation serializableLocation = getPluginInstance().getManager().getSmartTransferMap()
-                        .get(entity.getUniqueId());
+            if ((!getPluginInstance().getManager().getSmartTransferMap().isEmpty()
+                    && getPluginInstance().getManager().getSmartTransferMap().containsKey(entity.getUniqueId()))) {
+                SerializableLocation serializableLocation = getPluginInstance().getManager().getSmartTransferMap().get(entity.getUniqueId());
 
                 if (getPluginInstance().getManager().isFacingPortal(player, this, 5)) {
                     double currentYaw = serializableLocation.getYaw();
@@ -341,58 +330,28 @@ public class Portal {
                     }
                 }
 
-                if (getCooldown() != 0) {
-                    AtomicInteger ticksPassed = new AtomicInteger(0);
-                    addEntityInCooldown(player.getUniqueId());
-                    AtomicBoolean done = new AtomicBoolean(false);
-                    int task = getPluginInstance().getServer().getScheduler().scheduleSyncRepeatingTask(getPluginInstance(), () -> {
-                        if (!entitiesInCooldown.contains(entity.getUniqueId())) {
-                            ticksPassed.set(getCooldown() * 20);
-                            done.set(true);
-                            return;
-                        }
-                        ticksPassed.addAndGet(2);
-                        double rem = getCooldown() - (ticksPassed.intValue() / 20f);
-                        rem = Math.floor(rem * 10) / 10;
-                        //sender.sendMessage("§d" + rem);
+                if (getDelay() != 0) {
+                    getPluginInstance().getManager().getEntitiesInTeleportationAndPortals().put(player.getUniqueId(), this);
 
-                        if (rem <= 0 && !done.get()) {
-                            done.set(true);
-                            player.sendTitle("§eTeleporting...", "§aTeleporting...", 0, 40, 10);
-                            getPluginInstance().getManager().teleportWithEntity(player, serializableLocation.asBukkitLocation());
-                            getPluginInstance().getManager().getPortalLinkMap().put(player.getUniqueId(), getPortalId());
-                            removeEntityInCooldown(player.getUniqueId());
-                        } else if (rem > 0) {
-                            player.sendTitle("§eTeleporting...", rem + "§7 seconds remaining...", 0, 40, 0);
-                            // player.getWorld().spawnParticle(Particle.SPELL_WITCH, player.getLocation().getX(), player.getLocation().getY() + 0.5, player.getLocation().getZ(), 10, 0, 1, 0.5, 0.1);
-                        }
-                    }, 0, 2);
-
-                    getPluginInstance().getServer().getScheduler().scheduleSyncDelayedTask(getPluginInstance(),
-                            () -> Bukkit.getScheduler().cancelTask(task), (getCooldown() * 20L + 1));
+                    TeleportTask teleportTask = new TeleportTask(player, this, serializableLocation.asBukkitLocation());
+                    getPluginInstance().getServer().getScheduler().scheduleSyncDelayedTask(getPluginInstance(), () -> {
+                        if (!teleportTask.isCancelled()) teleportTask.cancel();
+                    }, (getDelay() * 20L + 1));
                 } else {
-                    getPluginInstance().getManager().teleportWithEntity(player, serializableLocation.asBukkitLocation());
+                    final Location loc = serializableLocation.asBukkitLocation();
+                    getPluginInstance().getManager().playTeleportEffect(entity.getLocation());
+                    getPluginInstance().getManager().teleportWithEntity(player, loc);
                     getPluginInstance().getManager().getPortalLinkMap().put(player.getUniqueId(), getPortalId());
+                    getPluginInstance().getManager().playTeleportEffect(loc);
                 }
-
-
             }
 
             final Location newSafeLocation = estimateNearbySafeLocation();
             if (newSafeLocation != null) getPluginInstance().getManager().teleportWithEntity(player, newSafeLocation);
-
             getPluginInstance().getManager().switchServer(player, getServerSwitchName());
+
+            pluginInstance.getManager().getEntitiesInTeleportationAndPortals().remove(player.getUniqueId());
         }
-
-        String particleEffect = getPluginInstance().getConfig().getString("teleport-visual-effect");
-        if (particleEffect != null && !particleEffect.isEmpty())
-            getPluginInstance().getManager().getParticleHandler().broadcastParticle(entity.getLocation(), 1, 2, 1, 0,
-                    particleEffect.toUpperCase().replace(" ", "_").replace("-", "_"), 10);
-
-        String soundName = getPluginInstance().getConfig().getString("teleport-sound");
-        if (soundName != null && !soundName.isEmpty())
-            entity.getWorld().playSound(entity.getLocation(), Sound.valueOf(soundName.toUpperCase().replace(" ", "_")
-                    .replace("-", "_")), 1, 1);
     }
 
 
@@ -458,6 +417,17 @@ public class Portal {
         setLastFillMaterial(material);
     }
 
+    public void cancelTask() {
+        getPluginInstance().getServer().getOnlinePlayers().parallelStream().forEach(this::cancelTask);
+    }
+
+    public void cancelTask(Player player) {
+        HashMap<String, BukkitTask> tasks = getPluginInstance().getManager().getTasks().getOrDefault(player.getUniqueId(), null);
+        if (tasks != null)
+            tasks.entrySet().parallelStream().filter(pair -> pair.getKey().equals(getTitle())).forEach(pair -> pair.getValue().cancel());
+        tasks.remove(getTitle());
+    }
+
     /**
      * Displays the region using particle packets.
      *
@@ -467,22 +437,10 @@ public class Portal {
         String particleEffect = getPluginInstance().getConfig().getString("region-visual-effect");
         if (particleEffect == null || particleEffect.isEmpty()) return;
 
-        BukkitTask bukkitTask = new RegionTask(getPluginInstance(), player, this).runTaskTimerAsynchronously(getPluginInstance(), 0, 5);
-        if (!getPluginInstance().getManager().getVisualTasks().isEmpty() && getPluginInstance().getManager().getVisualTasks().containsKey(player.getUniqueId())) {
-            TaskHolder taskHolder = getPluginInstance().getManager().getVisualTasks().get(player.getUniqueId());
-            if (taskHolder != null) {
-                if (taskHolder.getSelectionPointOne() != null)
-                    taskHolder.getSelectionPointOne().cancel();
-                if (taskHolder.getSelectionPointTwo() != null)
-                    taskHolder.getSelectionPointTwo().cancel();
-                taskHolder.setRegionDisplay(bukkitTask);
-                return;
-            }
-        }
-
-        TaskHolder taskHolder = new TaskHolder();
-        taskHolder.setRegionDisplay(bukkitTask);
-        getPluginInstance().getManager().getVisualTasks().put(player.getUniqueId(), taskHolder);
+        HashMap<String, BukkitTask> tasks = getPluginInstance().getManager().getTasks()
+                .computeIfAbsent(player.getUniqueId(), id -> new HashMap<>());
+        tasks.put(getTitle(), new RegionTask(getPluginInstance(), player, this)
+                .runTaskTimerAsynchronously(getPluginInstance(), 0, 5));
     }
 
     private void setBlock(Block block, Material material, BlockFace blockFace) {
@@ -647,14 +605,8 @@ public class Portal {
         return pluginInstance;
     }
 
-    public void addEntityInCooldown(final UUID uuid) {
-        entitiesInCooldown.add(uuid);
-        getPluginInstance().getManager().getEntitiesInTeleportationAndPortals().put(uuid, this);
-    }
+    public int getDelay() {return delay;}
 
-    public void removeEntityInCooldown(final UUID uuid) {
-        entitiesInCooldown.remove(uuid);
-        getPluginInstance().getManager().getEntitiesInTeleportationAndPortals().remove(uuid);
-    }
+    public void setDelay(int delay) {this.delay = delay;}
 
 }

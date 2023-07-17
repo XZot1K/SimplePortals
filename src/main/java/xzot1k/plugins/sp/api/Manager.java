@@ -22,7 +22,6 @@ import xzot1k.plugins.sp.api.exceptions.PortalFormException;
 import xzot1k.plugins.sp.api.objects.Portal;
 import xzot1k.plugins.sp.api.objects.Region;
 import xzot1k.plugins.sp.api.objects.SerializableLocation;
-import xzot1k.plugins.sp.core.objects.TaskHolder;
 import xzot1k.plugins.sp.core.packets.bar.ABH_Latest;
 import xzot1k.plugins.sp.core.packets.bar.ABH_Old;
 import xzot1k.plugins.sp.core.packets.bar.BarHandler;
@@ -33,6 +32,7 @@ import xzot1k.plugins.sp.core.packets.titles.TitleHandler;
 import xzot1k.plugins.sp.core.packets.titles.versions.Titles_Latest;
 import xzot1k.plugins.sp.core.packets.titles.versions.Titles_Old;
 import xzot1k.plugins.sp.core.tasks.HighlightTask;
+import xzot1k.plugins.sp.core.tasks.TeleportTask;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -51,12 +51,13 @@ public class Manager {
     private final HashMap<UUID, Region> currentSelections;
     private final HashMap<UUID, Boolean> selectionMode;
     private final HashMap<UUID, HashMap<String, Long>> playerPortalCooldowns;
-    private final HashMap<UUID, TaskHolder> visualTasks;
+    private final HashMap<UUID, HashMap<String, BukkitTask>> tasks;
     private final HashMap<UUID, SerializableLocation> smartTransferMap;
     private final HashMap<UUID, String> portalLinkMap;
     private final HashMap<String, Portal> portalMap;
 
     private final HashMap<UUID, Portal> entitiesInTeleportationAndPortals;
+    private final HashMap<UUID, TeleportTask> teleportTasks;
 
     private Random random;
     private ParticleHandler particleHandler;
@@ -71,11 +72,12 @@ public class Manager {
         currentSelections = new HashMap<>();
         selectionMode = new HashMap<>();
         playerPortalCooldowns = new HashMap<>();
-        visualTasks = new HashMap<>();
+        tasks = new HashMap<>();
         smartTransferMap = new HashMap<>();
         portalLinkMap = new HashMap<>();
 
-        entitiesInTeleportationAndPortals = new HashMap<>();
+        this.entitiesInTeleportationAndPortals = new HashMap<>();
+        this.teleportTasks = new HashMap<>();
 
         setRandom(new Random());
 
@@ -123,7 +125,7 @@ public class Manager {
         final File portalDirectory = new File(getPluginInstance().getDataFolder(), "/portals");
         File[] listFiles = portalDirectory.listFiles();
 
-        if (listFiles != null && listFiles.length > 0)
+        if (listFiles != null)
             for (File file : listFiles) {
                 if (file == null || !file.getName().toLowerCase().endsWith(".yml")) continue;
                 file.renameTo(new File(getPluginInstance().getDataFolder(), "/portals/" + file.getName().toLowerCase()));
@@ -175,7 +177,8 @@ public class Manager {
                 final Pattern hexPattern = Pattern.compile("\\{#([A-Fa-f\\d]){6}}");
                 Matcher matcher = hexPattern.matcher(message);
                 while (matcher.find()) {
-                    final net.md_5.bungee.api.ChatColor hex = net.md_5.bungee.api.ChatColor.of(matcher.group().substring(1, matcher.group().length() - 1));
+                    final net.md_5.bungee.api.ChatColor hex = net.md_5.bungee.api.ChatColor.of(matcher.group().substring(1,
+                            matcher.group().length() - 1));
                     final String pre = message.substring(0, matcher.start()), post = message.substring(matcher.end());
                     matcher = hexPattern.matcher(message = (pre + hex + post));
                 }
@@ -378,7 +381,8 @@ public class Manager {
      * @return The portal object instance.
      */
     public Portal getPortal(String portalId) {
-        return ((!getPortalMap().isEmpty() && getPortalMap().containsKey(portalId.toLowerCase())) ? getPortalMap().get(portalId.toLowerCase()) : null);
+        return ((!getPortalMap().isEmpty() && getPortalMap().containsKey(portalId.toLowerCase())) ? getPortalMap().get(portalId.toLowerCase()) :
+                null);
     }
 
     /**
@@ -408,10 +412,9 @@ public class Manager {
         final Portal portal = new Portal(getPluginInstance(), file.getName().toLowerCase().replace(".yml", ""), region);
 
         portal.setTeleportLocation(teleportLocation);
-        portal.setServerSwitchName(yaml.getString("portal-server"));
-        portal.setCommandsOnly(yaml.getBoolean("commands-only"));
-        portal.setCommands(yaml.getStringList("commands"));
-        portal.setCooldown(yaml.getInt("cooldown", 0));
+        if (yaml.contains("portal-server")) portal.setServerSwitchName(yaml.getString("portal-server"));
+        if (yaml.contains("commands-only")) portal.setCommandsOnly(yaml.getBoolean("commands-only"));
+        if (yaml.contains("commands")) portal.setCommands(yaml.getStringList("commands"));
 
         String materialName = yaml.getString("last-fill-material");
         if (materialName != null && !materialName.equalsIgnoreCase("")) {
@@ -424,6 +427,8 @@ public class Manager {
         if (yaml.contains("title")) portal.setTitle(yaml.getString("title"));
         if (yaml.contains("sub-title")) portal.setSubTitle(yaml.getString("sub-title"));
         if (yaml.contains("bar-message")) portal.setBarMessage(yaml.getString("bar-message"));
+        if (yaml.contains("cooldown")) portal.setCooldown(yaml.getInt("cooldown", 0));
+        if (yaml.contains("delay")) portal.setDelay(yaml.getInt("delay", 0));
 
         return portal;
     }
@@ -436,6 +441,30 @@ public class Manager {
      */
     public boolean doesPortalExist(String portalName) {
         return (!getPortalMap().isEmpty() && getPortalMap().containsKey(portalName.toLowerCase()));
+    }
+
+    /**
+     * @param location The location to show particles and play the sound.
+     */
+    public void playTeleportEffect(Location location) {
+        final String particleEffect = pluginInstance.getConfig().getString("teleport-visual-effect");
+        if (particleEffect != null && !particleEffect.isEmpty()) {
+            final String particleFixed = particleEffect.toUpperCase().replace(" ", "_").replace("-", "_");
+            pluginInstance.getManager().getParticleHandler().broadcastParticle(location,
+                    1, 2, 1, 0, particleFixed, 50);
+        }
+
+        final String sound = pluginInstance.getConfig().getString("teleport-sound");
+        if (sound != null && !sound.equalsIgnoreCase("")) {
+            final String soundFixed = sound.toUpperCase().replace(" ", "_").replace("-", "_");
+            for (int i = -1; ++i < Sound.values().length; ) {
+                Sound currentSound = Sound.values()[i];
+                if (currentSound.name().equalsIgnoreCase(soundFixed)) {
+                    location.getWorld().playSound(location, currentSound, 1, 1);
+                    break;
+                }
+            }
+        }
     }
 
     /**
@@ -490,6 +519,7 @@ public class Manager {
                     : Collections.singletonList(vehicle.getPassenger())) : Collections.emptyList());
             vehicle.eject();
 
+            playTeleportEffect(entity.getLocation());
             for (Entity e : passengersList) {
                 e.teleport(location, PlayerTeleportEvent.TeleportCause.PLUGIN);
                 if (!entityVelocity) e.setVelocity(new Vector(0, 0, 0));
@@ -506,12 +536,17 @@ public class Manager {
                 }
 
                 if (vehicleVelocity) vehicle.setVelocity(newVehicleDirection);
+                playTeleportEffect(entity.getLocation());
             }, 5);
         } else {
+            playTeleportEffect(entity.getLocation());
+
             Vector newDirection = entity.getVelocity().clone();
             entity.teleport(location, PlayerTeleportEvent.TeleportCause.PLUGIN);
             if (entityVelocity) entity.setVelocity(newDirection);
             else entity.setVelocity(new Vector(0, 0, 0));
+
+            playTeleportEffect(entity.getLocation());
         }
     }
 
@@ -603,20 +638,13 @@ public class Manager {
         BukkitTask bukkitTask = new HighlightTask(getPluginInstance(), player, block.getLocation(), particleEffect)
                 .runTaskTimerAsynchronously(getPluginInstance(), 0, 5);
 
-        if (!getVisualTasks().isEmpty() && getVisualTasks().containsKey(player.getUniqueId())) {
-            TaskHolder taskHolder = getVisualTasks().get(player.getUniqueId());
-            if (taskHolder != null) {
-                if (taskHolder.getRegionDisplay() != null) taskHolder.getRegionDisplay().cancel();
-                if (pointType == PointType.POINT_ONE) taskHolder.setSelectionPointOne(bukkitTask);
-                else taskHolder.setSelectionPointTwo(bukkitTask);
-                return;
-            }
-        }
+        final String key = ("point-" + (pointType == PointType.POINT_ONE ? "1" : "2"));
+        HashMap<String, BukkitTask> thMap = getTasks().computeIfAbsent(player.getUniqueId(), id -> new HashMap<>());
 
-        TaskHolder taskHolder = new TaskHolder();
-        if (pointType == PointType.POINT_ONE) taskHolder.setSelectionPointOne(bukkitTask);
-        else taskHolder.setSelectionPointTwo(bukkitTask);
-        getVisualTasks().put(player.getUniqueId(), taskHolder);
+        final BukkitTask task = thMap.getOrDefault(key, null);
+        if (task != null) task.cancel();
+
+        thMap.put(key, bukkitTask);
     }
 
     /**
@@ -636,23 +664,27 @@ public class Manager {
         for (String portalId : portalIds) {
 
             if (doesPortalExist(portalId)) {
-                getPluginInstance().log(Level.WARNING, "The portal '" + portalId + "' already exists in the 'portals' folder. Skipping conversion...");
+                getPluginInstance().log(Level.WARNING, "The portal '" + portalId + "' already exists in the 'portals' folder. Skipping conversion.." +
+                        ".");
                 continue;
             }
 
             SerializableLocation pointOne = new SerializableLocation(getPluginInstance(), yaml.getString(portalId + ".point-1.world"),
                     yaml.getDouble(portalId + ".point-1.x"), yaml.getDouble(portalId + ".point-1.y"),
                     yaml.getDouble(portalId + ".point-1.z"), yaml.getDouble(portalId + ".point-1.yaw"),
-                    yaml.getDouble(portalId + ".point-1.pitch")), pointTwo = new SerializableLocation(getPluginInstance(), yaml.getString(portalId + ".point-2.world"),
+                    yaml.getDouble(portalId + ".point-1.pitch")), pointTwo = new SerializableLocation(getPluginInstance(),
+                    yaml.getString(portalId + ".point-2.world"),
                     yaml.getDouble(portalId + ".point-2.x"), yaml.getDouble(portalId + ".point-2.y"),
                     yaml.getDouble(portalId + ".point-2.z"), yaml.getDouble(portalId + ".point-2.yaw"),
-                    yaml.getDouble(portalId + ".point-2.pitch")), teleportLocation = new SerializableLocation(getPluginInstance(), yaml.getString(portalId + ".teleport-location.world"),
+                    yaml.getDouble(portalId + ".point-2.pitch")), teleportLocation = new SerializableLocation(getPluginInstance(),
+                    yaml.getString(portalId + ".teleport-location.world"),
                     yaml.getDouble(portalId + ".teleport-location.x"), yaml.getDouble(portalId + ".teleport-location.y"),
                     yaml.getDouble(portalId + ".teleport-location.z"), yaml.getDouble(portalId + ".teleport-location.yaw"),
                     yaml.getDouble(portalId + ".teleport-location.pitch"));
 
             if (!pointOne.getWorldName().equalsIgnoreCase(pointTwo.getWorldName())) {
-                getPluginInstance().log(Level.WARNING, "The portal '" + portalId + "' has mismatching point one and point two world names. Skipping conversion...");
+                getPluginInstance().log(Level.WARNING, "The portal '" + portalId + "' has mismatching point one and point two world names. Skipping" +
+                        " conversion...");
                 return;
             }
 
@@ -694,15 +726,11 @@ public class Manager {
      * @param player The player to clear for.
      */
     public void clearAllVisuals(Player player) {
-        if (!getVisualTasks().isEmpty() && getVisualTasks().containsKey(player.getUniqueId())) {
-            TaskHolder taskHolder = getVisualTasks().get(player.getUniqueId());
-            if (taskHolder.getRegionDisplay() != null)
-                taskHolder.getRegionDisplay().cancel();
-            if (taskHolder.getSelectionPointOne() != null)
-                taskHolder.getSelectionPointOne().cancel();
-            if (taskHolder.getSelectionPointTwo() != null)
-                taskHolder.getSelectionPointTwo().cancel();
-        }
+        HashMap<String, BukkitTask> tasks = getTasks().getOrDefault(player.getUniqueId(), null);
+        if (tasks == null || tasks.isEmpty()) return;
+
+        tasks.entrySet().parallelStream().filter(pair -> pair.getValue() != null).forEach(pair -> pair.getValue().cancel());
+        getTasks().remove(player.getUniqueId());
     }
 
     /**
@@ -775,7 +803,8 @@ public class Manager {
      * @return Whether actions succeeded.
      */
     public boolean handleVanillaPortalReplacements(Player player, World world, PortalType portalType) {
-        for (String line : getPluginInstance().getConfig().getStringList((portalType == PortalType.NETHER ? "nether" : "end") + "-portal-locations")) {
+        for (String line :
+                getPluginInstance().getConfig().getStringList((portalType == PortalType.NETHER ? "nether" : "end") + "-portal-locations")) {
             if (line == null || !line.contains(":") || !line.contains(",")) continue;
             String[] mainSplit = line.split(":");
             if (!mainSplit[0].equalsIgnoreCase(world.getName())) continue;
@@ -784,7 +813,8 @@ public class Manager {
             World newWorld = getPluginInstance().getServer().getWorld(subSplit[0]);
             if (newWorld == null) continue;
 
-            final Location location = new Location(newWorld, Double.parseDouble(subSplit[1]), Double.parseDouble(subSplit[2]), Double.parseDouble(subSplit[3]),
+            final Location location = new Location(newWorld, Double.parseDouble(subSplit[1]), Double.parseDouble(subSplit[2]),
+                    Double.parseDouble(subSplit[3]),
                     Float.parseFloat(subSplit[4]), Float.parseFloat(subSplit[5]));
             player.teleport(location);
             return true;
@@ -801,7 +831,8 @@ public class Manager {
      * @return Whether actions succeeded.
      */
     public Location getVanillaPortalReplacement(World world, PortalType portalType) {
-        for (String line : getPluginInstance().getConfig().getStringList((portalType == PortalType.NETHER ? "nether" : "end") + "-portal-locations")) {
+        for (String line :
+                getPluginInstance().getConfig().getStringList((portalType == PortalType.NETHER ? "nether" : "end") + "-portal-locations")) {
             if (line == null || !line.contains(":") || !line.contains(",")) continue;
 
             String[] mainSplit = line.split(":");
@@ -845,9 +876,7 @@ public class Manager {
         return particleHandler;
     }
 
-    public HashMap<UUID, TaskHolder> getVisualTasks() {
-        return visualTasks;
-    }
+    public HashMap<UUID, HashMap<String, BukkitTask>> getTasks() {return tasks;}
 
     public HashMap<UUID, SerializableLocation> getSmartTransferMap() {
         return smartTransferMap;
@@ -873,9 +902,9 @@ public class Manager {
         return portalLinkMap;
     }
 
-    public HashMap<UUID, Portal> getEntitiesInTeleportationAndPortals() {
-        return entitiesInTeleportationAndPortals;
-    }
+    public HashMap<UUID, Portal> getEntitiesInTeleportationAndPortals() {return entitiesInTeleportationAndPortals;}
+
+    public HashMap<UUID, TeleportTask> getTeleportTasks() {return teleportTasks;}
 
     private SimplePortals getPluginInstance() {
         return pluginInstance;

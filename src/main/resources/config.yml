@@ -8,11 +8,15 @@ maintain-vehicle-velocity: true
 # (NOTE: This can kill the entity via fall damage under certain circumstances).
 maintain-entity-velocity: true
 # If this is enabled, all players will be able to use all portals.
-bypass-portal-permissions: true
+bypass-portal-permissions: false
 # If this is enabled, the player can teleport through portals with vehicles, such as Horses and Boats.
 vehicle-teleportation: true
 # If this is enabled, portal usage for creative mode players will be blocked entirely.
 block-creative-portal-entrance: false
+# If this is enabled, all players will be sent to spawn upon joining the server.
+force-join: false
+# This is the world that the spawn location will be obtained from. If blank, the world defaults the player's current world.
+force-join-world: ""
 
 # Adding a world and a location to this list will cause all nether portals in the world to send the player to the specified location.
 # Format: <world portal must be in>:<world of to location>,<x>,<y>,<z>,<yaw>,<pitch>
@@ -52,7 +56,7 @@ join-protection-cooldown: 5
 # How long should the player have to wait in between portal usages in seconds?
 portal-cooldown-duration: 5
 # This is the force/multiplier of the portal throw back feature (Set to -1 or lower to disable).
-throw-velocity: 1.35
+throw-velocity: 6
 # This is the delay before portal commands are initiated (20 ticks = 1 second).
 command-tick-delay: 5
 

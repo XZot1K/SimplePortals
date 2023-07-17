@@ -77,7 +77,7 @@ public class SerializableLocation {
      * @param locationString The string to read.
      */
     public void load(String locationString) {
-        if (locationString == null || locationString.isEmpty() || !locationString.contains(",")) return;
+        if (locationString == null || !locationString.contains(",")) return;
         String[] args = locationString.split(",");
         setWorldName(args[0]);
         setX(Double.parseDouble(args[1]));

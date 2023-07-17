@@ -4,7 +4,10 @@
 
 package xzot1k.plugins.sp.core;
 
-import org.bukkit.*;
+import org.bukkit.GameMode;
+import org.bukkit.Location;
+import org.bukkit.PortalType;
+import org.bukkit.World;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -18,11 +21,13 @@ import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.event.vehicle.VehicleMoveEvent;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.util.Vector;
 import xzot1k.plugins.sp.SimplePortals;
 import xzot1k.plugins.sp.api.enums.PointType;
 import xzot1k.plugins.sp.api.events.PortalEnterEvent;
 import xzot1k.plugins.sp.api.objects.Portal;
 import xzot1k.plugins.sp.api.objects.SerializableLocation;
+import xzot1k.plugins.sp.core.tasks.TeleportTask;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -80,6 +85,21 @@ public class Listeners implements Listener {
                 || e.getFrom().getBlockZ() != e.getTo().getBlockZ()) initiatePortalStuff(e.getTo(), e.getFrom(), e.getPlayer());
     }
 
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onForceJoin(PlayerJoinEvent e) {
+        if (pluginInstance.getConfig().getBoolean("force-join")) {
+            final String worldName = pluginInstance.getConfig().getString("force-join-world");
+            if (worldName != null && worldName.isEmpty()) {
+                if (e.getPlayer().getWorld().getSpawnLocation() != null)
+                    e.getPlayer().teleport(e.getPlayer().getWorld().getSpawnLocation(), PlayerTeleportEvent.TeleportCause.PLUGIN);
+            } else {
+                final World world = pluginInstance.getServer().getWorld(worldName);
+                if (world != null && world.getSpawnLocation() != null)
+                    e.getPlayer().teleport(world.getSpawnLocation(), PlayerTeleportEvent.TeleportCause.PLUGIN);
+            }
+        }
+    }
+
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onJoin(PlayerJoinEvent e) {
         if (pluginInstance.getConfig().getBoolean("join-protection") && pluginInstance.getConfig().getBoolean("use-portal-cooldown")
@@ -123,6 +143,15 @@ public class Listeners implements Listener {
         if (e.getTo() == null) return;
         if (e.getFrom().getBlockX() != e.getTo().getBlockX() || e.getFrom().getBlockY() != e.getTo().getBlockY() || e.getFrom().getBlockZ() != e.getTo().getBlockZ())
             initiatePortalStuff(e.getTo(), e.getFrom(), e.getVehicle());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onTeleportReader(PlayerTeleportEvent e) {
+        pluginInstance.getManager().getEntitiesInTeleportationAndPortals().remove(e.getPlayer().getUniqueId());
+
+        final TeleportTask teleportTask = pluginInstance.getManager().getTeleportTasks().getOrDefault(e.getPlayer().getUniqueId(), null);
+        if (teleportTask != null) teleportTask.cancel();
+        pluginInstance.getManager().getTeleportTasks().remove(e.getPlayer().getUniqueId());
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -197,12 +226,21 @@ public class Listeners implements Listener {
         final boolean isPlayer = (entity instanceof Player);
         Portal portal = pluginInstance.getManager().getPortalAtLocation(toLocation);
         if (portal == null) {
-            final Portal foundPortal = pluginInstance.getManager().getEntitiesInTeleportationAndPortals().get(entity.getUniqueId());
-            if (foundPortal != null) {
-                foundPortal.removeEntityInCooldown(entity.getUniqueId());
-                if (isPlayer) {
-                    pluginInstance.getManager().getTitleHandler().sendTitle(((Player) entity), "&cTeleportation cancelled",
-                            "&7You stepped out of the portal", 0, 40, 0);
+            final Portal foundPortal = pluginInstance.getManager().getEntitiesInTeleportationAndPortals().getOrDefault(entity.getUniqueId(), null);
+            if (foundPortal != null && isPlayer) {
+                final Player player = ((Player) entity);
+
+                pluginInstance.getManager().getEntitiesInTeleportationAndPortals().remove(player.getUniqueId());
+
+                final TeleportTask teleportTask = pluginInstance.getManager().getTeleportTasks().getOrDefault(player.getUniqueId(), null);
+                if (teleportTask != null) teleportTask.cancel();
+                pluginInstance.getManager().getTeleportTasks().remove(player.getUniqueId());
+
+                String title = pluginInstance.getLangConfig().getString("teleport-cancelled.title"),
+                        subTitle = pluginInstance.getLangConfig().getString("teleport-cancelled.sub-title");
+                if ((title != null && !title.isEmpty()) || (subTitle != null && !subTitle.isEmpty())) {
+                    player.sendTitle(pluginInstance.getManager().colorText(title),
+                            pluginInstance.getManager().colorText(subTitle), 0, 40, 0);
                 }
             }
         }
@@ -224,16 +262,23 @@ public class Listeners implements Listener {
                 final Player player = (Player) entity;
                 final boolean canBypassCooldown = player.hasPermission("simpleportals.cdbypass");
                 final boolean cooldownFail = (pluginInstance.getConfig().getBoolean("use-portal-cooldown")
-                        && (pluginInstance.getManager().isPlayerOnCooldown(player, "normal", pluginInstance.getConfig().getInt("portal-cooldown-duration"))
-                        || pluginInstance.getManager().isPlayerOnCooldown(player, "join-protection", pluginInstance.getConfig().getInt("join-protection-cooldown")))
+                        && (pluginInstance.getManager().isPlayerOnCooldown(player, "normal",
+                        pluginInstance.getConfig().getInt("portal-cooldown-duration"))
+                        || pluginInstance.getManager().isPlayerOnCooldown(player, "join-protection",
+                        pluginInstance.getConfig().getInt("join-protection-cooldown")))
                         && !canBypassCooldown), permissionFail = !pluginInstance.getConfig().getBoolean("bypass-portal-permissions")
-                        && (!player.hasPermission("simpleportals.portal." + portal.getPortalId()) && !player.hasPermission("simpleportals.portals." + portal.getPortalId())
+                        && (!player.hasPermission("simpleportals.portal." + portal.getPortalId())
+                        && !player.hasPermission("simpleportals.portals." + portal.getPortalId())
                         && !player.hasPermission("simpleportals.portal.*") && !player.hasPermission("simpleportals.portals.*"));
 
                 if (cooldownFail || permissionFail) {
                     double tv = pluginInstance.getConfig().getDouble("throw-velocity");
-                    if (!(tv <= -1))
-                        player.setVelocity(player.getLocation().getDirection().setY(player.getLocation().getDirection().getY() / 2).multiply(-tv));
+                    if (!(tv <= -1)) {
+                        final Vector direction = new Vector(fromLocation.getX() - toLocation.getX(),
+                                ((fromLocation.getY() - toLocation.getY()) + (player.getVelocity().getY() / 2)),
+                                fromLocation.getZ() - toLocation.getZ()).multiply(tv);
+                        player.setVelocity(direction);
+                    }
 
                     String message = cooldownFail ? pluginInstance.getLangConfig().getString("enter-cooldown-message")
                             : pluginInstance.getLangConfig().getString("enter-no-permission-message");
@@ -253,24 +298,6 @@ public class Listeners implements Listener {
 
             if (isPlayer) portal.invokeCommands((Player) entity, toLocation);
             if (!portal.isCommandsOnly() || portal.getTeleportLocation() == null) {
-                String particleEffect = pluginInstance.getConfig().getString("teleport-visual-effect");
-                if (particleEffect != null && !particleEffect.isEmpty()) {
-                    final String particleFixed = particleEffect.toUpperCase().replace(" ", "_").replace("-", "_");
-                    pluginInstance.getManager().getParticleHandler().broadcastParticle(entity.getLocation(), 1, 2, 1, 0, particleFixed, 50);
-                }
-
-                final String sound = pluginInstance.getConfig().getString("teleport-sound");
-                if (sound != null && !sound.equalsIgnoreCase("")) {
-                    final String soundFixed = sound.toUpperCase().replace(" ", "_").replace("-", "_");
-                    for (int i = -1; ++i < Sound.values().length; ) {
-                        Sound currentSound = Sound.values()[i];
-                        if (currentSound.name().equalsIgnoreCase(soundFixed)) {
-                            entity.getWorld().playSound(entity.getLocation(), currentSound, 1, 1);
-                            break;
-                        }
-                    }
-                }
-
                 if (isPlayer) {
                     final Player player = (Player) entity;
                     if (portal.getMessage() != null && !portal.getMessage().isEmpty())

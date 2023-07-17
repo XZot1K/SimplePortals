@@ -32,7 +32,9 @@ permissions:
       simpleportals.fill: true
       simpleportals.viewcommands: true
       simpleportals.toggle: true
-      simpleportals.changecooldown: true
+      simpleportals.cooldown: true
+      simpleportals.delay: true
+      simpleportals.find: true
   simpleportals.showregion:
     default: op
     description: Allows the player to view a portal's region.
@@ -90,6 +92,12 @@ permissions:
   simpleportals.use:
     default: op
     description: Allows the sender to use the basic /simpleportals command.
-  simpleportals.changecooldown:
+  simpleportals.cooldown:
     default: op
     description: Allows the sender to use the /simpleportals cooldown command.
+  simpleportals.delay:
+    default: op
+    description: Allows the sender to use the /simpleportals delay command.
+  simpleportals.find:
+    default: op
+    description: Allows the sender to use the /simpleportals find command.
