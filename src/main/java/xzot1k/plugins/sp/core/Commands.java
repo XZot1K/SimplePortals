@@ -66,14 +66,13 @@ public class Commands implements CommandExecutor {
             }
 
             if (args.length >= 3) {
-
                 boolean isAddCmd = (args[0].equalsIgnoreCase("addcommand") || args[0].equalsIgnoreCase("addcmd")),
                         isMessageCmd = args[0].equalsIgnoreCase("message"),
                         isSetLocationCmd = (args[0].equalsIgnoreCase("setlocation") || args[0].equalsIgnoreCase("sl")),
                         isCooldownCmd = args[0].equalsIgnoreCase("cooldown"),
                         isDelayCmd = args[0].equalsIgnoreCase("delay");
 
-                if (isAddCmd || isMessageCmd || isCooldownCmd || isSetLocationCmd) {
+                if (isAddCmd || isMessageCmd || isCooldownCmd || isDelayCmd || isSetLocationCmd) {
 
                     Portal prevPortal = null, currentPortal = null;
                     StringBuilder nameBuilder = new StringBuilder(),
@@ -599,7 +598,7 @@ public class Commands implements CommandExecutor {
         }
 
         Portal portal = getPluginInstance().getManager().getPortal(portalName);
-        if (portal != null) {
+        if (portal == null) {
             sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                     + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message"))
                     .replace("{name}", portalName)));

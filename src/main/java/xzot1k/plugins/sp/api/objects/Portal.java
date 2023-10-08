@@ -255,7 +255,6 @@ public class Portal {
      * @param entity The entity to perform actions on.
      */
     public void performAction(@NotNull Entity entity) {
-
         final boolean isPlayer = (entity instanceof Player);
 
         if (isPlayer) {
@@ -285,6 +284,10 @@ public class Portal {
                             if (!teleportTask.isCancelled()) teleportTask.cancel();
                         }, (getDelay() * 20L + 1));
                     } else {
+
+                        invokeCommands((Player) entity, location);
+                        if (isCommandsOnly()) return;
+
                         getPluginInstance().getManager().playTeleportEffect(entity.getLocation());
                         getPluginInstance().getManager().teleportWithEntity(entity, location);
                         getPluginInstance().getManager().getPortalLinkMap().put(entity.getUniqueId(), getPortalId());
@@ -339,6 +342,10 @@ public class Portal {
                     }, (getDelay() * 20L + 1));
                 } else {
                     final Location loc = serializableLocation.asBukkitLocation();
+
+                    invokeCommands((Player) entity, loc);
+                    if (isCommandsOnly()) return;
+
                     getPluginInstance().getManager().playTeleportEffect(entity.getLocation());
                     getPluginInstance().getManager().teleportWithEntity(player, loc);
                     getPluginInstance().getManager().getPortalLinkMap().put(player.getUniqueId(), getPortalId());

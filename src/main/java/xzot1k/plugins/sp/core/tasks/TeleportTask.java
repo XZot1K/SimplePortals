@@ -22,6 +22,7 @@ public class TeleportTask extends BukkitRunnable {
     private final Location location;
     private long ticksPassed = 0;
     private boolean done = false;
+
     public TeleportTask(Entity entity, Portal portal, Location location) {
         this.INSTANCE = SimplePortals.getPluginInstance();
         this.entity = entity;
@@ -50,7 +51,6 @@ public class TeleportTask extends BukkitRunnable {
         if (rem <= 0 && !done) {
             done = true;
 
-            INSTANCE.getManager().teleportWithEntity(entity, location);
             if (entity instanceof Player) {
                 final Player player = ((Player) entity);
 
@@ -60,9 +60,17 @@ public class TeleportTask extends BukkitRunnable {
                     player.sendTitle(INSTANCE.getManager().colorText(title), INSTANCE.getManager().colorText(subTitle
                             .replace("{rem}", String.valueOf(rem))), 0, 40, 0);
                 }
+            }
 
-                INSTANCE.getManager().getPortalLinkMap().put(player.getUniqueId(), portal.getPortalId());
-                INSTANCE.getManager().getEntitiesInTeleportationAndPortals().remove(player.getUniqueId());
+            portal.invokeCommands((Player) entity, location);
+
+            if (!portal.isCommandsOnly()) {
+                INSTANCE.getManager().teleportWithEntity(entity, location);
+                if (entity instanceof Player) {
+                    final Player player = ((Player) entity);
+                    INSTANCE.getManager().getPortalLinkMap().put(player.getUniqueId(), portal.getPortalId());
+                    INSTANCE.getManager().getEntitiesInTeleportationAndPortals().remove(player.getUniqueId());
+                }
             }
 
             cancel();

@@ -11,7 +11,6 @@ import xzot1k.plugins.sp.SimplePortals;
 import xzot1k.plugins.sp.api.enums.PortalCommandType;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class TabCompleter implements org.bukkit.command.TabCompleter {
@@ -30,7 +29,7 @@ public class TabCompleter implements org.bukkit.command.TabCompleter {
     @Override
     public List<String> onTabComplete(CommandSender commandSender, Command command, String label, String[] args) {
         //removed command.getName().equalsIgnoreCase("simpleportals") && because not necessary
-        if (  commandSender.hasPermission("simpleportals.use") ) {
+        if (commandSender.hasPermission("simpleportals.use")) {
             values.clear();
             partialValues.clear();
             if (args.length == 1) {
@@ -55,34 +54,37 @@ public class TabCompleter implements org.bukkit.command.TabCompleter {
                 values.add("disablemessages");
                 values.add("list");
                 values.add("cooldown");
+                values.add("delay");
 
 
-            } else if (args.length == 2 || (args.length == 3 && (args[0].equalsIgnoreCase("setlocation") || args[0].equalsIgnoreCase("sl")))  ){
+            } else if (args.length == 2 || (args.length == 3 && (args[0].equalsIgnoreCase("setlocation")
+                    || args[0].equalsIgnoreCase("sl")))) {
                 //The portal name should not be completed for every argument
-                if( !args[0].equalsIgnoreCase("selectionmode") && !args[0].equalsIgnoreCase("sm")  && !args[0].equalsIgnoreCase("create") && !args[0].equalsIgnoreCase("list")  ){
+                if (!args[0].equalsIgnoreCase("selectionmode") && !args[0].equalsIgnoreCase("sm")
+                        && !args[0].equalsIgnoreCase("create") && !args[0].equalsIgnoreCase("list")) {
                     values.addAll(getPluginInstance().getManager().getPortalNames(false));
                 }
             } else if (args.length == 3) {
-                if(args[0].equalsIgnoreCase("cooldown")){
-                    for(int i=0; i<=12; i++){
-                        values.add(""+i);
+                if (args[0].equalsIgnoreCase("cooldown") || args[0].equalsIgnoreCase("delay")) {
+                    for (int i = 0; i <= 12; i++) {
+                        values.add("" + i);
                     }
-                }else{
+                } else {
                     int colonCount = 0;
-                    for (char character : args[2].toCharArray()){
-                        if (character == ':'){
+                    for (char character : args[2].toCharArray()) {
+                        if (character == ':') {
                             colonCount++;
                         }
                     }
 
-                    if (colonCount == 1){
-                        for (PortalCommandType portalCommandType : PortalCommandType.values()){
+                    if (colonCount == 1) {
+                        for (PortalCommandType portalCommandType : PortalCommandType.values()) {
                             values.add(portalCommandType.name());
                         }
                         //Return immediately, because copyPartialMatches breaks this for some reason
                         return values;
-                    }else if (colonCount == 2){
-                        for (int i = 0; ++i < 100; ){
+                    } else if (colonCount == 2) {
+                        for (int i = 0; ++i < 100; ) {
                             values.add(String.valueOf(i));
                         }
                         //Return immediately, because copyPartialMatches breaks this for some reason
@@ -109,7 +111,6 @@ public class TabCompleter implements org.bukkit.command.TabCompleter {
             }
 
             StringUtil.copyPartialMatches(args[args.length - 1], values, partialValues);
-
 
 
             //if (values.size() > 0) Collections.sort(values);

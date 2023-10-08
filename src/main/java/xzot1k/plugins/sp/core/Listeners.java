@@ -248,6 +248,10 @@ public class Listeners implements Listener {
         if (portal != null && !portal.isDisabled()) {
             if (isPlayer) {
                 final Player player = (Player) entity;
+
+                TeleportTask teleportTask = pluginInstance.getManager().getTeleportTasks().getOrDefault(player.getUniqueId(), null);
+                if (teleportTask != null && !teleportTask.isCancelled()) return;
+
                 if (pluginInstance.getManager().getPortalLinkMap().containsKey(player.getUniqueId())
                         && pluginInstance.getManager().getPortalLinkMap().get(player.getUniqueId()).equalsIgnoreCase(portal.getPortalId()))
                     return;
@@ -296,8 +300,7 @@ public class Listeners implements Listener {
                 if (!canBypassCooldown) pluginInstance.getManager().updatePlayerPortalCooldown((Player) entity, "normal");
             }
 
-            if (isPlayer) portal.invokeCommands((Player) entity, toLocation);
-            if (!portal.isCommandsOnly() || portal.getTeleportLocation() == null) {
+            if (portal.getTeleportLocation() != null) {
                 if (isPlayer) {
                     final Player player = (Player) entity;
                     if (portal.getMessage() != null && !portal.getMessage().isEmpty())
@@ -334,7 +337,8 @@ public class Listeners implements Listener {
             final Player player = (Player) entity;
 
             pluginInstance.getManager().getPortalLinkMap().remove(player.getUniqueId());
-            if (!pluginInstance.getManager().getSmartTransferMap().isEmpty() && pluginInstance.getManager().getSmartTransferMap().containsKey(player.getUniqueId())) {
+            if (!pluginInstance.getManager().getSmartTransferMap().isEmpty()
+                    && pluginInstance.getManager().getSmartTransferMap().containsKey(player.getUniqueId())) {
                 SerializableLocation serializableLocation = pluginInstance.getManager().getSmartTransferMap().get(player.getUniqueId());
                 if (serializableLocation != null) {
                     Location location = player.getLocation();

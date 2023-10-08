@@ -18,6 +18,7 @@ import xzot1k.plugins.sp.core.utils.UpdateChecker;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 
@@ -52,11 +53,16 @@ public class SimplePortals extends JavaPlugin {
         setPrismaInstalled(getServer().getPluginManager().getPlugin("Prisma") != null);
         manager = new Manager(this);
 
-        PluginCommand command = getCommand("simpleportals");
-        if (command != null) {
-            command.setTabCompleter(new TabCompleter(this));
-            command.setExecutor(new Commands(this));
+        TabCompleter tabCompleter = new TabCompleter(this);
+        Commands commands = new Commands(this);
+        for (Map.Entry<String, Map<String, Object>> entry : getDescription().getCommands().entrySet()) {
+            PluginCommand command = getCommand(entry.getKey());
+            if (command == null) continue;
+
+            command.setTabCompleter(tabCompleter);
+            command.setExecutor(commands);
         }
+
         getServer().getPluginManager().registerEvents(new Listeners(this), this);
         getManager().convertFromPortalsFile();
 
