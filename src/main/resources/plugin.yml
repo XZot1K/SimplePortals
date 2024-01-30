@@ -71,10 +71,10 @@ permissions:
     description: Allows the player to use all portals.
   simpleportals.addcommand:
     default: op
-    desdcription: Allows the player to add a command to a portal.
+    description: Allows the player to add a command to a portal.
   simpleportals.clearcommands:
     default: op
-    desdcription: Allows the player to clear all commands from a portal.
+    description: Allows the player to clear all commands from a portal.
   simpleportals.togglecommandonly:
     default: op
     description: Allows the player to toggle command only mode for a portal.

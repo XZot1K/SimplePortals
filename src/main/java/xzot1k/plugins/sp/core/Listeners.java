@@ -125,7 +125,6 @@ public class Listeners implements Listener {
                     final String server = resultSet.getString("server"), coords = resultSet.getString("coordinates"),
                             commandLine = resultSet.getString("commands"), extra = resultSet.getString("extra");
 
-                    System.out.println("commands: " + commandLine);
                     if (server.equalsIgnoreCase(serverName)) return new TransferData(server, coords, commandLine, extra);
                 }
             } catch (SQLException ex) {pluginInstance.log(Level.WARNING, "There was an issue reading from the \"" + table + "\" table.");}

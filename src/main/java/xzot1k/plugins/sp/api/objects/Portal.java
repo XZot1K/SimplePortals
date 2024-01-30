@@ -311,12 +311,12 @@ public class Portal {
             final Player player = (Player) entity;
             if (getServerSwitchLocation() != null) {
                 CompletableFuture.runAsync(() -> getPluginInstance().sendTransferMessage(player, getServerSwitchName(), getServerSwitchLocation().toString(), getCommands()))
-                        .thenRun(() -> pluginInstance.getServer().getScheduler().runTask(pluginInstance, () -> actionHelper(player)));
-            } else actionHelper(player);
+                        .thenRun(() -> pluginInstance.getServer().getScheduler().runTask(pluginInstance, () -> actionHelper(player, false)));
+            } else actionHelper(player, true);
         }
     }
 
-    private void actionHelper(@NotNull Player player) {
+    private void actionHelper(@NotNull Player player, boolean sendCommands) {
         if ((!getPluginInstance().getManager().getSmartTransferMap().isEmpty() && getPluginInstance().getManager().getSmartTransferMap().containsKey(player.getUniqueId()))) {
             SerializableLocation serializableLocation = getPluginInstance().getManager().getSmartTransferMap().get(player.getUniqueId());
 
@@ -356,8 +356,10 @@ public class Portal {
             } else {
                 final Location loc = serializableLocation.asBukkitLocation();
 
-                invokeCommands(player, loc);
-                if (isCommandsOnly()) return;
+                if (isCommandsOnly()) {
+                    invokeCommands(player, loc);
+                    return;
+                } else if (sendCommands) invokeCommands(player, loc);
 
                 getPluginInstance().getManager().playTeleportEffect(player.getLocation());
                 getPluginInstance().getManager().teleportWithEntity(player, loc);
