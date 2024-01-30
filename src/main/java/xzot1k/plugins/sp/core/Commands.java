@@ -21,8 +21,10 @@ import xzot1k.plugins.sp.api.objects.Region;
 import xzot1k.plugins.sp.api.objects.SerializableLocation;
 import xzot1k.plugins.sp.core.tasks.ManagementTask;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
 
 public class Commands implements CommandExecutor {
 
@@ -37,221 +39,110 @@ public class Commands implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-
         if (command.getName().equalsIgnoreCase("simpleportals")) {
+            if (sender.hasPermission("simpleportals.use")) {
 
-            if (!sender.hasPermission("simpleportals.use")) {
+                if (args.length >= 3 && (args[0].equalsIgnoreCase("setswitchlocation") || args[0].equalsIgnoreCase("ssl"))) {
+                    initiatePortalSwitchLocationSet(sender, args);
+                    return true;
+                } else if (args.length >= 3 && (args[0].equalsIgnoreCase("addcommand") || args[0].equalsIgnoreCase("addcmd"))) {
+                    addCommand(sender, args);
+                    return true;
+                } else if (args.length >= 3 && (args[0].equalsIgnoreCase("message"))) {
+                    setMessage(sender, args);
+                    return true;
+                }
+
+                switch (args.length) {
+                    case 1:
+                        if (args[0].equalsIgnoreCase("selectionmode") || args[0].equalsIgnoreCase("sm")) {
+                            initiateSelectionMode(sender);
+                            return true;
+                        } else if (args[0].equalsIgnoreCase("list")) {
+                            initiateList(sender);
+                            return true;
+                        } else if (args[0].equalsIgnoreCase("reload")) {
+                            initiateReload(sender);
+                            return true;
+                        } else if (args[0].equalsIgnoreCase("info")) {
+                            initiateInfo(sender);
+                            return true;
+                        }
+
+                        break;
+                    case 2:
+                        if (args[0].equalsIgnoreCase("disablemessages") || args[0].equalsIgnoreCase("dm")) {
+                            initiateDisableMessages(sender, args[1]);
+                            return true;
+                        } else if (args[0].equalsIgnoreCase("create")) {
+                            initiatePortalCreation(sender, args[1]);
+                            return true;
+                        } else if (args[0].equalsIgnoreCase("enable")) {
+                            initiateEnable(sender, args[1]);
+                            return true;
+                        } else if (args[0].equalsIgnoreCase("disable")) {
+                            initiateDisable(sender, args[1]);
+                            return true;
+                        } else if (args[0].equalsIgnoreCase("commands") || args[0].equalsIgnoreCase("cmds")) {
+                            sendPortalCommands(sender, args[1]);
+                            return true;
+                        } else if (args[0].equalsIgnoreCase("delete")) {
+                            initiatePortalDeletion(sender, args[1]);
+                            return true;
+                        } else if (args[0].equalsIgnoreCase("setlocation") || args[0].equalsIgnoreCase("sl")) {
+                            initiatePortalLocationSet(sender, args[1]);
+                            return true;
+                        } else if (args[0].equalsIgnoreCase("showregion") || args[0].equalsIgnoreCase("sr")) {
+                            initiatePortalRegion(sender, args[1]);
+                            return true;
+                        } else if (args[0].equalsIgnoreCase("relocate") || args[0].equalsIgnoreCase("rl")) {
+                            initiateRelocate(sender, args[1]);
+                            return true;
+                        } else if (args[0].equalsIgnoreCase("clearcommands") || args[0].equalsIgnoreCase("clearcmds")) {
+                            clearCommands(sender, args[1]);
+                            return true;
+                        } else if (args[0].equalsIgnoreCase("togglecommandsonly") || args[0].equalsIgnoreCase("tco")) {
+                            toggleCommandOnly(sender, args[1]);
+                            return true;
+                        } else if (args[0].equalsIgnoreCase("help")) {
+                            sendHelpPage(sender, args[1]);
+                            return true;
+                        }
+
+                        break;
+                    case 3:
+                        if (args[0].equalsIgnoreCase("switchserver") || args[0].equalsIgnoreCase("ss")) {
+                            initiateSwitchServerSet(sender, args[1], args[2]);
+                            return true;
+                        } else if (args[0].equalsIgnoreCase("fill")) {
+                            initiateFill(sender, args[1], args[2]);
+                            return true;
+                        } else if (args[0].equalsIgnoreCase("setlocation") || args[0].equalsIgnoreCase("sl")) {
+                            initiatePortalLocationSet(sender, args[1], args[2]);
+                            return true;
+                        } else if (args[0].equalsIgnoreCase("cooldown") || args[0].equalsIgnoreCase("cd")) {
+                            initiatePortalCooldown(sender, args[1], args[2]);
+                            return true;
+                        }
+
+                        break;
+                    default:
+                        break;
+                }
+
+                sendHelpPage(sender, "1");
+                return true;
+            } else {
                 sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                         + getPluginInstance().getLangConfig().getString("no-permission-message")));
                 return false;
             }
 
-            if (args.length == 1) {
-                if (args[0].equalsIgnoreCase("selectionmode") || args[0].equalsIgnoreCase("sm")) {
-                    initiateSelectionMode(sender);
-                    return true;
-                } else if (args[0].equalsIgnoreCase("list")) {
-                    initiateList(sender);
-                    return true;
-                } else if (args[0].equalsIgnoreCase("reload")) {
-                    initiateReload(sender);
-                    return true;
-                } else if (args[0].equalsIgnoreCase("info")) {
-                    initiateInfo(sender);
-                    return true;
-                } else if (args[0].equalsIgnoreCase("find")) {
-                    findPortalCommand(sender, "1");
-                    return true;
-                }
-            }
-
-            if (args.length >= 3) {
-                boolean isAddCmd = (args[0].equalsIgnoreCase("addcommand") || args[0].equalsIgnoreCase("addcmd")),
-                        isMessageCmd = args[0].equalsIgnoreCase("message"),
-                        isSetLocationCmd = (args[0].equalsIgnoreCase("setlocation") || args[0].equalsIgnoreCase("sl")),
-                        isCooldownCmd = args[0].equalsIgnoreCase("cooldown"),
-                        isDelayCmd = args[0].equalsIgnoreCase("delay");
-
-                if (isAddCmd || isMessageCmd || isCooldownCmd || isDelayCmd || isSetLocationCmd) {
-
-                    Portal prevPortal = null, currentPortal = null;
-                    StringBuilder nameBuilder = new StringBuilder(),
-                            contentBuilder = new StringBuilder();
-                    boolean contentMode = false;
-                    for (int i = 0; ++i < args.length; ) {
-
-                        if (!contentMode) {
-                            final String addition = ((nameBuilder.length() > 0) ? (" " + args[i]) : args[i]);
-                            final boolean currentWasValid = (currentPortal != null);
-
-                            currentPortal = getPluginInstance().getManager().getPortal(nameBuilder + addition);
-                            if (currentPortal != null) prevPortal = currentPortal;
-
-                            if ((!currentWasValid && currentPortal == null) || (!currentWasValid && currentPortal != null))
-                                nameBuilder.append(addition);
-                        }
-
-                        contentMode = (currentPortal == null && prevPortal != null);
-                        if (contentMode) {
-                            if (contentBuilder.length() > 0) contentBuilder.append(" ");
-                            contentBuilder.append(args[i]);
-                        }
-                    }
-
-                    if (isAddCmd) {
-                        addCommand(sender, nameBuilder.toString(), contentBuilder.toString());
-                        return true;
-                    } else if (isCooldownCmd) {
-                        initiatePortalCooldown(sender, nameBuilder.toString(), contentBuilder.toString());
-                        return true;
-                    } else if (isDelayCmd) {
-                        initiatePortalDelay(sender, nameBuilder.toString(), contentBuilder.toString());
-                        return true;
-                    } else if (isSetLocationCmd) {
-                        if (contentBuilder.length() > 0) {
-                            initiatePortalLocationSet(sender, nameBuilder.toString(), contentBuilder.toString());
-                            return true;
-                        }
-                    } else {
-                        setMessage(sender, nameBuilder.toString(), contentBuilder.toString());
-                        return true;
-                    }
-                }
-
-                if (args[0].equalsIgnoreCase("switchserver") || args[0].equalsIgnoreCase("ss")) {
-                    initiateSwitchServerSet(sender, args[1], args[2]);
-                    return true;
-                } else if (args[0].equalsIgnoreCase("fill")) {
-                    initiateFill(sender, args[1], args[2]);
-                    return true;
-                }
-            }
-
-            if (args.length >= 2) {
-
-                if (args[0].equalsIgnoreCase("help")) {
-                    sendHelpPage(sender, args[1]);
-                    return true;
-                }
-
-                StringBuilder nameBuilder = new StringBuilder();
-                for (int i = 0; ++i < args.length; ) {
-                    if (nameBuilder.length() > 0) nameBuilder.append(" ");
-                    nameBuilder.append(args[i]);
-                }
-
-                if (args[0].equalsIgnoreCase("create")) {
-                    initiatePortalCreation(sender, nameBuilder.toString());
-                    return true;
-                } else if (args[0].equalsIgnoreCase("delete")) {
-                    initiatePortalDeletion(sender, nameBuilder.toString());
-                    return true;
-                } else if (args[0].equalsIgnoreCase("enable")) {
-                    initiateEnable(sender, nameBuilder.toString());
-                    return true;
-                } else if (args[0].equalsIgnoreCase("disable")) {
-                    initiateDisable(sender, nameBuilder.toString());
-                    return true;
-                } else if (args[0].equalsIgnoreCase("commands") || args[0].equalsIgnoreCase("cmds")) {
-                    sendPortalCommands(sender, nameBuilder.toString());
-                    return true;
-                } else if (args[0].equalsIgnoreCase("disablemessages") || args[0].equalsIgnoreCase("dm")) {
-                    initiateDisableMessages(sender, nameBuilder.toString());
-                    return true;
-                } else if (args[0].equalsIgnoreCase("setlocation") || args[0].equalsIgnoreCase("sl")) {
-                    initiatePortalLocationSet(sender, nameBuilder.toString());
-                    return true;
-                } else if (args[0].equalsIgnoreCase("showregion") || args[0].equalsIgnoreCase("sr")) {
-                    initiatePortalRegion(sender, nameBuilder.toString());
-                    return true;
-                } else if (args[0].equalsIgnoreCase("relocate") || args[0].equalsIgnoreCase("rl")) {
-                    initiateRelocate(sender, nameBuilder.toString());
-                    return true;
-                } else if (args[0].equalsIgnoreCase("clearcommands") || args[0].equalsIgnoreCase("clearcmds")) {
-                    clearCommands(sender, nameBuilder.toString());
-                    return true;
-                } else if (args[0].equalsIgnoreCase("togglecommandsonly") || args[0].equalsIgnoreCase("tco")) {
-                    toggleCommandOnly(sender, nameBuilder.toString());
-                    return true;
-                } else if (args[0].equalsIgnoreCase("find")) {
-                    findPortalCommand(sender, args[1]);
-                    return true;
-                }
-
-            }
-
-            sendHelpPage(sender, "1");
-            return true;
         }
 
         return false;
     }
 
-    private void findPortalCommand(CommandSender sender, String rangeString) {
-
-        if (!sender.hasPermission("simpleportals.find")) {
-            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
-                    + getPluginInstance().getLangConfig().getString("no-permission-message")));
-            return;
-        }
-
-        if (!(sender instanceof Player)) {
-            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
-                    + getPluginInstance().getLangConfig().getString("must-be-player-message")));
-            return;
-        }
-
-        final Player player = (Player) sender;
-
-        int range;
-        if (!getPluginInstance().getManager().isNumeric(rangeString)) {
-            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
-                    + getPluginInstance().getLangConfig().getString("invalid-range")));
-            return;
-        }
-
-        range = Integer.parseInt(rangeString);
-        if (range <= 0) {
-            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
-                    + getPluginInstance().getLangConfig().getString("invalid-range")));
-            return;
-        }
-
-        final int finalRange = range;
-        List<Map.Entry<String, Portal>> list = getPluginInstance().getManager().getPortalMap().entrySet().parallelStream()
-                .filter(entry -> (entry.getValue().getRegion().getPoint1().distance(player.getLocation(), false) <= finalRange)
-                        || (entry.getValue().getRegion().getPoint2().distance(player.getLocation(), false) <= finalRange))
-                .limit(3).collect(Collectors.toList());
-
-        if (list.isEmpty()) {
-            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
-                    + getPluginInstance().getLangConfig().getString("no-find-results")
-                    .replace("{range}", String.valueOf(range))));
-            return;
-        }
-
-        final TextComponent message = new TextComponent(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString(
-                "prefix") + getPluginInstance().getLangConfig().getString("portal-find-message")
-                .replace("{range}", String.valueOf(range))));
-        for (Map.Entry<String, Portal> entry : list) {
-            final Portal portal = entry.getValue();
-            final int x = (int) ((portal.getRegion().getPoint1().getX() + portal.getRegion().getPoint2().getX()) / 2),
-                    y = (int) ((portal.getRegion().getPoint1().getY() + portal.getRegion().getPoint2().getY()) / 2),
-                    z = (int) ((portal.getRegion().getPoint1().getZ() + portal.getRegion().getPoint2().getZ()) / 2);
-
-            final TextComponent portalText = new TextComponent("\n" + getPluginInstance().getManager().getPortalName(portal, true));
-            portalText.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                    new BaseComponent[]{new TextComponent(getPluginInstance().getManager().colorText("&bClick to teleport to the portal &a"
-                            + portal.getPortalId()))}));
-            portalText.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,
-                    "/tppos " + x + " " + y + " " + z + " 0 0 " + portal.getRegion().getPoint1().getWorldName()));
-            message.addExtra(portalText);
-
-            portal.displayRegion(player);
-        }
-
-        sender.spigot().sendMessage(message);
-    }
 
     private void initiateDisableMessages(CommandSender sender, String portalName) {
         if (!sender.hasPermission("simpleportals.dm")) {
@@ -398,27 +289,28 @@ public class Commands implements CommandExecutor {
         portal.fillPortal(player, material, durability);
         portal.save();
         sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
-                + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-filled-message")).replace("{name}",
-                portal.getPortalId()).replace("{material}", material.name())));
+                + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-filled-message")).replace("{name}", portal.getPortalId()).replace("{material}", material.name())));
     }
 
-    private void setMessage(CommandSender sender, String portalName, String message) {
+    private void setMessage(CommandSender sender, String[] args) {
         if (!sender.hasPermission("simpleportals.message")) {
             sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                     + getPluginInstance().getLangConfig().getString("no-permission-message")));
             return;
         }
 
-        Portal portal = getPluginInstance().getManager().getPortal(portalName);
+        Portal portal = getPluginInstance().getManager().getPortal(args[1]);
         if (portal == null) {
             sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
-                    + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message"))
-                    .replace("{name}", portalName)));
+                    + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}", args[1])));
             return;
         }
 
+        StringBuilder enteredMessage = new StringBuilder(args[2]);
+        if (args.length > 3) for (int i = 2; ++i < args.length; ) enteredMessage.append(" ").append(args[i]);
+
         String foundType = "Normal";
-        final String tempMessage = message.toUpperCase(), fixedMessage = message.replaceAll("(?i):NORMAL", "")
+        final String tempMessage = enteredMessage.toString().toUpperCase(), fixedMessage = enteredMessage.toString().replaceAll("(?i):NORMAL", "")
                 .replaceAll("(?i):BAR", "").replaceAll("(?i):SUBTITLE", "").replaceAll("(?i):TITLE", "");
         if (tempMessage.endsWith(":BAR")) {
             portal.setBarMessage(fixedMessage);
@@ -437,7 +329,7 @@ public class Commands implements CommandExecutor {
                 .replace("{message}", fixedMessage).replace("{type}", foundType).replace("{name}", portal.getPortalId())));
     }
 
-    private void addCommand(CommandSender sender, String portalName, String command) {
+    private void addCommand(CommandSender sender, String[] args) {
         if (sender instanceof Player) {
             Player player = (Player) sender;
             if (!player.hasPermission("simpleportals.addcommand")) {
@@ -446,22 +338,21 @@ public class Commands implements CommandExecutor {
                 return;
             }
 
-            Portal portal = getPluginInstance().getManager().getPortal(portalName);
-            if (portal == null) {
+            Portal portal = getPluginInstance().getManager().getPortal(args[1]);
+            if (portal != null) {
+                StringBuilder enteredCommand = new StringBuilder(args[2]);
+                if (args.length > 3) for (int i = 2; ++i < args.length; ) enteredCommand.append(" ").append(args[i]);
+                portal.getCommands().add(enteredCommand.toString());
+                portal.save();
+
+                String fixedCommand = enteredCommand.toString().replaceAll("(?i):CHAT", "")
+                        .replaceAll("(?i):PLAYER", "").replaceAll("(?i):CONSOLE", "");
                 player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
-                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}",
-                        portalName)));
-                return;
-            }
-
-            portal.getCommands().add(command);
-            portal.save();
-
-            String fixedCommand = command.replaceAll("(?i):CHAT", "")
-                    .replaceAll("(?i):PLAYER", "").replaceAll("(?i):CONSOLE", "");
-            player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
-                    + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-command-added-message"))
-                    .replace("{command}", fixedCommand).replace("{name}", portal.getPortalId())));
+                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-command-added-message"))
+                        .replace("{command}", fixedCommand).replace("{name}", portal.getPortalId())));
+            } else
+                player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}", args[1])));
         } else
             sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                     + getPluginInstance().getLangConfig().getString("must-be-player-message")));
@@ -485,8 +376,7 @@ public class Commands implements CommandExecutor {
                         .replace("{name}", portal.getPortalId())));
             } else
                 player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
-                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}",
-                        portalName)));
+                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
         } else
             sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                     + getPluginInstance().getLangConfig().getString("must-be-player-message")));
@@ -511,11 +401,56 @@ public class Commands implements CommandExecutor {
                         .replace("{name}", portal.getPortalId())));
             } else
                 player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
-                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}",
-                        portalName)));
+                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
         } else
             sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                     + getPluginInstance().getLangConfig().getString("must-be-player-message")));
+    }
+
+    private void initiatePortalSwitchLocationSet(CommandSender sender, String... args) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + getPluginInstance().getLangConfig().getString("must-be-player-message")));
+            return;
+        }
+
+        Player player = (Player) sender;
+        if (!player.hasPermission("simpleportals.setswitchlocation") || !player.hasPermission("simpleportals.ssl")) {
+            player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + getPluginInstance().getLangConfig().getString("no-permission-message")));
+            return;
+        }
+
+        Portal portal = getPluginInstance().getManager().getPortal(args[1]);
+        if (portal == null) player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}", args[1])));
+
+        final String worldName = args[2];
+        if (getPluginInstance().getServer().getWorlds().parallelStream().noneMatch(world -> world.getName().equalsIgnoreCase(worldName))) {
+            player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                    + getPluginInstance().getLangConfig().getString("invalid-world").replace("{world}", worldName)));
+            return;
+        }
+
+        String invalidCoordMessage = getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                + getPluginInstance().getLangConfig().getString("invalid-coordinate"));
+
+        for (int i = 2; ++i < Math.min(args.length, 8); ) {
+            if (getPluginInstance().getManager().isNumeric(args[i])) {
+                player.sendMessage(invalidCoordMessage.replace("{value}", args[i]));
+                return;
+            }
+        }
+
+        SerializableLocation location = ((args.length >= 8) ? new SerializableLocation(getPluginInstance(), worldName, Double.parseDouble(args[3]),
+                Double.parseDouble(args[4]), Double.parseDouble(args[5]), Double.parseDouble(args[6]), Double.parseDouble(args[7]))
+                : new SerializableLocation(getPluginInstance(), worldName, Double.parseDouble(args[3]), Double.parseDouble(args[4]), Double.parseDouble(args[5]), 0, 0));
+
+        portal.setServerSwitchLocation(location);
+        portal.save();
+        player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
+                + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("switch-location-set-message"))
+                .replace("{name}", portal.getPortalId())));
     }
 
     private void initiatePortalLocationSet(CommandSender sender, String portalName) {
@@ -536,8 +471,7 @@ public class Commands implements CommandExecutor {
                         .replace("{name}", portal.getPortalId())));
             } else
                 player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
-                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}",
-                        portalName)));
+                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
         } else
             sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                     + getPluginInstance().getLangConfig().getString("must-be-player-message")));
@@ -558,77 +492,36 @@ public class Commands implements CommandExecutor {
                 Portal foundPortal = getPluginInstance().getManager().getPortal(otherPortalName);
                 if (foundPortal == null) {
                     player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
-                            + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}",
-                            otherPortalName)));
+                            + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}", otherPortalName)));
                     return;
                 }
 
                 SerializableLocation foundPointOne = foundPortal.getRegion().getPoint1(), foundPointTwo = foundPortal.getRegion().getPoint2();
-                final int x = (int) ((foundPointOne.getX() + foundPointTwo.getX()) / 2), y =
-                        (int) ((foundPointOne.getY() + foundPointTwo.getY()) / 2), z = (int) ((foundPointOne.getZ() + foundPointTwo.getZ()) / 2);
+                final int x = (int) ((foundPointOne.getX() + foundPointTwo.getX()) / 2), y = (int) ((foundPointOne.getY() + foundPointTwo.getY()) / 2), z =
+                        (int) ((foundPointOne.getZ() + foundPointTwo.getZ()) / 2);
 
                 World world = getPluginInstance().getServer().getWorld(foundPointOne.getWorldName());
                 if (world == null) {
                     player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
-                            + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("world-invalid-message")).replace("{name}",
-                            foundPointOne.getWorldName())));
+                            + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("world-invalid-message")).replace("{name}", foundPointOne.getWorldName())));
                     return;
                 }
 
-                portal.setTeleportLocation(new Location(world, x + 0.5, y + 0.5, z + 0.5, player.getLocation().getYaw(),
-                        player.getLocation().getPitch()));
+                portal.setTeleportLocation(new Location(world, x + 0.5, y + 0.5, z + 0.5, player.getLocation().getYaw(), player.getLocation().getPitch()));
                 portal.save();
                 player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                         + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-link-message"))
                         .replace("{name}", portal.getPortalId()).replace("{other}", foundPortal.getPortalId())));
             } else
                 player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
-                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}",
-                        portalName)));
+                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
         } else
             sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                     + getPluginInstance().getLangConfig().getString("must-be-player-message")));
     }
 
     private void initiatePortalCooldown(CommandSender sender, String portalName, String cooldownInSeconds) {
-        if (!sender.hasPermission("simpleportals.cooldown")) {
-            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
-                    + getPluginInstance().getLangConfig().getString("no-permission-message")));
-            return;
-        }
-
-        Portal portal = getPluginInstance().getManager().getPortal(portalName);
-        if (portal == null) {
-            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
-                    + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message"))
-                    .replace("{name}", portalName)));
-            return;
-        }
-
-        int cooldown;
-        if (!getPluginInstance().getManager().isNumeric(cooldownInSeconds)) {
-            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
-                    + getPluginInstance().getLangConfig().getString("invalid-cooldown")));
-            return;
-        }
-
-        cooldown = Integer.parseInt(cooldownInSeconds);
-        if (cooldown < 0) {
-            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
-                    + getPluginInstance().getLangConfig().getString("invalid-cooldown")));
-            return;
-        }
-
-        portal.setCooldown(cooldown);
-        portal.save();
-
-        sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
-                + getPluginInstance().getLangConfig().getString("cooldown-set-message")
-                .replace("{id}", portal.getPortalId()).replace("{cooldown}", String.valueOf(cooldown))));
-    }
-
-    private void initiatePortalDelay(CommandSender sender, String portalName, String delayInSeconds) {
-        if (!sender.hasPermission("simpleportals.delay")) {
+        if (!sender.hasPermission("simpleportals.changecooldown")) {
             sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                     + getPluginInstance().getLangConfig().getString("no-permission-message")));
             return;
@@ -636,33 +529,26 @@ public class Commands implements CommandExecutor {
 
         Portal portal = getPluginInstance().getManager().getPortal(portalName);
         if (portal != null) {
-            int delay;
-            if (!getPluginInstance().getManager().isNumeric(delayInSeconds)) {
-                sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
-                        + getPluginInstance().getLangConfig().getString("invalid-delay")));
+            int cooldownInSecondsInt;
+            try {
+                cooldownInSecondsInt = Integer.parseInt(cooldownInSeconds);
+            } catch (NumberFormatException e) {
+                sender.sendMessage("§cInvalid cooldown entered! Please enter just a number.");
                 return;
             }
 
-            delay = Integer.parseInt(delayInSeconds);
-            if (delay < 0) {
-                sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
-                        + getPluginInstance().getLangConfig().getString("invalid-delay")));
-                return;
-            }
-
-            portal.setDelay(delay);
+            portal.setCooldown(cooldownInSecondsInt);
             portal.save();
 
-            sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
-                    + getPluginInstance().getLangConfig().getString("delay-set-message")
-                    .replace("{id}", portal.getPortalId()).replace("{delay}", String.valueOf(delay))));
+            sender.sendMessage("§aCooldown of portal §b" + portal.getPortalId() + " §asuccessfully set to §e" + cooldownInSecondsInt + " seconds§a.");
+
         } else {
             sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
-                    + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message"))
-                    .replace("{name}", portalName)));
+                    + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
         }
 
     }
+
 
     private void initiateRelocate(CommandSender sender, String portalName) {
         if (sender instanceof Player) {
@@ -687,12 +573,10 @@ public class Commands implements CommandExecutor {
                 getPluginInstance().getManager().clearCurrentSelection(player);
                 portal.displayRegion(player);
                 player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
-                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("region-relocated-message")).replace("{name}",
-                        portal.getPortalId())));
+                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("region-relocated-message")).replace("{name}", portal.getPortalId())));
             } else
                 player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
-                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}",
-                        portalName)));
+                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
         } else
             sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                     + getPluginInstance().getLangConfig().getString("must-be-player-message")));
@@ -711,12 +595,10 @@ public class Commands implements CommandExecutor {
             if (portal != null) {
                 portal.displayRegion(player);
                 player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
-                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("region-displayed-message")).replace("{name}",
-                        portal.getPortalId())));
+                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("region-displayed-message")).replace("{name}", portal.getPortalId())));
             } else
                 player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
-                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}",
-                        portalName)));
+                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
         } else
             sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                     + getPluginInstance().getLangConfig().getString("must-be-player-message")));
@@ -768,8 +650,7 @@ public class Commands implements CommandExecutor {
         /*List<String> portalNames = getPluginInstance().getManager().getPortalNames(true);
         StringBuilder stringBuilder = new StringBuilder();
         //Info message before portals
-        stringBuilder.append(getPluginInstance().getLangConfig().getString("prefix")).append(getPluginInstance().getLangConfig().getString
-        ("portal-list-message"));
+        stringBuilder.append(getPluginInstance().getLangConfig().getString("prefix")).append(getPluginInstance().getLangConfig().getString("portal-list-message"));
         //Actual portals
         for (final String portalName : portalNames){
             stringBuilder.append("\n").append(portalName);
@@ -777,8 +658,9 @@ public class Commands implements CommandExecutor {
         sender.sendMessage(getPluginInstance().getManager().colorText(stringBuilder.toString()));*/
 
         //Old version with clickable text which teleports you
-        final TextComponent message = new TextComponent(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString(
-                "prefix") + getPluginInstance().getLangConfig().getString("portal-list-message")));
+        final TextComponent message =
+                new TextComponent(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix") + getPluginInstance().getLangConfig().getString("portal-list" +
+                        "-message")));
         for (final String portalName : getPluginInstance().getManager().getPortalMap().keySet()) {
             final Portal portal = getPluginInstance().getManager().getPortalMap().get(portalName);
             final int x = (int) ((portal.getRegion().getPoint1().getX() + portal.getRegion().getPoint2().getX()) / 2),
@@ -788,8 +670,7 @@ public class Commands implements CommandExecutor {
             final TextComponent portalText = new TextComponent("\n" + getPluginInstance().getManager().getPortalName(portal, true));
             portalText.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                     new BaseComponent[]{new TextComponent(getPluginInstance().getManager().colorText("&bClick to teleport to the portal &a" + portalName))}));
-            portalText.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,
-                    "/tppos " + x + " " + y + " " + z + " 0 0 " + portal.getRegion().getPoint1().getWorldName()));
+            portalText.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tppos " + x + " " + y + " " + z + " 0 0 " + portal.getRegion().getPoint1().getWorldName()));
             message.addExtra(portalText);
         }
 
@@ -832,8 +713,7 @@ public class Commands implements CommandExecutor {
                         .replace("{name}", portal.getPortalId())));
             } else
                 sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
-                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}",
-                        portalName)));
+                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
         } else
             sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                     + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-invalid-message")).replace("{name}", portalName)));
@@ -852,15 +732,13 @@ public class Commands implements CommandExecutor {
             Portal portal = getPluginInstance().getManager().getPortalAtLocation(player.getLocation());
             if (portal != null) {
                 player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
-                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-location-exists-message")).replace("{name}",
-                        portal.getPortalId())));
+                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-location-exists-message")).replace("{name}", portal.getPortalId())));
                 return;
             }
 
             if (getPluginInstance().getManager().doesPortalExist(portalName)) {
                 player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
-                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-exists-message")).replace("{name}",
-                        portalName)));
+                        + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("portal-exists-message")).replace("{name}", portalName)));
                 return;
             }
 
@@ -935,8 +813,7 @@ public class Commands implements CommandExecutor {
         page3Lines.add("&e/portals <togglecommandsonly/tco> <name> &7- toggles command only mode for a portal.");
         page3Lines.add("&e/portals <commands/cmds> <name> &7- provides a list of all commands on the defined warp in the order they were added.");
         page3Lines.add("&e/portals <enable/disable> <name> &7- enables/disabled the portal entirely untiled toggled again.");
-        page3Lines.add("&e/portals message <name> <text> &7- sets the message of the portal to the entered text. Refer to documentation for message" +
-                " types.");
+        page3Lines.add("&e/portals message <name> <text> &7- sets the message of the portal to the entered text. Refer to documentation for message types.");
         page3Lines.add("&e/portals <cooldown/cd> <name> <seconds> &7- sets a cooldown until the teleportation happens after you entered the portal");
         getHelpPageMap().put(3, page3Lines);
     }
@@ -947,15 +824,13 @@ public class Commands implements CommandExecutor {
             page = Integer.parseInt(pageString);
         } catch (Exception ignored) {
             commandSender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
-                    + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("invalid-page-message")).replace("{pages}",
-                    String.valueOf(getHelpPageMap().size()))));
+                    + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("invalid-page-message")).replace("{pages}", String.valueOf(getHelpPageMap().size()))));
             return;
         }
 
         if (getHelpPageMap().isEmpty() || !getHelpPageMap().containsKey(page)) {
             commandSender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
-                    + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("invalid-page-message")).replace("{pages}",
-                    String.valueOf(getHelpPageMap().size()))));
+                    + Objects.requireNonNull(getPluginInstance().getLangConfig().getString("invalid-page-message")).replace("{pages}", String.valueOf(getHelpPageMap().size()))));
             return;
         }
 
@@ -963,8 +838,7 @@ public class Commands implements CommandExecutor {
             Player player = (Player) commandSender;
             List<String> pageLines = getHelpPageMap().get(page);
 
-            player.sendMessage(getPluginInstance().getManager().colorText("\n&e&m---------------&d[ &bSP Help &e(&a" + page + "&e) " +
-                    "&d]&e&m---------------"));
+            player.sendMessage(getPluginInstance().getManager().colorText("\n&e&m---------------&d[ &bSP Help &e(&a" + page + "&e) &d]&e&m---------------"));
             for (int i = -1; ++i < pageLines.size(); )
                 player.sendMessage(getPluginInstance().getManager().colorText(pageLines.get(i)));
 
@@ -977,12 +851,10 @@ public class Commands implements CommandExecutor {
 
                 footerExtra1.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/portals help " + (page - 1)));
                 footerExtra1.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                        new BaseComponent[]{new TextComponent(getPluginInstance().getManager().colorText("&aClicking this will open the help menu " +
-                                "at page &e" + (page - 1) + "&a."))}));
+                        new BaseComponent[]{new TextComponent(getPluginInstance().getManager().colorText("&aClicking this will open the help menu at page &e" + (page - 1) + "&a."))}));
                 footerExtra2.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/portals help " + (page + 1)));
                 footerExtra2.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                        new BaseComponent[]{new TextComponent(getPluginInstance().getManager().colorText("&aClicking this will open the help menu " +
-                                "at page &e" + (page + 1) + "&a."))}));
+                        new BaseComponent[]{new TextComponent(getPluginInstance().getManager().colorText("&aClicking this will open the help menu at page &e" + (page + 1) + "&a."))}));
 
                 footerMessage1.addExtra(footerExtra1);
                 footerMessage1.addExtra(footerExtra2);
@@ -996,9 +868,8 @@ public class Commands implements CommandExecutor {
                         footerEnd = new TextComponent(getPluginInstance().getManager().colorText("&d]&e&m---------------\n"));
 
                 footerExtra.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/portals help " + (page + 1)));
-                footerExtra.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                        new BaseComponent[]{new TextComponent(getPluginInstance().getManager().colorText("&aClicking this will open the help menu " +
-                                "at page &e" + (page + 1) + "&a."))}));
+                footerExtra.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[]{new TextComponent(getPluginInstance().getManager().colorText("&aClicking this will open the" +
+                        " help menu at page &e" + (page + 1) + "&a."))}));
                 footerMessage.addExtra(footerExtra);
                 footerMessage.addExtra(footerEnd);
 
@@ -1010,9 +881,8 @@ public class Commands implements CommandExecutor {
                         footerEnd = new TextComponent(getPluginInstance().getManager().colorText("&d]&e&m-------------\n"));
 
                 footerExtra.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/portals help " + (page - 1)));
-                footerExtra.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                        new BaseComponent[]{new TextComponent(getPluginInstance().getManager().colorText("&aClicking this will open the help menu " +
-                                "at page &e" + (page - 1) + "&a."))}));
+                footerExtra.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[]{new TextComponent(getPluginInstance().getManager().colorText("&aClicking this will open the" +
+                        " help menu at page &e" + (page - 1) + "&a."))}));
                 footerMessage.addExtra(footerExtra);
                 footerMessage.addExtra(footerEnd);
 
@@ -1021,8 +891,7 @@ public class Commands implements CommandExecutor {
                 player.sendMessage(getPluginInstance().getManager().colorText("&d[&e&m---------------------------------------&r&d]\n"));
         } else {
             List<String> pageLines = getHelpPageMap().get(page);
-            commandSender.sendMessage(getPluginInstance().getManager().colorText("&d[&e&m-------------&r&d] &bSP Help &e(&a" + page + "&e) " +
-                    "&d[&e&m-------------&r&d]"));
+            commandSender.sendMessage(getPluginInstance().getManager().colorText("&d[&e&m-------------&r&d] &bSP Help &e(&a" + page + "&e) &d[&e&m-------------&r&d]"));
             for (int i = -1; ++i < pageLines.size(); )
                 commandSender.sendMessage(getPluginInstance().getManager().colorText(pageLines.get(i)));
             commandSender.sendMessage(getPluginInstance().getManager().colorText("&d[&e&m---------------------------------------&r&d]\n"));

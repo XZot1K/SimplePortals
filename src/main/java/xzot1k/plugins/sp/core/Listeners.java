@@ -16,31 +16,45 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
-import org.bukkit.event.entity.EntityPortalEnterEvent;
+import org.bukkit.event.entity.EntityPortalEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.event.vehicle.VehicleMoveEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
 import xzot1k.plugins.sp.SimplePortals;
 import xzot1k.plugins.sp.api.enums.PointType;
 import xzot1k.plugins.sp.api.events.PortalEnterEvent;
 import xzot1k.plugins.sp.api.objects.Portal;
 import xzot1k.plugins.sp.api.objects.SerializableLocation;
+import xzot1k.plugins.sp.api.objects.TransferData;
 import xzot1k.plugins.sp.core.tasks.TeleportTask;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.logging.Level;
 
 import static org.bukkit.GameMode.CREATIVE;
 
 public class Listeners implements Listener {
 
     private final SimplePortals pluginInstance;
+    private final List<UUID> PortalToPortalProtectionList;
+    private final HashMap<UUID, TransferData> transferData;
 
     public Listeners(SimplePortals pluginInstance) {
         this.pluginInstance = pluginInstance;
+        this.PortalToPortalProtectionList = new ArrayList<>();
+        this.transferData = new HashMap<>();
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -86,45 +100,107 @@ public class Listeners implements Listener {
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onForceJoin(PlayerJoinEvent e) {
-        if (pluginInstance.getConfig().getBoolean("force-join")) {
-            final String worldName = pluginInstance.getConfig().getString("force-join-world");
-            if (worldName != null && worldName.isEmpty()) {
-                if (e.getPlayer().getWorld().getSpawnLocation() != null)
-                    e.getPlayer().teleport(e.getPlayer().getWorld().getSpawnLocation(), PlayerTeleportEvent.TeleportCause.PLUGIN);
-            } else {
-                final World world = pluginInstance.getServer().getWorld(worldName);
-                if (world != null && world.getSpawnLocation() != null)
-                    e.getPlayer().teleport(world.getSpawnLocation(), PlayerTeleportEvent.TeleportCause.PLUGIN);
-            }
+    public void onJoin(PlayerJoinEvent e) {
+        if (getTransferData().containsKey(e.getPlayer().getUniqueId())) {
+            final TransferData data = getTransferData().get(e.getPlayer().getUniqueId());
+            final Location dest = data.getDestination().asBukkitLocation();
+
+            e.getPlayer().teleport(dest, PlayerTeleportEvent.TeleportCause.PLUGIN);
+            Portal.invokeCommands(data.getCommands(), e.getPlayer(), dest);
         }
+
+        forceJoin(e.getPlayer());
+        checkPTPProtection(e.getPlayer());
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onJoin(PlayerJoinEvent e) {
-        if (pluginInstance.getConfig().getBoolean("join-protection") && pluginInstance.getConfig().getBoolean("use-portal-cooldown")
-                && !e.getPlayer().hasPermission("simpleportals.cdbypass")) {
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onPreJoin(AsyncPlayerPreLoginEvent e) {
+        final String serverName = pluginInstance.getConfig().getString("mysql.server-name"),
+                table = pluginInstance.getConfig().getString("mysql.transfer-table");
 
-            Portal portal = pluginInstance.getManager().getPortalAtLocation(e.getPlayer().getLocation());
-            if (portal == null || portal.isDisabled()) return;
+        CompletableFuture<TransferData> destinationFuture = CompletableFuture.supplyAsync(() -> {
+            try (PreparedStatement statement = pluginInstance.getDatabaseConnection().prepareStatement("SELECT * FROM " + table + " WHERE uuid = '" + e.getUniqueId() + "';");
+                 ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    final String server = resultSet.getString("server"), coords = resultSet.getString("coordinates"),
+                            commandLine = resultSet.getString("commands"), extra = resultSet.getString("extra");
 
-            pluginInstance.getManager().updatePlayerPortalCooldown(e.getPlayer(), "join-protection");
-            double tv = pluginInstance.getConfig().getDouble("throw-velocity");
-            if (!(tv <= -1)) e.getPlayer().setVelocity(e.getPlayer().getLocation().getDirection()
-                    .setY(e.getPlayer().getLocation().getDirection().getY() / 2).multiply(-tv));
+                    System.out.println("commands: " + commandLine);
+                    if (server.equalsIgnoreCase(serverName)) return new TransferData(server, coords, commandLine, extra);
+                }
+            } catch (SQLException ex) {pluginInstance.log(Level.WARNING, "There was an issue reading from the \"" + table + "\" table.");}
+            return null;
+        });
+
+        TransferData transferData = destinationFuture.thenApply(data -> {
+            if (data != null) {
+                Player player = pluginInstance.getServer().getPlayer(e.getUniqueId());
+                if (player != null && player.isOnline()) {
+                    final Location dest = data.getDestination().asBukkitLocation();
+                    player.teleport(dest, PlayerTeleportEvent.TeleportCause.PLUGIN);
+                    Portal.invokeCommands(data.getCommands(), player, dest);
+                } else getTransferData().put(e.getUniqueId(), data);
+            }
+            return data;
+        }).join();
+
+        if (transferData != null) {
+            destinationFuture.thenRunAsync(() -> {
+                try (PreparedStatement removalStatement = pluginInstance.getDatabaseConnection().prepareStatement("DELETE FROM " + table + " WHERE UUID = '" + e.getUniqueId() + "';")) {
+                    removalStatement.executeUpdate();
+                } catch (SQLException ex) {pluginInstance.log(Level.WARNING, "There was an issue reading from the \"" + table + "\" table.");}
+            });
         }
+
+        /*pluginInstance.getServer().getScheduler().runTaskAsynchronously(pluginInstance, () -> {
+            try (PreparedStatement statement = pluginInstance.getDatabaseConnection().prepareStatement("SELECT * FROM "
+                    + pluginInstance.getConfig().getString("mysql.table") + " WHERE uuid = '" + e.getUniqueId() + "';");
+                 ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    final String server = resultSet.getString("server"), coords = resultSet.getString("coordinates");
+
+               /* ManagementTask.TransferData foundData = getTransferDataQueue().parallelStream().filter(transferData ->
+                        transferData.getPlayerUniqueId().toString().equals(uuidString)).findAny().orElse(null);
+                if (foundData != null && !foundData.getDestination().toString().equals(coords)) {
+                    foundData.setDestination(new SerializableLocation(getPluginInstance(), coords));
+                    return;
+                }
+
+                injectTransferData(uuid, serverName, coords);
+
+
+                    PreparedStatement removalStatement = pluginInstance.getDatabaseConnection().prepareStatement("DELETE FROM "
+                            + pluginInstance.getConfig().getString("mysql.table") + " WHERE UUID = '" + e.getUniqueId() + "';");
+                    removalStatement.executeUpdate();
+                    removalStatement.close();
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+                pluginInstance.log(Level.WARNING, "This is just a warning stating that a market region has failed to load.");
+            }
+        });*/
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onQuit(PlayerQuitEvent e) {
         pluginInstance.getManager().getSmartTransferMap().remove(e.getPlayer().getUniqueId());
+        getPTPProtectionList().remove(e.getPlayer().getUniqueId());
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onSpawn(PlayerRespawnEvent e) {
+        if (e.getPlayer().getBedSpawnLocation() == null) forceJoin(e.getPlayer());
+        checkPTPProtection(e.getPlayer());
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    public void onPortal(EntityPortalEnterEvent e) {
-        if (!(e.getEntity() instanceof Player) || e.getLocation().getWorld().getEnvironment() != World.Environment.THE_END) return;
-        pluginInstance.getServer().getScheduler().runTaskLater(pluginInstance, () ->
-                pluginInstance.getManager().handleVanillaPortalReplacements((Player) e.getEntity(), e.getEntity().getWorld(), PortalType.ENDER), 5);
+    public void onPortal(EntityPortalEvent e) {
+        if (!(e.getEntity() instanceof Player) || (e.getTo().getWorld().getEnvironment() != World.Environment.THE_END
+                && e.getTo().getWorld().getEnvironment() != World.Environment.NETHER)) return;
+
+        Location location = pluginInstance.getManager().handleVanillaPortalReplacements(e.getFrom().getWorld(),
+                (e.getTo().getWorld().getEnvironment() == World.Environment.NETHER) ? PortalType.NETHER : PortalType.ENDER);
+        if (location != null) e.setTo(location);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -152,6 +228,13 @@ public class Listeners implements Listener {
         final TeleportTask teleportTask = pluginInstance.getManager().getTeleportTasks().getOrDefault(e.getPlayer().getUniqueId(), null);
         if (teleportTask != null) teleportTask.cancel();
         pluginInstance.getManager().getTeleportTasks().remove(e.getPlayer().getUniqueId());
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onTeleportDestinationCheck(PlayerTeleportEvent e) {
+        Portal fromPortal = pluginInstance.getManager().getPortalAtLocation(e.getFrom()),
+                toPortal = pluginInstance.getManager().getPortalAtLocation(e.getTo());
+        if (fromPortal != null && toPortal != null && !toPortal.isDisabled()) getPTPProtectionList().add(e.getPlayer().getUniqueId());
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -222,10 +305,16 @@ public class Listeners implements Listener {
         }
     }
 
+    // helpers
     private void initiatePortalStuff(Location toLocation, Location fromLocation, Entity entity) {
         final boolean isPlayer = (entity instanceof Player);
         Portal portal = pluginInstance.getManager().getPortalAtLocation(toLocation);
         if (portal == null) {
+            if (isPlayer) {
+                final Player player = ((Player) entity);
+                getPTPProtectionList().remove(player.getUniqueId());
+            }
+
             final Portal foundPortal = pluginInstance.getManager().getEntitiesInTeleportationAndPortals().getOrDefault(entity.getUniqueId(), null);
             if (foundPortal != null && isPlayer) {
                 final Player player = ((Player) entity);
@@ -249,6 +338,9 @@ public class Listeners implements Listener {
             if (isPlayer) {
                 final Player player = (Player) entity;
 
+                // prevent teleporting due to join protection
+                if (pluginInstance.getConfig().getBoolean("join-protection") && getPTPProtectionList().contains(player.getUniqueId())) return;
+
                 TeleportTask teleportTask = pluginInstance.getManager().getTeleportTasks().getOrDefault(player.getUniqueId(), null);
                 if (teleportTask != null && !teleportTask.isCancelled()) return;
 
@@ -264,16 +356,12 @@ public class Listeners implements Listener {
 
             if (isPlayer) {
                 final Player player = (Player) entity;
-                final boolean canBypassCooldown = player.hasPermission("simpleportals.cdbypass");
-                final boolean cooldownFail = (pluginInstance.getConfig().getBoolean("use-portal-cooldown")
-                        && (pluginInstance.getManager().isPlayerOnCooldown(player, "normal",
-                        pluginInstance.getConfig().getInt("portal-cooldown-duration"))
-                        || pluginInstance.getManager().isPlayerOnCooldown(player, "join-protection",
-                        pluginInstance.getConfig().getInt("join-protection-cooldown")))
-                        && !canBypassCooldown), permissionFail = !pluginInstance.getConfig().getBoolean("bypass-portal-permissions")
-                        && (!player.hasPermission("simpleportals.portal." + portal.getPortalId())
-                        && !player.hasPermission("simpleportals.portals." + portal.getPortalId())
-                        && !player.hasPermission("simpleportals.portal.*") && !player.hasPermission("simpleportals.portals.*"));
+                final boolean canBypassCooldown = player.hasPermission("simpleportals.cdbypass"),
+                        cooldownFail = (pluginInstance.getConfig().getBoolean("use-portal-cooldown")
+                                && (pluginInstance.getManager().isPlayerOnCooldown(player, "normal", pluginInstance.getConfig().getInt("portal-cooldown-duration"))) && !canBypassCooldown),
+                        permissionFail = !pluginInstance.getConfig().getBoolean("bypass-portal-permissions") && (!player.hasPermission("simpleportals.portal." + portal.getPortalId())
+                                && !player.hasPermission("simpleportals.portals." + portal.getPortalId()) && !player.hasPermission("simpleportals.portal.*")
+                                && !player.hasPermission("simpleportals.portals.*"));
 
                 if (cooldownFail || permissionFail) {
                     double tv = pluginInstance.getConfig().getDouble("throw-velocity");
@@ -374,7 +462,37 @@ public class Listeners implements Listener {
                 break;
         }
 
-        pluginInstance.getManager().handleVanillaPortalReplacements(e.getPlayer(), e.getFrom().getWorld(), portalType);
+        Location location = pluginInstance.getManager().handleVanillaPortalReplacements(e.getFrom().getWorld(), portalType);
+        if (location != null) e.setTo(location);
     }
 
+    private void forceJoin(@NotNull Player player) {
+        if (pluginInstance.getConfig().getBoolean("force-join")) {
+            final String worldName = pluginInstance.getConfig().getString("force-join-world");
+            if (worldName != null && worldName.isEmpty()) {
+                if (player.getWorld().getSpawnLocation() != null) player.teleport(player.getWorld().getSpawnLocation(), PlayerTeleportEvent.TeleportCause.PLUGIN);
+            } else {
+                final World world = pluginInstance.getServer().getWorld(worldName);
+                if (world != null && world.getSpawnLocation() != null) player.teleport(world.getSpawnLocation(), PlayerTeleportEvent.TeleportCause.PLUGIN);
+            }
+        }
+    }
+
+    private void checkPTPProtection(@NotNull Player player) {
+        if (pluginInstance.getConfig().getBoolean("portal-to-portal-protection")) {
+            Portal portal = pluginInstance.getManager().getPortalAtLocation(player.getLocation());
+            if (portal == null || portal.isDisabled()) return;
+
+            getPTPProtectionList().add(player.getUniqueId());
+        }
+    }
+
+    // getters & setters
+
+    /**
+     * @return The list of users who will be blocked from teleporting in a portal they join, spawn, or teleport into
+     */
+    public List<UUID> getPTPProtectionList() {return PortalToPortalProtectionList;}
+
+    public HashMap<UUID, TransferData> getTransferData() {return transferData;}
 }

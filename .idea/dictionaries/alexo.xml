@@ -7,15 +7,20 @@
       <w>clearcmds</w>
       <w>clearcommands</w>
       <w>cmds</w>
+      <w>coord</w>
       <w>craftbukkit</w>
       <w>disablemessages</w>
+      <w>examplepassword</w>
       <w>icbc</w>
       <w>selectionmode</w>
       <w>setlocation</w>
+      <w>setswitchlocation</w>
       <w>showregion</w>
       <w>spigotmc</w>
       <w>switchserver</w>
+      <w>togglecommandonly</w>
       <w>togglecommandsonly</w>
+      <w>viewcommands</w>
     </words>
   </dictionary>
 </component>

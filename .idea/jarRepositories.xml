@@ -32,6 +32,11 @@
       <option name="url" value="https://oss.sonatype.org/content/repositories/snapshots" />
     </remote-repository>
     <remote-repository>
+      <option name="id" value="papermc" />
+      <option name="name" value="papermc" />
+      <option name="url" value="https://repo.papermc.io/repository/maven-public/" />
+    </remote-repository>
+    <remote-repository>
       <option name="id" value="my-local-repo" />
       <option name="name" value="my-local-repo" />
       <option name="url" value="file://C:\Users\alexo/.m2/repository" />

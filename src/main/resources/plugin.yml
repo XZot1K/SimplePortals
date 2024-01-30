@@ -18,6 +18,7 @@ permissions:
       simpleportals.use: true
       simpleportals.showregion: true
       simpleportals.setlocation: true
+      simpleportals.setswitchlocation: true
       simpleportals.info: true
       simpleportals.reload: true
       simpleportals.create: true
@@ -41,6 +42,9 @@ permissions:
   simpleportals.setlocation:
     default: op
     description: Allows the player to set a portal's teleport location.
+  simpleportals.setswitchlocation:
+    default: op
+    description: Allows the player to set a portal's switch server location.
   simpleportals.info:
     default: op
     description: Allows the player to view the plugin's information.

@@ -55,7 +55,6 @@ public class Manager {
     private final HashMap<UUID, SerializableLocation> smartTransferMap;
     private final HashMap<UUID, String> portalLinkMap;
     private final HashMap<String, Portal> portalMap;
-
     private final HashMap<UUID, Portal> entitiesInTeleportationAndPortals;
     private final HashMap<UUID, TeleportTask> teleportTasks;
 
@@ -157,7 +156,7 @@ public class Manager {
      * @return Whether it is numerical.
      */
     public boolean isNumeric(String string) {
-        return string.matches("-?\\d+(\\.\\d+)?");
+        return string.matches("-?\\\\d+(\\\\.\\\\d+)?");
     }
 
     /**
@@ -355,14 +354,13 @@ public class Manager {
      * @return The portal found (Can return NULL).
      */
     public Portal getPortalAtLocation(Location location) {
-        for (Map.Entry<String, Portal> entry : getPortalMap().entrySet())
-            if (entry.getValue().getRegion().isInRegion(location)) return entry.getValue();
-        return null;
+        Map.Entry<String, Portal> foundEntry = getPortalMap().entrySet().parallelStream().filter(entry ->
+                entry.getValue().getRegion().isInRegion(location)).findFirst().orElse(null);
+        return (foundEntry != null ? foundEntry.getValue() : null);
     }
 
 
     public boolean isPortalNearby(Location location, double radius) {
-
         for (int x = (int) (location.getBlockX() - radius) - 1; ++x <= location.getBlockX() + radius; ) {
             for (int y = (int) (location.getBlockY() - radius) - 1; ++y <= location.getBlockY() + radius; ) {
                 for (int z = (int) (location.getBlockZ() - radius) - 1; ++z <= location.getBlockZ() + radius; ) {
@@ -370,7 +368,6 @@ public class Manager {
                 }
             }
         }
-
         return false;
     }
 
@@ -381,8 +378,8 @@ public class Manager {
      * @return The portal object instance.
      */
     public Portal getPortal(String portalId) {
-        return ((!getPortalMap().isEmpty() && getPortalMap().containsKey(portalId.toLowerCase())) ? getPortalMap().get(portalId.toLowerCase()) :
-                null);
+        return ((!getPortalMap().isEmpty() && getPortalMap().containsKey(portalId.toLowerCase()))
+                ? getPortalMap().get(portalId.toLowerCase()) : null);
     }
 
     /**
@@ -405,12 +402,15 @@ public class Manager {
                     + "' does NOT equal '" + pointTwo.getWorldName() + "').");
 
         World world = getPluginInstance().getServer().getWorld(pointOne.getWorldName());
-        if (world == null)
-            throw new PortalFormException("The portal \"" + portalId + "\" has a world assigned to it that no longer exists.");
+        if (world == null) throw new PortalFormException("The portal \"" + portalId + "\" has a world assigned to it that no longer exists.");
+
+        SerializableLocation switchServerLocation = null;
+        if (yaml.contains("server-switch-location")) switchServerLocation = new SerializableLocation(getPluginInstance(), yaml.getString("server-switch-location"));
 
         final Region region = new Region(getPluginInstance(), pointOne, pointTwo);
         final Portal portal = new Portal(getPluginInstance(), file.getName().toLowerCase().replace(".yml", ""), region);
 
+        portal.setServerSwitchLocation(switchServerLocation);
         portal.setTeleportLocation(teleportLocation);
         if (yaml.contains("portal-server")) portal.setServerSwitchName(yaml.getString("portal-server"));
         if (yaml.contains("commands-only")) portal.setCommandsOnly(yaml.getBoolean("commands-only"));
@@ -797,30 +797,23 @@ public class Manager {
     /**
      * Handles the vanilla portal teleport location replacements.
      *
-     * @param player     The player to handle the teleportation for.
      * @param world      The world where the nether/end portal is located.
      * @param portalType The type of vanilla portal.
-     * @return Whether actions succeeded.
+     * @return The destination.
      */
-    public boolean handleVanillaPortalReplacements(Player player, World world, PortalType portalType) {
-        for (String line :
-                getPluginInstance().getConfig().getStringList((portalType == PortalType.NETHER ? "nether" : "end") + "-portal-locations")) {
-            if (line == null || !line.contains(":") || !line.contains(",")) continue;
-            String[] mainSplit = line.split(":");
-            if (!mainSplit[0].equalsIgnoreCase(world.getName())) continue;
-            String[] subSplit = mainSplit[1].split(",");
+    public Location handleVanillaPortalReplacements(World world, PortalType portalType) {
+        String line = getPluginInstance().getConfig().getStringList((portalType == PortalType.NETHER ? "nether" : "end") + "-portal-locations")
+                .parallelStream().filter(cLine -> (cLine != null && cLine.contains(":") && cLine.contains(",")
+                        && cLine.toLowerCase().startsWith(world.getName().toLowerCase()))).findFirst().orElse(null);
+        if (line == null) return null;
 
-            World newWorld = getPluginInstance().getServer().getWorld(subSplit[0]);
-            if (newWorld == null) continue;
+        String[] split = line.split(":")[1].split(",");
 
-            final Location location = new Location(newWorld, Double.parseDouble(subSplit[1]), Double.parseDouble(subSplit[2]),
-                    Double.parseDouble(subSplit[3]),
-                    Float.parseFloat(subSplit[4]), Float.parseFloat(subSplit[5]));
-            player.teleport(location);
-            return true;
-        }
+        World newWorld = getPluginInstance().getServer().getWorld(split[0]);
+        if (newWorld == null) return null;
 
-        return false;
+        return new Location(newWorld, Double.parseDouble(split[1]), Double.parseDouble(split[2]),
+                Double.parseDouble(split[3]), Float.parseFloat(split[4]), Float.parseFloat(split[5]));
     }
 
     /**

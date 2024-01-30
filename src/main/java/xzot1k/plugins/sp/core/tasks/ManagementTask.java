@@ -11,16 +11,12 @@ public class ManagementTask extends BukkitRunnable {
 
     private final SimplePortals pluginInstance;
 
-    public ManagementTask(SimplePortals pluginInstance) {
-        this.pluginInstance = pluginInstance;
-    }
+    public ManagementTask(SimplePortals pluginInstance) {this.pluginInstance = pluginInstance;}
 
     @Override
-    public void run() {
-        getPluginInstance().getManager().loadPortals();
-    }
+    public void run() {getPluginInstance().getManager().loadPortals();}
 
-    private SimplePortals getPluginInstance() {
-        return pluginInstance;
-    }
+    // getters & setters
+    private SimplePortals getPluginInstance() {return pluginInstance;}
+
 }

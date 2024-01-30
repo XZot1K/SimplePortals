@@ -29,13 +29,14 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 
 public class Portal {
 
     private final SimplePortals pluginInstance;
     private Region region;
-    private SerializableLocation teleportLocation;
+    private SerializableLocation teleportLocation, serverSwitchLocation;
     private String portalId, serverSwitchName, message, title, subTitle, barMessage;
     private boolean commandsOnly, disabled;
     private List<String> commands;
@@ -45,6 +46,7 @@ public class Portal {
 
     public Portal(SimplePortals pluginInstance, String portalId, Region region) {
         this.pluginInstance = pluginInstance;
+        this.serverSwitchLocation = null;
 
         setRegion(region);
         setPortalId(portalId.toLowerCase());
@@ -79,47 +81,12 @@ public class Portal {
         return false;
     }
 
-    /**
-     * Attempts to save the portal to its own file located in the portals folder.
-     */
-    public void save() {
-        try {
-            File file = new File(getPluginInstance().getDataFolder(), "/portals/" + getPortalId().toLowerCase() + ".yml");
-            FileConfiguration yaml = YamlConfiguration.loadConfiguration(file);
-
-            yaml.set("last-fill-material", getLastFillMaterial().name());
-            yaml.set("portal-server", getServerSwitchName());
-
-            SerializableLocation pointOne = getRegion().getPoint1();
-            if (pointOne != null) yaml.set("point-one", pointOne.toString());
-
-            SerializableLocation pointTwo = getRegion().getPoint2();
-            if (pointTwo != null) yaml.set("point-two", pointTwo.toString());
-
-            SerializableLocation teleportLocation = getTeleportLocation();
-            if (teleportLocation != null) yaml.set("teleport-location", teleportLocation.toString());
-
-            yaml.set("commands-only", isCommandsOnly());
-            yaml.set("commands", getCommands());
-            yaml.set("disabled", isDisabled());
-            yaml.set("message", getMessage());
-            yaml.set("title", getTitle());
-            yaml.set("sub-title", getSubTitle());
-            yaml.set("bar-message", getBarMessage());
-            yaml.set("cooldown", getCooldown());
-            yaml.set("delay", getDelay());
-
-            yaml.save(file);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+    public static void invokeCommands(@NotNull List<String> commands, @NotNull Player player, Location locationForCoords) {invokeCmds(commands, player, locationForCoords);}
 
     /**
      * @return Gets a safe proper location outside the portal on the shorter depth side.
      */
     public Location estimateNearbySafeLocation() {
-
         SerializableLocation location = new SerializableLocation(getPluginInstance(), getRegion().getPoint1().getWorldName(),
                 ((getRegion().getPoint1().getX() + getRegion().getPoint2().getX()) / 2),
                 (Math.min(getRegion().getPoint1().getY(), getRegion().getPoint2().getY())),
@@ -180,15 +147,9 @@ public class Portal {
         return null;
     }
 
-    /**
-     * Invokes all commands attached to the portal (includes percentage calculations).
-     *
-     * @param player            The player to send command based on.
-     * @param locationForCoords The location where the player is or should be.
-     */
-    public void invokeCommands(Player player, Location locationForCoords) {
-        getPluginInstance().getServer().getScheduler().runTaskLater(getPluginInstance(), () -> {
-            for (String commandLine : getCommands()) {
+    private static void invokeCmds(@NotNull List<String> commands, @NotNull Player player, Location locationForCoords) {
+        SimplePortals.getPluginInstance().getServer().getScheduler().runTaskLater(SimplePortals.getPluginInstance(), () -> {
+            for (String commandLine : commands) {
                 PortalCommandType portalCommandType = PortalCommandType.CONSOLE;
                 double percentage = 100;
                 if (commandLine.contains(":")) {
@@ -196,7 +157,7 @@ public class Portal {
                     if (commandLineSplit.length >= 3) {
 
                         String foundPercentValue = commandLineSplit[(commandLineSplit.length - 1)];
-                        if (getPluginInstance().getManager().isNumeric(foundPercentValue)) {
+                        if (SimplePortals.getPluginInstance().getManager().isNumeric(foundPercentValue)) {
 
                             percentage = Double.parseDouble(foundPercentValue);
 
@@ -223,7 +184,7 @@ public class Portal {
                     switch (portalCommandType) {
 
                         case PLAYER:
-                            getPluginInstance().getServer().dispatchCommand(player, commandLine.replace("{x}",
+                            SimplePortals.getPluginInstance().getServer().dispatchCommand(player, commandLine.replace("{x}",
                                             String.valueOf(locationForCoords.getX()))
                                     .replace("{y}", String.valueOf(locationForCoords.getY())).replace("{z}", String.valueOf(locationForCoords.getZ()))
                                     .replace("{world}", locationForCoords.getWorld().getName()).replace("{player}", player.getName()));
@@ -236,7 +197,7 @@ public class Portal {
                             break;
 
                         default:
-                            getPluginInstance().getServer().dispatchCommand(getPluginInstance().getServer().getConsoleSender(),
+                            SimplePortals.getPluginInstance().getServer().dispatchCommand(SimplePortals.getPluginInstance().getServer().getConsoleSender(),
                                     commandLine.replace("{x}", String.valueOf(locationForCoords.getX()))
                                             .replace("{y}", String.valueOf(locationForCoords.getY())).replace("{z}",
                                                     String.valueOf(locationForCoords.getZ()))
@@ -246,8 +207,53 @@ public class Portal {
                     }
                 }
             }
-        }, getPluginInstance().getConfig().getInt("command-tick-delay"));
+        }, SimplePortals.getPluginInstance().getConfig().getInt("command-tick-delay"));
     }
+
+    /**
+     * Attempts to save the portal to its own file located in the portals folder.
+     */
+    public synchronized void save() {
+        try {
+            File file = new File(getPluginInstance().getDataFolder(), "/portals/" + getPortalId().toLowerCase() + ".yml");
+            FileConfiguration yaml = YamlConfiguration.loadConfiguration(file);
+
+            yaml.set("last-fill-material", getLastFillMaterial().name());
+            yaml.set("portal-server", getServerSwitchName());
+
+            SerializableLocation pointOne = getRegion().getPoint1();
+            if (pointOne != null) yaml.set("point-one", pointOne.toString());
+
+            SerializableLocation pointTwo = getRegion().getPoint2();
+            if (pointTwo != null) yaml.set("point-two", pointTwo.toString());
+
+            SerializableLocation teleportLocation = getTeleportLocation();
+            if (teleportLocation != null) yaml.set("teleport-location", teleportLocation.toString());
+
+            SerializableLocation serverSwitchLocation = getServerSwitchLocation();
+            if (serverSwitchLocation != null) yaml.set("server-switch-location", serverSwitchLocation.toString());
+
+            yaml.set("commands-only", isCommandsOnly());
+            yaml.set("commands", getCommands());
+            yaml.set("disabled", isDisabled());
+            yaml.set("message", getMessage());
+            yaml.set("title", getTitle());
+            yaml.set("sub-title", getSubTitle());
+            yaml.set("bar-message", getBarMessage());
+            yaml.set("cooldown", getCooldown());
+            yaml.set("delay", getDelay());
+
+            yaml.save(file);
+        } catch (IOException e) {e.printStackTrace();}
+    }
+
+    /**
+     * Invokes all commands attached to the portal (includes percentage calculations).
+     *
+     * @param player            The player to send command based on.
+     * @param locationForCoords The location where the player is or should be.
+     */
+    public void invokeCommands(@NotNull Player player, Location locationForCoords) {invokeCmds(getCommands(), player, locationForCoords);}
 
     /**
      * Performs the general action of the portal by teleporting the player and playing effects. (Handles server transfer)
@@ -303,62 +309,70 @@ public class Portal {
             }
         } else if (isPlayer) {
             final Player player = (Player) entity;
-            if ((!getPluginInstance().getManager().getSmartTransferMap().isEmpty()
-                    && getPluginInstance().getManager().getSmartTransferMap().containsKey(entity.getUniqueId()))) {
-                SerializableLocation serializableLocation = getPluginInstance().getManager().getSmartTransferMap().get(entity.getUniqueId());
+            if (getServerSwitchLocation() != null) {
+                CompletableFuture.runAsync(() -> getPluginInstance().sendTransferMessage(player, getServerSwitchName(), getServerSwitchLocation().toString(), getCommands()))
+                        .thenRun(() -> pluginInstance.getServer().getScheduler().runTask(pluginInstance, () -> actionHelper(player)));
+            } else actionHelper(player);
+        }
+    }
 
-                if (getPluginInstance().getManager().isFacingPortal(player, this, 5)) {
-                    double currentYaw = serializableLocation.getYaw();
-                    String direction = getPluginInstance().getManager().getDirection(currentYaw);
+    private void actionHelper(@NotNull Player player) {
+        if ((!getPluginInstance().getManager().getSmartTransferMap().isEmpty() && getPluginInstance().getManager().getSmartTransferMap().containsKey(player.getUniqueId()))) {
+            SerializableLocation serializableLocation = getPluginInstance().getManager().getSmartTransferMap().get(player.getUniqueId());
 
-                    // Set YAW to opposite directions.
-                    switch (direction.toUpperCase()) {
-                        case "NORTH":
-                            serializableLocation.setYaw(0);
-                            break;
+            if (getPluginInstance().getManager().isFacingPortal(player, this, 5)) {
+                double currentYaw = serializableLocation.getYaw();
+                String direction = getPluginInstance().getManager().getDirection(currentYaw);
 
-                        case "SOUTH":
-                            serializableLocation.setYaw(180);
-                            break;
+                // Set YAW to opposite directions.
+                switch (direction.toUpperCase()) {
+                    case "NORTH":
+                        serializableLocation.setYaw(0);
+                        break;
 
-                        case "EAST":
-                            serializableLocation.setYaw(90);
-                            break;
+                    case "SOUTH":
+                        serializableLocation.setYaw(180);
+                        break;
 
-                        case "WEST":
-                            serializableLocation.setYaw(-90);
-                            break;
-                        default:
-                            break;
-                    }
-                }
+                    case "EAST":
+                        serializableLocation.setYaw(90);
+                        break;
 
-                if (getDelay() != 0) {
-                    getPluginInstance().getManager().getEntitiesInTeleportationAndPortals().put(player.getUniqueId(), this);
-
-                    TeleportTask teleportTask = new TeleportTask(player, this, serializableLocation.asBukkitLocation());
-                    getPluginInstance().getServer().getScheduler().scheduleSyncDelayedTask(getPluginInstance(), () -> {
-                        if (!teleportTask.isCancelled()) teleportTask.cancel();
-                    }, (getDelay() * 20L + 1));
-                } else {
-                    final Location loc = serializableLocation.asBukkitLocation();
-
-                    invokeCommands((Player) entity, loc);
-                    if (isCommandsOnly()) return;
-
-                    getPluginInstance().getManager().playTeleportEffect(entity.getLocation());
-                    getPluginInstance().getManager().teleportWithEntity(player, loc);
-                    getPluginInstance().getManager().getPortalLinkMap().put(player.getUniqueId(), getPortalId());
-                    getPluginInstance().getManager().playTeleportEffect(loc);
+                    case "WEST":
+                        serializableLocation.setYaw(-90);
+                        break;
+                    default:
+                        break;
                 }
             }
 
-            final Location newSafeLocation = estimateNearbySafeLocation();
-            if (newSafeLocation != null) getPluginInstance().getManager().teleportWithEntity(player, newSafeLocation);
-            getPluginInstance().getManager().switchServer(player, getServerSwitchName());
+            if (getDelay() != 0) {
+                getPluginInstance().getManager().getEntitiesInTeleportationAndPortals().put(player.getUniqueId(), this);
 
-            pluginInstance.getManager().getEntitiesInTeleportationAndPortals().remove(player.getUniqueId());
+                TeleportTask teleportTask = new TeleportTask(player, this, serializableLocation.asBukkitLocation());
+                getPluginInstance().getServer().getScheduler().scheduleSyncDelayedTask(getPluginInstance(), () -> {
+                    if (!teleportTask.isCancelled()) teleportTask.cancel();
+                }, (getDelay() * 20L + 1));
+            } else {
+                final Location loc = serializableLocation.asBukkitLocation();
+
+                invokeCommands(player, loc);
+                if (isCommandsOnly()) return;
+
+                getPluginInstance().getManager().playTeleportEffect(player.getLocation());
+                getPluginInstance().getManager().teleportWithEntity(player, loc);
+                getPluginInstance().getManager().getPortalLinkMap().put(player.getUniqueId(), getPortalId());
+                getPluginInstance().getManager().playTeleportEffect(loc);
+            }
         }
+
+        final Location newSafeLocation = estimateNearbySafeLocation();
+        if (newSafeLocation != null) getPluginInstance().getManager().teleportWithEntity(player, newSafeLocation);
+
+        // transfer
+        getPluginInstance().getManager().switchServer(player, getServerSwitchName());
+
+        pluginInstance.getManager().getEntitiesInTeleportationAndPortals().remove(player.getUniqueId());
     }
 
 
@@ -370,7 +384,6 @@ public class Portal {
      * @param durability The durability to modify the material.
      */
     public void fillPortal(Player player, Material material, int durability) {
-
         final boolean isOldVersion = (getPluginInstance().getServerVersion().startsWith("v1_12")
                 || getPluginInstance().getServerVersion().startsWith("v1_11")
                 || getPluginInstance().getServerVersion().startsWith("v1_10")
@@ -500,33 +513,27 @@ public class Portal {
         return 4;
     }
 
-    public Region getRegion() {
-        return region;
+    public Region getRegion() {return region;}
+
+    public void setRegion(Region region) {this.region = region;}
+
+    public String getPortalId() {return portalId.toLowerCase();}
+
+    private void setPortalId(String portalId) {this.portalId = portalId.toLowerCase();}
+
+    public SerializableLocation getTeleportLocation() {return teleportLocation;}
+
+    public void setTeleportLocation(Location teleportLocation) {this.teleportLocation = (teleportLocation == null ? null : new SerializableLocation(getPluginInstance(), teleportLocation));}
+
+    public void setTeleportLocation(SerializableLocation teleportLocation) {this.teleportLocation = teleportLocation;}
+
+    public SerializableLocation getServerSwitchLocation() {return serverSwitchLocation;}
+
+    public void setServerSwitchLocation(Location serverSwitchLocation) {
+        this.serverSwitchLocation = (serverSwitchLocation == null ? null : new SerializableLocation(getPluginInstance(), serverSwitchLocation));
     }
 
-    public void setRegion(Region region) {
-        this.region = region;
-    }
-
-    public String getPortalId() {
-        return portalId.toLowerCase();
-    }
-
-    private void setPortalId(String portalId) {
-        this.portalId = portalId.toLowerCase();
-    }
-
-    public SerializableLocation getTeleportLocation() {
-        return teleportLocation;
-    }
-
-    public void setTeleportLocation(Location teleportLocation) {
-        this.teleportLocation = new SerializableLocation(getPluginInstance(), teleportLocation);
-    }
-
-    public void setTeleportLocation(SerializableLocation teleportLocation) {
-        this.teleportLocation = teleportLocation;
-    }
+    public void setServerSwitchLocation(SerializableLocation serverSwitchLocation) {this.serverSwitchLocation = serverSwitchLocation;}
 
     public String getServerSwitchName() {
         return serverSwitchName;
@@ -588,29 +595,17 @@ public class Portal {
         return subTitle;
     }
 
-    public void setSubTitle(String subTitle) {
-        this.subTitle = subTitle;
-    }
+    public void setSubTitle(String subTitle) {this.subTitle = subTitle;}
 
-    public String getBarMessage() {
-        return barMessage;
-    }
+    public String getBarMessage() {return barMessage;}
 
-    public void setBarMessage(String barMessage) {
-        this.barMessage = barMessage;
-    }
+    public void setBarMessage(String barMessage) {this.barMessage = barMessage;}
 
-    public int getCooldown() {
-        return cooldown;
-    }
+    public int getCooldown() {return cooldown;}
 
-    public void setCooldown(int cooldown) {
-        this.cooldown = cooldown;
-    }
+    public void setCooldown(int cooldown) {this.cooldown = cooldown;}
 
-    private SimplePortals getPluginInstance() {
-        return pluginInstance;
-    }
+    private SimplePortals getPluginInstance() {return pluginInstance;}
 
     public int getDelay() {return delay;}
 

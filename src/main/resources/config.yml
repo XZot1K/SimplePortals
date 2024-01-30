@@ -1,3 +1,20 @@
+# All MySQL settings can be set and handled within this section
+mysql:
+  # Ensure this is the name used within your proxy's configuration
+  server-name: "lobby"
+  # The "use-ssl" feature enables SSL connection support
+  use-ssl: false
+  # Name of the database
+  database: "SimplePortals"
+  # Name of the table used for transfer data
+  transfer-table: "transfer"
+  # The "host" option can be left blank to determine whether mysql is used or not
+  # If disabled, SQLite will be used locally instead
+  host: ""
+  port: 3306
+  username: "root"
+  password: ""
+
 # If this is enabled, the management task loading and prioritizing the file form of the portals will be utilized.
 management-task: true
 # If this is enabled, when the player is teleport they will keep their current Yaw and Pitch.
@@ -48,11 +65,8 @@ titles:
 
 # Should players have a cooldown for portal usage?
 use-portal-cooldown: true
-# If this option is enabled, players who join the server will automatically be placed on portal cooldown
-# and thrown out of the portal region (if within a portal region).
-join-protection: true
-# This is the duration of the join protection cooldown.
-join-protection-cooldown: 5
+# If this option is enabled, players joining the server, spawning, or teleporting into a portal's region will be restricted from teleporting until they leave the portal area.
+portal-to-portal-protection: true
 # How long should the player have to wait in between portal usages in seconds?
 portal-cooldown-duration: 5
 # This is the force/multiplier of the portal throw back feature (Set to -1 or lower to disable).
