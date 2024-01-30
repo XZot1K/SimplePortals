@@ -192,10 +192,17 @@ public class Listeners implements Listener {
         checkPTPProtection(e.getPlayer());
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onPortal(EntityPortalEvent e) {
         if (!(e.getEntity() instanceof Player) || (e.getTo().getWorld().getEnvironment() != World.Environment.THE_END
                 && e.getTo().getWorld().getEnvironment() != World.Environment.NETHER)) return;
+
+        Portal portal = pluginInstance.getManager().getPortalAtLocation(e.getFrom());
+        if (portal != null && !portal.isDisabled()) {
+            e.setCancelled(true);
+            e.setTo(e.getFrom());
+            return;
+        }
 
         Location location = pluginInstance.getManager().handleVanillaPortalReplacements(e.getFrom().getWorld(),
                 (e.getTo().getWorld().getEnvironment() == World.Environment.NETHER) ? PortalType.NETHER : PortalType.ENDER);
@@ -264,6 +271,8 @@ public class Listeners implements Listener {
         if (portal == null || portal.isDisabled()) return;
 
         e.setCancelled(true);
+        e.setTo(e.getFrom());
+
         try {
             Method method = e.getClass().getMethod("setCanCreatePortal", Boolean.class);
             if (method != null) method.invoke(e, false);
