@@ -115,6 +115,8 @@ public class Listeners implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onPreJoin(AsyncPlayerPreLoginEvent e) {
+        if (pluginInstance.getDatabaseConnection() == null) return;
+
         final String serverName = pluginInstance.getConfig().getString("mysql.server-name"),
                 table = pluginInstance.getConfig().getString("mysql.transfer-table");
 
@@ -150,34 +152,6 @@ public class Listeners implements Listener {
                 } catch (SQLException ex) {pluginInstance.log(Level.WARNING, "There was an issue reading from the \"" + table + "\" table.");}
             });
         }
-
-        /*pluginInstance.getServer().getScheduler().runTaskAsynchronously(pluginInstance, () -> {
-            try (PreparedStatement statement = pluginInstance.getDatabaseConnection().prepareStatement("SELECT * FROM "
-                    + pluginInstance.getConfig().getString("mysql.table") + " WHERE uuid = '" + e.getUniqueId() + "';");
-                 ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    final String server = resultSet.getString("server"), coords = resultSet.getString("coordinates");
-
-               /* ManagementTask.TransferData foundData = getTransferDataQueue().parallelStream().filter(transferData ->
-                        transferData.getPlayerUniqueId().toString().equals(uuidString)).findAny().orElse(null);
-                if (foundData != null && !foundData.getDestination().toString().equals(coords)) {
-                    foundData.setDestination(new SerializableLocation(getPluginInstance(), coords));
-                    return;
-                }
-
-                injectTransferData(uuid, serverName, coords);
-
-
-                    PreparedStatement removalStatement = pluginInstance.getDatabaseConnection().prepareStatement("DELETE FROM "
-                            + pluginInstance.getConfig().getString("mysql.table") + " WHERE UUID = '" + e.getUniqueId() + "';");
-                    removalStatement.executeUpdate();
-                    removalStatement.close();
-                }
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-                pluginInstance.log(Level.WARNING, "This is just a warning stating that a market region has failed to load.");
-            }
-        });*/
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
