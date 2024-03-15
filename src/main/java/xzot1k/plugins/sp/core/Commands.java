@@ -40,7 +40,7 @@ public class Commands implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (command.getName().equalsIgnoreCase("simpleportals")) {
-            if (sender.hasPermission("simpleportals.use")) {
+            if (sender.hasPermission("simpleportals.use") || sender.hasPermission("simpleportals.use")) {
 
                 if (args.length >= 3 && (args[0].equalsIgnoreCase("setswitchlocation") || args[0].equalsIgnoreCase("ssl"))) {
                     initiatePortalSwitchLocationSet(sender, args);
@@ -145,7 +145,7 @@ public class Commands implements CommandExecutor {
 
 
     private void initiateDisableMessages(CommandSender sender, String portalName) {
-        if (!sender.hasPermission("simpleportals.dm")) {
+        if (!sender.hasPermission("simpleportals.dm") && !sender.hasPermission("simpleportals.admin")) {
             sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                     + getPluginInstance().getLangConfig().getString("no-permission-message")));
             return;
@@ -169,7 +169,7 @@ public class Commands implements CommandExecutor {
     }
 
     private void initiateDisable(CommandSender sender, String portalName) {
-        if (!sender.hasPermission("simpleportals.toggle")) {
+        if (!sender.hasPermission("simpleportals.toggle") && !sender.hasPermission("simpleportals.admin")) {
             sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                     + getPluginInstance().getLangConfig().getString("no-permission-message")));
             return;
@@ -197,7 +197,7 @@ public class Commands implements CommandExecutor {
     }
 
     private void initiateEnable(CommandSender sender, String portalName) {
-        if (!sender.hasPermission("simpleportals.toggle")) {
+        if (!sender.hasPermission("simpleportals.toggle") && !sender.hasPermission("simpleportals.admin")) {
             sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                     + getPluginInstance().getLangConfig().getString("no-permission-message")));
             return;
@@ -225,7 +225,7 @@ public class Commands implements CommandExecutor {
     }
 
     private void sendPortalCommands(CommandSender sender, String portalName) {
-        if (!sender.hasPermission("simpleportals.viewcommands")) {
+        if (!sender.hasPermission("simpleportals.viewcommands") && !sender.hasPermission("simpleportals.admin")) {
             sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                     + getPluginInstance().getLangConfig().getString("no-permission-message")));
             return;
@@ -244,7 +244,7 @@ public class Commands implements CommandExecutor {
     }
 
     private void initiateFill(CommandSender sender, String portalName, String materialString) {
-        if (!sender.hasPermission("simpleportals.fill")) {
+        if (!sender.hasPermission("simpleportals.fill") && !sender.hasPermission("simpleportals.admin")) {
             sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                     + getPluginInstance().getLangConfig().getString("no-permission-message")));
             return;
@@ -293,7 +293,7 @@ public class Commands implements CommandExecutor {
     }
 
     private void setMessage(CommandSender sender, String[] args) {
-        if (!sender.hasPermission("simpleportals.message")) {
+        if (!sender.hasPermission("simpleportals.message") && !sender.hasPermission("simpleportals.admin")) {
             sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                     + getPluginInstance().getLangConfig().getString("no-permission-message")));
             return;
@@ -332,7 +332,7 @@ public class Commands implements CommandExecutor {
     private void addCommand(CommandSender sender, String[] args) {
         if (sender instanceof Player) {
             Player player = (Player) sender;
-            if (!player.hasPermission("simpleportals.addcommand")) {
+            if (!player.hasPermission("simpleportals.addcommand") && !sender.hasPermission("simpleportals.admin")) {
                 player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                         + getPluginInstance().getLangConfig().getString("no-permission-message")));
                 return;
@@ -361,7 +361,7 @@ public class Commands implements CommandExecutor {
     private void clearCommands(CommandSender sender, String portalName) {
         if (sender instanceof Player) {
             Player player = (Player) sender;
-            if (!player.hasPermission("simpleportals.clearcommands")) {
+            if (!player.hasPermission("simpleportals.clearcommands") && !sender.hasPermission("simpleportals.admin")) {
                 player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                         + getPluginInstance().getLangConfig().getString("no-permission-message")));
                 return;
@@ -385,7 +385,7 @@ public class Commands implements CommandExecutor {
     private void toggleCommandOnly(CommandSender sender, String portalName) {
         if (sender instanceof Player) {
             Player player = (Player) sender;
-            if (!player.hasPermission("simpleportals.togglecommandonly")) {
+            if (!player.hasPermission("simpleportals.togglecommandonly") && !sender.hasPermission("simpleportals.admin")) {
                 player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                         + getPluginInstance().getLangConfig().getString("no-permission-message")));
                 return;
@@ -415,7 +415,7 @@ public class Commands implements CommandExecutor {
         }
 
         Player player = (Player) sender;
-        if (!player.hasPermission("simpleportals.setswitchlocation") || !player.hasPermission("simpleportals.ssl")) {
+        if ((!player.hasPermission("simpleportals.setswitchlocation") || !player.hasPermission("simpleportals.ssl")) && !sender.hasPermission("simpleportals.admin")) {
             player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                     + getPluginInstance().getLangConfig().getString("no-permission-message")));
             return;
@@ -456,7 +456,7 @@ public class Commands implements CommandExecutor {
     private void initiatePortalLocationSet(CommandSender sender, String portalName) {
         if (sender instanceof Player) {
             Player player = (Player) sender;
-            if (!player.hasPermission("simpleportals.setlocation") || !player.hasPermission("simpleportals.sl")) {
+            if ((!player.hasPermission("simpleportals.setlocation") || !player.hasPermission("simpleportals.sl")) && !sender.hasPermission("simpleportals.admin")) {
                 player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                         + getPluginInstance().getLangConfig().getString("no-permission-message")));
                 return;
@@ -480,7 +480,7 @@ public class Commands implements CommandExecutor {
     private void initiatePortalLocationSet(CommandSender sender, String portalName, String otherPortalName) {
         if (sender instanceof Player) {
             Player player = (Player) sender;
-            if (!player.hasPermission("simpleportals.setlocation") || !player.hasPermission("simpleportals.sl")) {
+            if ((!player.hasPermission("simpleportals.setlocation") || !player.hasPermission("simpleportals.sl")) && !sender.hasPermission("simpleportals.admin")) {
                 player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                         + getPluginInstance().getLangConfig().getString("no-permission-message")));
                 return;
@@ -521,7 +521,7 @@ public class Commands implements CommandExecutor {
     }
 
     private void initiatePortalCooldown(CommandSender sender, String portalName, String cooldownInSeconds) {
-        if (!sender.hasPermission("simpleportals.changecooldown")) {
+        if (!sender.hasPermission("simpleportals.changecooldown") && !sender.hasPermission("simpleportals.admin")) {
             sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                     + getPluginInstance().getLangConfig().getString("no-permission-message")));
             return;
@@ -553,7 +553,7 @@ public class Commands implements CommandExecutor {
     private void initiateRelocate(CommandSender sender, String portalName) {
         if (sender instanceof Player) {
             Player player = (Player) sender;
-            if (!player.hasPermission("simpleportals.relocate") || !player.hasPermission("simpleportals.rl")) {
+            if ((!player.hasPermission("simpleportals.relocate") || !player.hasPermission("simpleportals.rl")) && !sender.hasPermission("simpleportals.admin")) {
                 player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                         + getPluginInstance().getLangConfig().getString("no-permission-message")));
                 return;
@@ -585,7 +585,7 @@ public class Commands implements CommandExecutor {
     private void initiatePortalRegion(CommandSender sender, String portalName) {
         if (sender instanceof Player) {
             Player player = (Player) sender;
-            if (!player.hasPermission("simpleportals.showregion") || !player.hasPermission("simpleportals.sr")) {
+            if ((!player.hasPermission("simpleportals.showregion") || !player.hasPermission("simpleportals.sr")) && !sender.hasPermission("simpleportals.admin")) {
                 player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                         + getPluginInstance().getLangConfig().getString("no-permission-message")));
                 return;
@@ -605,7 +605,7 @@ public class Commands implements CommandExecutor {
     }
 
     private void initiateInfo(CommandSender sender) {
-        if (!sender.hasPermission("simpleportals.info")) {
+        if (!sender.hasPermission("simpleportals.info") && !sender.hasPermission("simpleportals.admin")) {
             sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                     + getPluginInstance().getLangConfig().getString("no-permission-message")));
             return;
@@ -621,7 +621,7 @@ public class Commands implements CommandExecutor {
     }
 
     private void initiateReload(CommandSender sender) {
-        if (!sender.hasPermission("simpleportals.reload")) {
+        if (!sender.hasPermission("simpleportals.reload") && !sender.hasPermission("simpleportals.admin")) {
             sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                     + getPluginInstance().getLangConfig().getString("no-permission-message")));
             return;
@@ -639,7 +639,7 @@ public class Commands implements CommandExecutor {
     }
 
     private void initiateList(CommandSender sender) {
-        if (!sender.hasPermission("simpleportals.list")) {
+        if (!sender.hasPermission("simpleportals.list") && !sender.hasPermission("simpleportals.admin")) {
             sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                     + getPluginInstance().getLangConfig().getString("no-permission-message")));
             return;
@@ -679,7 +679,7 @@ public class Commands implements CommandExecutor {
     }
 
     private void initiateSwitchServerSet(CommandSender sender, String portalName, String serverName) {
-        if (!sender.hasPermission("simpleportals.switchserver") || !sender.hasPermission("simpleportals.ss")) {
+        if ((!sender.hasPermission("simpleportals.switchserver") || !sender.hasPermission("simpleportals.ss")) && !sender.hasPermission("simpleportals.admin")) {
             sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                     + getPluginInstance().getLangConfig().getString("no-permission-message")));
             return;
@@ -698,7 +698,7 @@ public class Commands implements CommandExecutor {
     }
 
     private void initiatePortalDeletion(CommandSender sender, String portalName) {
-        if (!sender.hasPermission("simpleportals.delete")) {
+        if (!sender.hasPermission("simpleportals.delete") && !sender.hasPermission("simpleportals.admin")) {
             sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                     + getPluginInstance().getLangConfig().getString("no-permission-message")));
             return;
@@ -723,7 +723,7 @@ public class Commands implements CommandExecutor {
         if (sender instanceof Player) {
             Player player = (Player) sender;
 
-            if (!player.hasPermission("simpleportals.create")) {
+            if (!player.hasPermission("simpleportals.create") && !sender.hasPermission("simpleportals.admin")) {
                 player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                         + getPluginInstance().getLangConfig().getString("no-permission-message")));
                 return;
@@ -773,7 +773,7 @@ public class Commands implements CommandExecutor {
         if (sender instanceof Player) {
             Player player = (Player) sender;
 
-            if (!player.hasPermission("simpleportals.selectionmode") && !player.hasPermission("simpleportals.sm")) {
+            if ((!player.hasPermission("simpleportals.selectionmode") && !player.hasPermission("simpleportals.sm")) && !sender.hasPermission("simpleportals.admin")) {
                 player.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                         + getPluginInstance().getLangConfig().getString("no-permission-message")));
                 return;
