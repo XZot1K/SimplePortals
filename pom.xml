@@ -10,7 +10,7 @@
 
     <groupId>xzot1k.plugins.sp</groupId>
     <artifactId>SimplePortals</artifactId>
-    <version>1.7.5</version>
+    <version>1.7.6</version>
     <packaging>jar</packaging>
 
     <name>SimplePortals</name>
@@ -108,7 +108,7 @@
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
-            <version>1.20.4-R0.1-SNAPSHOT</version>
+            <version>1.20.6-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

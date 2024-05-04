@@ -196,7 +196,11 @@ public class SimplePortals extends JavaPlugin {
     @Override
     public void onEnable() {
         pluginInstance = this;
-        setServerVersion(getServer().getClass().getPackage().getName().replace(".", ",").split(",")[3]);
+
+        // 1.20.5-1.20.6 changed packaging, so the server version is formatted as v1_20_6R1
+        String[] args = getServer().getClass().getPackage().getName().split("\\.");
+        setServerVersion(args.length > 3 ? args[3] : "v" + getServer().getBukkitVersion().replace("-R0.", "R")
+                .replace("-SNAPSHOT", "").replace(".", "_"));
 
         File file = new File(getDataFolder(), "/config.yml");
         if (file.exists()) {

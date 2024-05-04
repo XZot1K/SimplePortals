@@ -17,7 +17,7 @@ public class PH_Latest implements ParticleHandler {
         Particle particle = Particle.valueOf(enumParticle);
         if (!SimplePortals.getPluginInstance().getServerVersion().startsWith("v1_8") && !SimplePortals.getPluginInstance().getServerVersion().startsWith("v1_9")
                 && !SimplePortals.getPluginInstance().getServerVersion().startsWith("v1_10") && !SimplePortals.getPluginInstance().getServerVersion().startsWith("v1_11")
-                && !SimplePortals.getPluginInstance().getServerVersion().startsWith("v1_12") && particle == Particle.REDSTONE)
+                && !SimplePortals.getPluginInstance().getServerVersion().startsWith("v1_12") && (particle.name().equals("REDSTONE") || particle.name().equals("DUST")))
             player.spawnParticle(particle, location, amount, offsetX, offsetY, offsetZ, new Particle.DustOptions(Color.fromBGR(255, 0, 0), 1));
         else player.spawnParticle(particle, location, amount, offsetX, offsetY, offsetZ, 0);
     }
@@ -27,7 +27,7 @@ public class PH_Latest implements ParticleHandler {
         Particle particle = Particle.valueOf(enumParticle);
         if (!SimplePortals.getPluginInstance().getServerVersion().startsWith("v1_8") && !SimplePortals.getPluginInstance().getServerVersion().startsWith("v1_9")
                 && !SimplePortals.getPluginInstance().getServerVersion().startsWith("v1_10") && !SimplePortals.getPluginInstance().getServerVersion().startsWith("v1_11")
-                && !SimplePortals.getPluginInstance().getServerVersion().startsWith("v1_12") && particle == Particle.REDSTONE)
+                && !SimplePortals.getPluginInstance().getServerVersion().startsWith("v1_12") && (particle.name().equals("REDSTONE") || particle.name().equals("DUST")))
             location.getWorld().spawnParticle(particle, location, amount, offsetX, offsetY, offsetZ, new Particle.DustOptions(Color.fromBGR(255, 0, 0), 1));
         else location.getWorld().spawnParticle(particle, location, amount, offsetX, offsetY, offsetZ, 0);
     }
