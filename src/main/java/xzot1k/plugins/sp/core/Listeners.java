@@ -343,8 +343,8 @@ public class Listeners implements Listener {
                         pluginInstance.getConfig().getBoolean("use-portal-cooldown") &&
                         pluginInstance.getManager().isPlayerOnCooldown(player, "normal", pluginInstance.getConfig().getInt("portal-cooldown-duration"));
                 final boolean hasPermission = pluginInstance.getConfig().getBoolean("bypass-portal-permissions") || 
-                        player.hasPermission("simpleportals.portal." + portal.getPortalId() ||
-                        player.hasPermission("simpleportals.portals." + portal.getPortalId();
+                        player.hasPermission("simpleportals.portal." + portal.getPortalId()) ||
+                        player.hasPermission("simpleportals.portals." + portal.getPortalId());
 
                 if (onCooldown || !hasPermission) {
                     double tv = pluginInstance.getConfig().getDouble("throw-velocity");
