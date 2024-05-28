@@ -338,14 +338,15 @@ public class Listeners implements Listener {
 
             if (isPlayer) {
                 final Player player = (Player) entity;
-                final boolean canBypassCooldown = player.hasPermission("simpleportals.cdbypass"),
-                        cooldownFail = (pluginInstance.getConfig().getBoolean("use-portal-cooldown")
-                                && (pluginInstance.getManager().isPlayerOnCooldown(player, "normal", pluginInstance.getConfig().getInt("portal-cooldown-duration"))) && !canBypassCooldown),
-                        permissionFail = !pluginInstance.getConfig().getBoolean("bypass-portal-permissions") && (!player.hasPermission("simpleportals.portal." + portal.getPortalId())
-                                && !player.hasPermission("simpleportals.portals." + portal.getPortalId()) && !player.hasPermission("simpleportals.portal.*")
-                                && !player.hasPermission("simpleportals.portals.*"));
+                final boolean canBypassCooldown = player.hasPermission("simpleportals.cdbypass");
+                final boolean onCooldown = !canBypassCooldown && 
+                        pluginInstance.getConfig().getBoolean("use-portal-cooldown") &&
+                        pluginInstance.getManager().isPlayerOnCooldown(player, "normal", pluginInstance.getConfig().getInt("portal-cooldown-duration"));
+                final boolean hasPermission = pluginInstance.getConfig().getBoolean("bypass-portal-permissions") || 
+                        player.hasPermission("simpleportals.portal." + portal.getPortalId() ||
+                        player.hasPermission("simpleportals.portals." + portal.getPortalId();
 
-                if (cooldownFail || permissionFail) {
+                if (onCooldown || !hasPermission) {
                     double tv = pluginInstance.getConfig().getDouble("throw-velocity");
                     if (!(tv <= -1)) {
                         final Vector direction = new Vector(fromLocation.getX() - toLocation.getX(),
@@ -354,7 +355,7 @@ public class Listeners implements Listener {
                         player.setVelocity(direction);
                     }
 
-                    String message = cooldownFail ? pluginInstance.getLangConfig().getString("enter-cooldown-message")
+                    String message = onCooldown ? pluginInstance.getLangConfig().getString("enter-cooldown-message")
                             : pluginInstance.getLangConfig().getString("enter-no-permission-message");
                     if (message != null && !message.equalsIgnoreCase(""))
                         player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
