@@ -29,7 +29,7 @@ public class TabCompleter implements org.bukkit.command.TabCompleter {
     @Override
     public List<String> onTabComplete(CommandSender commandSender, Command command, String label, String[] args) {
         //removed command.getName().equalsIgnoreCase("simpleportals") && because not necessary
-        if (commandSender.hasPermission("simpleportals.use")) {
+        if (commandSender.hasPermission("simpleportals.use") || commandSender.hasPermission("simpleportals.admin")) {
             values.clear();
             partialValues.clear();
             if (args.length == 1) {
