@@ -354,7 +354,7 @@ public class Listeners implements Listener {
                         player.setVelocity(direction);
                     }
 
-                    String message = onCooldown ? pluginInstance.getLangConfig().getString("enter-cooldown-message")
+                    String message = cooldownFail ? pluginInstance.getLangConfig().getString("enter-cooldown-message")
                             : pluginInstance.getLangConfig().getString("enter-no-permission-message");
                     if (message != null && !message.equalsIgnoreCase(""))
                         player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
