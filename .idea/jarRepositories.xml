@@ -2,6 +2,11 @@
 <project version="4">
   <component name="RemoteRepositoriesConfiguration">
     <remote-repository>
+      <option name="id" value="paper-repo" />
+      <option name="name" value="paper-repo" />
+      <option name="url" value="https://repo.papermc.io/repository/maven-public/" />
+    </remote-repository>
+    <remote-repository>
       <option name="id" value="central" />
       <option name="name" value="Central Repository" />
       <option name="url" value="https://repo.maven.apache.org/maven2" />
@@ -15,6 +20,11 @@
       <option name="id" value="spigotmc-repo" />
       <option name="name" value="spigotmc-repo" />
       <option name="url" value="https://hub.spigotmc.org/nexus/content/repositories/snapshots/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="my-local-repo" />
+      <option name="name" value="my-local-repo" />
+      <option name="url" value="file://$MAVEN_REPOSITORY$" />
     </remote-repository>
     <remote-repository>
       <option name="id" value="central" />

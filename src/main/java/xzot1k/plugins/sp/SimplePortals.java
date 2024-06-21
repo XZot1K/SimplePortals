@@ -16,7 +16,6 @@ import xzot1k.plugins.sp.core.Commands;
 import xzot1k.plugins.sp.core.Listeners;
 import xzot1k.plugins.sp.core.TabCompleter;
 import xzot1k.plugins.sp.core.tasks.ManagementTask;
-import xzot1k.plugins.sp.core.utils.UpdateChecker;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -238,13 +237,6 @@ public class SimplePortals extends JavaPlugin {
             setManagementTask(new ManagementTask(this));
             getManagementTask().runTaskTimerAsynchronously(this, 0, 200);
         }
-
-        try {
-            final UpdateChecker updateChecker = new UpdateChecker(this, 56772);
-            if (updateChecker.checkForUpdates()) log(Level.INFO, "The version " + getDescription().getVersion()
-                    + " doesn't match the latest version!");
-            else log(Level.INFO, "Everything looks like it is up to date!");
-        } catch (Exception e) {log(Level.INFO, "Unable to check for updates ('" + e.getMessage() + "').");}
     }
 
     public void log(Level level, String text) {getServer().getLogger().log(level, "[" + getDescription().getName() + "] " + text);}

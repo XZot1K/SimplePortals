@@ -16,69 +16,20 @@
     <name>SimplePortals</name>
 
     <properties>
-        <java.version>1.8</java.version>
+        <java.version>8</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-    <url>https://www.zotware.dev/</url>
 
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version>
+                <version>3.13.0</version>
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
-                    <compilerArgument>-proc:none</compilerArgument>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <version>3.5.0</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                            <createDependencyReducedPom>false</createDependencyReducedPom>
-                            <relocations>
-                                <relocation>
-                                    <pattern>redis.clients</pattern>
-                                    <shadedPattern>xzot1k.plugins.sp.redis.clients</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org.jetbrains</pattern>
-                                    <shadedPattern>xzot1k.plugins.sp.org.jetbrains</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>org.intellij</pattern>
-                                    <shadedPattern>xzot1k.plugins.sp.org.intellij</shadedPattern>
-                                </relocation>
-                            </relocations>
-                            <filters>
-                                <filter>
-                                    <artifact>*:*</artifact>
-                                    <excludeDefaults>false</excludeDefaults>
-                                    <includes>
-                                        <include>xzot1k.plugins.sp.redis.clients</include>
-                                    </includes>
-                                </filter>
-                                <filter>
-                                    <artifact>*:*</artifact>
-                                    <excludeDefaults>false</excludeDefaults>
-                                    <includes>
-                                        <include>xzot1k.plugins.sp.org.jetbrains</include>
-                                        <include>xzot1k.plugins.sp.org.intellij</include>
-                                    </includes>
-                                </filter>
-                            </filters>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
         <resources>
@@ -91,38 +42,17 @@
 
     <repositories>
         <repository>
-            <id>spigotmc-repo</id>
-            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
-        </repository>
-        <repository>
-            <id>bungeecord-repo</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </repository>
-        <repository>
-            <id>sonatype</id>
-            <url>https://oss.sonatype.org/content/groups/public/</url>
+            <id>paper-repo</id>
+            <url>https://repo.papermc.io/repository/maven-public/</url>
         </repository>
     </repositories>
 
     <dependencies>
         <dependency>
-            <groupId>org.spigotmc</groupId>
-            <artifactId>spigot-api</artifactId>
-            <version>1.20.6-R0.1-SNAPSHOT</version>
+            <groupId>io.papermc.paper</groupId>
+            <artifactId>paper-api</artifactId>
+            <version>1.21-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>net.md-5</groupId>
-            <artifactId>bungeecord-api</artifactId>
-            <version>1.20-R0.1-SNAPSHOT</version>
-            <type>jar</type>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-            <version>23.0.0</version>
-            <scope>compile</scope>
         </dependency>
     </dependencies>
 </project>
