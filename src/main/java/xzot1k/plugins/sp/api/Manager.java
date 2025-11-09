@@ -460,7 +460,7 @@ public class Manager {
         final String sound = pluginInstance.getConfig().getString("teleport-sound");
         if (sound != null && !sound.equalsIgnoreCase("")) {
             final String soundFixed = sound.toUpperCase().replace(" ", "_").replace("-", "_");
-            for (int i = -1; ++i < Sound.values().length; ) {
+            for (int i = -1; ++i < SOUNDS.length; ) {
                 Sound currentSound = SOUNDS[i];
                 if (currentSound.name().equalsIgnoreCase(soundFixed)) {
                     location.getWorld().playSound(location, currentSound, 1, 1);
