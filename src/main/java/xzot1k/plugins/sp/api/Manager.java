@@ -47,6 +47,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Manager {
+
+    private static final Sound[] SOUNDS = Sound.values();
+
     private final SimplePortals pluginInstance;
     private final HashMap<UUID, Region> currentSelections;
     private final HashMap<UUID, Boolean> selectionMode;
@@ -458,7 +461,7 @@ public class Manager {
         if (sound != null && !sound.equalsIgnoreCase("")) {
             final String soundFixed = sound.toUpperCase().replace(" ", "_").replace("-", "_");
             for (int i = -1; ++i < Sound.values().length; ) {
-                Sound currentSound = Sound.values()[i];
+                Sound currentSound = SOUNDS[i];
                 if (currentSound.name().equalsIgnoreCase(soundFixed)) {
                     location.getWorld().playSound(location, currentSound, 1, 1);
                     break;
