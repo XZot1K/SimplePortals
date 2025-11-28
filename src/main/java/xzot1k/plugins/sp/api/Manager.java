@@ -42,7 +42,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -58,7 +57,7 @@ public class Manager {
     private final HashMap<UUID, HashMap<String, BukkitTask>> tasks;
     private final HashMap<UUID, SerializableLocation> smartTransferMap;
     private final HashMap<UUID, String> portalLinkMap;
-    private final ConcurrentHashMap<String, Portal> portalMap;
+    private final HashMap<String, Portal> portalMap;
     // Map<worldUUID, Map<chunkKey, List<Portal>>>
     private final Map<UUID, Map<Long, List<Portal>>> portalChunkIndex;
     private final HashMap<UUID, Portal> entitiesInTeleportationAndPortals;
@@ -73,8 +72,8 @@ public class Manager {
 
     public Manager(SimplePortals pluginInstance) {
         this.pluginInstance = pluginInstance;
-        portalMap = new ConcurrentHashMap<>();
-        portalChunkIndex = new ConcurrentHashMap<>();
+        portalMap = new HashMap<>();
+        portalChunkIndex = new HashMap<>();
         currentSelections = new HashMap<>();
         selectionMode = new HashMap<>();
         playerPortalCooldowns = new HashMap<>();
@@ -134,20 +133,28 @@ public class Manager {
         final File portalDirectory = new File(getPluginInstance().getDataFolder(), "/portals");
         File[] listFiles = portalDirectory.listFiles();
 
-        if (listFiles != null) {
-            for (File file : listFiles) {
-                if (file == null || !file.getName().toLowerCase().endsWith(".yml")) continue;
-                file.renameTo(new File(getPluginInstance().getDataFolder(), "/portals/" + file.getName().toLowerCase()));
+        if (listFiles == null) return;
 
-                try {
-                    Portal portal = getPortalFromFile(file.getName().toLowerCase().replace(".yml", ""));
-                    portalMap.put(portal.getPortalId(), portal);
-                    indexPortal(portal);
-                } catch (PortalFormException e) {
-                    getPluginInstance().log(Level.WARNING, e.getMessage());
-                }
-            }
+        for (File file : listFiles) {
+            loadPortal(file);
         }
+    }
+
+    public void loadPortal(File file) {
+        if (file == null || !file.getName().toLowerCase().endsWith(".yml")) return;
+        file.renameTo(new File(getPluginInstance().getDataFolder(), "/portals/" + file.getName().toLowerCase()));
+
+        try {
+            Portal portal = getPortalFromFile(file.getName().toLowerCase().replace(".yml", ""));
+            loadPortal(portal);
+        } catch (PortalFormException e) {
+            getPluginInstance().log(Level.WARNING, e.getMessage());
+        }
+    }
+
+    public void loadPortal(Portal portal) {
+        portalMap.put(portal.getPortalId(), portal);
+        indexPortal(portal);
     }
 
     private void indexPortal(Portal portal) {
@@ -980,7 +987,7 @@ public class Manager {
         return pluginInstance;
     }
 
-    public ConcurrentHashMap<String, Portal> getPortalMap() {
+    public HashMap<String, Portal> getPortalMap() {
         return portalMap;
     }
 

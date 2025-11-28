@@ -755,6 +755,7 @@ public class Commands implements CommandExecutor {
             Portal newPortal = new Portal(getPluginInstance(), portalName, region);
             newPortal.setTeleportLocation(player.getLocation().clone());
             newPortal.save();
+            getPluginInstance().getManager().loadPortal(newPortal);
 
             newPortal.displayRegion(player);
             getPluginInstance().getManager().clearCurrentSelection(player);
