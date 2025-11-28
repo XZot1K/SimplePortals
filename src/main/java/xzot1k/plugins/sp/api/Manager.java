@@ -58,6 +58,8 @@ public class Manager {
     private final HashMap<UUID, SerializableLocation> smartTransferMap;
     private final HashMap<UUID, String> portalLinkMap;
     private final HashMap<String, Portal> portalMap;
+    // Map<worldUUID, Map<chunkKey, List<Portal>>>
+    private final Map<UUID, Map<Long, List<Portal>>> portalChunkIndex;
     private final HashMap<UUID, Portal> entitiesInTeleportationAndPortals;
     private final HashMap<UUID, TeleportTask> teleportTasks;
 
@@ -71,6 +73,7 @@ public class Manager {
     public Manager(SimplePortals pluginInstance) {
         this.pluginInstance = pluginInstance;
         portalMap = new HashMap<>();
+        portalChunkIndex = new HashMap<>();
         currentSelections = new HashMap<>();
         selectionMode = new HashMap<>();
         playerPortalCooldowns = new HashMap<>();
@@ -124,21 +127,68 @@ public class Manager {
     }
 
     public void loadPortals() {
+        portalMap.clear();
+        portalChunkIndex.clear();
+
         final File portalDirectory = new File(getPluginInstance().getDataFolder(), "/portals");
         File[] listFiles = portalDirectory.listFiles();
 
-        if (listFiles != null)
-            for (File file : listFiles) {
-                if (file == null || !file.getName().toLowerCase().endsWith(".yml")) continue;
-                file.renameTo(new File(getPluginInstance().getDataFolder(), "/portals/" + file.getName().toLowerCase()));
+        if (listFiles == null) return;
 
-                try {
-                    Portal portal = getPortalFromFile(file.getName().toLowerCase().replace(".yml", ""));
-                    getPortalMap().put(portal.getPortalId(), portal);
-                } catch (PortalFormException e) {
-                    getPluginInstance().log(Level.WARNING, e.getMessage());
-                }
+        for (File file : listFiles) {
+            loadPortal(file);
+        }
+    }
+
+    public void loadPortal(File file) {
+        if (file == null || !file.getName().toLowerCase().endsWith(".yml")) return;
+        file.renameTo(new File(getPluginInstance().getDataFolder(), "/portals/" + file.getName().toLowerCase()));
+
+        try {
+            Portal portal = getPortalFromFile(file.getName().toLowerCase().replace(".yml", ""));
+            loadPortal(portal);
+        } catch (PortalFormException e) {
+            getPluginInstance().log(Level.WARNING, e.getMessage());
+        }
+    }
+
+    public void loadPortal(Portal portal) {
+        portalMap.put(portal.getPortalId(), portal);
+        indexPortal(portal);
+    }
+
+    private void indexPortal(Portal portal) {
+        Region region = portal.getRegion();
+        SerializableLocation p1 = region.getPoint1();
+        SerializableLocation p2 = region.getPoint2();
+
+        World world = Bukkit.getWorld(p1.getWorldName());
+        if (world == null) {
+            pluginInstance.getLogger().log(Level.WARNING,
+                    "World " + p1.getWorldName() + " not found for portal '"
+                            + portal.getPortalId() + "'");
+            return;
+        }
+
+        UUID worldId = world.getUID();
+
+        Map<Long, List<Portal>> worldMap =
+                portalChunkIndex.computeIfAbsent(worldId, k -> new HashMap<>());
+
+        double p1x = p1.getX(), p1z = p1.getZ();
+        double p2x = p2.getX(), p2z = p2.getZ();
+
+        int minChunkX = (int) Math.floor(Math.min(p1x, p2x)) >> 4;
+        int maxChunkX = (int) Math.floor(Math.max(p1x, p2x)) >> 4;
+        int minChunkZ = (int) Math.floor(Math.min(p1z, p2z)) >> 4;
+        int maxChunkZ = (int) Math.floor(Math.max(p1z, p2z)) >> 4;
+
+        for (int cx = minChunkX; cx <= maxChunkX; cx++) {
+            for (int cz = minChunkZ; cz <= maxChunkZ; cz++) {
+                long key = toChunkKey(cx, cz);
+                worldMap.computeIfAbsent(key, k -> new ArrayList<>()).add(portal);
             }
+        }
     }
 
     /**
@@ -357,9 +407,36 @@ public class Manager {
      * @return The portal found (Can return NULL).
      */
     public Portal getPortalAtLocation(Location location) {
-        Map.Entry<String, Portal> foundEntry = getPortalMap().entrySet().parallelStream().filter(entry ->
-                entry.getValue().getRegion().isInRegion(location)).findFirst().orElse(null);
-        return (foundEntry != null ? foundEntry.getValue() : null);
+        if (location == null || location.getWorld() == null) {
+            return null;
+        }
+
+        UUID worldId = location.getWorld().getUID();
+        Map<Long, List<Portal>> worldMap = portalChunkIndex.get(worldId);
+
+        // No portals in world
+        if (worldMap == null) {
+            return null;
+        }
+
+        int cx = location.getBlockX() >> 4;
+        int cz = location.getBlockZ() >> 4;
+        long key = toChunkKey(cx, cz);
+
+        List<Portal> portals = worldMap.get(key);
+
+        // No portals in chunk
+        if (portals == null) {
+            return null;
+        }
+
+        for (Portal p : portals) {
+            if (p.getRegion().isInRegion(location)) {
+                return p;
+            }
+        }
+
+        return null;
     }
 
 
@@ -381,8 +458,8 @@ public class Manager {
      * @return The portal object instance.
      */
     public Portal getPortal(String portalId) {
-        return ((!getPortalMap().isEmpty() && getPortalMap().containsKey(portalId.toLowerCase()))
-                ? getPortalMap().get(portalId.toLowerCase()) : null);
+        return ((!portalMap.isEmpty() && portalMap.containsKey(portalId.toLowerCase()))
+                ? portalMap.get(portalId.toLowerCase()) : null);
     }
 
     /**
@@ -443,7 +520,7 @@ public class Manager {
      * @return Whether the portal object exists.
      */
     public boolean doesPortalExist(String portalName) {
-        return (!getPortalMap().isEmpty() && getPortalMap().containsKey(portalName.toLowerCase()));
+        return (!portalMap.isEmpty() && portalMap.containsKey(portalName.toLowerCase()));
     }
 
     /**
@@ -765,7 +842,7 @@ public class Manager {
      */
     public List<String> getPortalNames(boolean withCoordinates) {
         return new ArrayList<String>() {{
-            for (Portal portal : getPortalMap().values()) {
+            for (Portal portal : portalMap.values()) {
                 if (!withCoordinates) {
                     add(portal.getPortalId().toLowerCase());
                     continue;
@@ -853,6 +930,10 @@ public class Manager {
 
         getCurrentSelections().put(player.getUniqueId(), region);
         return true;
+    }
+
+    private long toChunkKey(int x, int z) {
+        return (((long) x) << 32) ^ (z & 0xffffffffL);
     }
 
     // getters & setters
