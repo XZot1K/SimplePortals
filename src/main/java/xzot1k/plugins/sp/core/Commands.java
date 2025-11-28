@@ -19,7 +19,6 @@ import xzot1k.plugins.sp.SimplePortals;
 import xzot1k.plugins.sp.api.objects.Portal;
 import xzot1k.plugins.sp.api.objects.Region;
 import xzot1k.plugins.sp.api.objects.SerializableLocation;
-import xzot1k.plugins.sp.core.tasks.ManagementTask;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -628,10 +627,8 @@ public class Commands implements CommandExecutor {
         }
 
         if (getPluginInstance().getConfig().getBoolean("management-task")) {
-            getPluginInstance().getManagementTask().cancel();
             getPluginInstance().reloadConfigs();
-            getPluginInstance().setManagementTask(new ManagementTask(getPluginInstance()));
-            getPluginInstance().getManagementTask().runTaskTimerAsynchronously(getPluginInstance(), 0, 200);
+            getPluginInstance().getManager().loadPortals();
         } else getPluginInstance().reloadConfigs();
 
         sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")

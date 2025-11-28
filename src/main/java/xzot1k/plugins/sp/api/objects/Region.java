@@ -7,8 +7,6 @@ package xzot1k.plugins.sp.api.objects;
 import org.bukkit.Location;
 import xzot1k.plugins.sp.SimplePortals;
 
-import java.util.Objects;
-
 public class Region {
 
     private final SimplePortals pluginInstance;
@@ -26,18 +24,33 @@ public class Region {
         setPoint2(point2);
     }
 
-    public boolean isInRegion(Location location) {
-        if (getPoint1() == null || getPoint2() == null) return false;
-        Location point1 = getPoint1().asBukkitLocation(), point2 = getPoint2().asBukkitLocation();
-        if (Objects.requireNonNull(point1.getWorld()).getName().equalsIgnoreCase(Objects.requireNonNull(location.getWorld()).getName())
-                && Objects.requireNonNull(point2.getWorld()).getName().equalsIgnoreCase(location.getWorld().getName())) {
-            final double highestX = Math.max(point1.getX(), point2.getX()), highestY = Math.max(point1.getY(), point2.getY()), highestZ = Math.max(point1.getZ(), point2.getZ()),
-                    lowestX = Math.min(point1.getX(), point2.getX()), lowestY = Math.min(point1.getY(), point2.getY()), lowestZ = Math.min(point1.getZ(), point2.getZ());
-            return (highestX >= location.getBlockX() && lowestX <= location.getBlockX()) && (highestY >= location.getBlockY()
-                    && lowestY <= location.getBlockY()) && (highestZ >= location.getBlockZ() && lowestZ <= location.getBlockZ());
+    public boolean isInRegion(Location loc) {
+        if (loc == null || loc.getWorld() == null) {
+            return false;
+        }
+        if (point1 == null || point2 == null) {
+            return false;
         }
 
-        return false;
+        if (!point1.getWorldName().equalsIgnoreCase(loc.getWorld().getName())) {
+            return false;
+        }
+
+        int x = loc.getBlockX();
+        int y = loc.getBlockY();
+        int z = loc.getBlockZ();
+
+        double x1 = point1.getX(), x2 = point2.getX();
+        double y1 = point1.getY(), y2 = point2.getY();
+        double z1 = point1.getZ(), z2 = point2.getZ();
+
+        double minX = Math.min(x1, x2), maxX = Math.max(x1, x2);
+        double minY = Math.min(y1, y2), maxY = Math.max(y1, y2);
+        double minZ = Math.min(z1, z2), maxZ = Math.max(z1, z2);
+
+        return (x >= minX && x <= maxX) &&
+                (y >= minY && y <= maxY) &&
+                (z >= minZ && z <= maxZ);
     }
 
     public SerializableLocation getPoint1() {

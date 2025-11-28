@@ -15,7 +15,6 @@ import xzot1k.plugins.sp.api.Manager;
 import xzot1k.plugins.sp.core.Commands;
 import xzot1k.plugins.sp.core.Listeners;
 import xzot1k.plugins.sp.core.TabCompleter;
-import xzot1k.plugins.sp.core.tasks.ManagementTask;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -33,7 +32,6 @@ public class SimplePortals extends JavaPlugin {
     private Manager manager;
     private String serverVersion;
     private Connection databaseConnection;
-    private ManagementTask managementTask;
     private FileConfiguration langConfig;
     private File langFile;
     private boolean prismaInstalled;
@@ -233,10 +231,7 @@ public class SimplePortals extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new Listeners(this), this);
         getManager().convertFromPortalsFile();
 
-        if (getConfig().getBoolean("management-task")) {
-            setManagementTask(new ManagementTask(this));
-            getManagementTask().runTaskTimerAsynchronously(this, 0, 200);
-        }
+        getManager().loadPortals();
     }
 
     public void log(Level level, String text) {getServer().getLogger().log(level, "[" + getDescription().getName() + "] " + text);}
@@ -324,14 +319,6 @@ public class SimplePortals extends JavaPlugin {
 
     private void setPrismaInstalled(boolean prismaInstalled) {
         this.prismaInstalled = prismaInstalled;
-    }
-
-    public ManagementTask getManagementTask() {
-        return managementTask;
-    }
-
-    public void setManagementTask(ManagementTask managementTask) {
-        this.managementTask = managementTask;
     }
 
     public Connection getDatabaseConnection() {return databaseConnection;}
