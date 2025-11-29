@@ -15,6 +15,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import xzot1k.plugins.sp.Config;
 import xzot1k.plugins.sp.SimplePortals;
 import xzot1k.plugins.sp.api.objects.Portal;
 import xzot1k.plugins.sp.api.objects.Region;
@@ -626,10 +627,10 @@ public class Commands implements CommandExecutor {
             return;
         }
 
-        if (getPluginInstance().getConfig().getBoolean("management-task")) {
-            getPluginInstance().reloadConfigs();
+        getPluginInstance().reloadConfigs();
+        if (Config.get().managementTask) {
             getPluginInstance().getManager().loadPortals();
-        } else getPluginInstance().reloadConfigs();
+        }
 
         sender.sendMessage(getPluginInstance().getManager().colorText(getPluginInstance().getLangConfig().getString("prefix")
                 + getPluginInstance().getLangConfig().getString("reload-message")));

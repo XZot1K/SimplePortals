@@ -8,6 +8,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
+import xzot1k.plugins.sp.Config;
 import xzot1k.plugins.sp.SimplePortals;
 import xzot1k.plugins.sp.api.objects.SerializableLocation;
 
@@ -23,7 +24,7 @@ public class HighlightTask extends BukkitRunnable {
     public HighlightTask(SimplePortals pluginInstance, Player player, Location blockLocation, String particleEffect) {
         setPluginInstance(pluginInstance);
         setBlockLocation(new SerializableLocation(pluginInstance, blockLocation));
-        setDuration(getPluginInstance().getConfig().getInt("selection-visual-duration"));
+        setDuration(Config.get().selectionDuration);
         setPlayer(player);
         setWorld(blockLocation.getWorld());
         setParticleEffect(particleEffect);

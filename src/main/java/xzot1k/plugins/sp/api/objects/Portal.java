@@ -17,6 +17,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
+import xzot1k.plugins.sp.Config;
 import xzot1k.plugins.sp.SimplePortals;
 import xzot1k.plugins.sp.api.enums.Direction;
 import xzot1k.plugins.sp.api.enums.PortalCommandType;
@@ -207,7 +208,7 @@ public class Portal {
                     }
                 }
             }
-        }, SimplePortals.getPluginInstance().getConfig().getInt("command-tick-delay"));
+        }, Config.get().commandTickDelay);
     }
 
     /**
@@ -273,7 +274,7 @@ public class Portal {
         if (getServerSwitchName() == null || getServerSwitchName().isEmpty() || getServerSwitchName().equalsIgnoreCase("none")) {
             Location location = getTeleportLocation().asBukkitLocation();
             if (location != null) {
-                if (getPluginInstance().getConfig().getBoolean("keep-teleport-head-axis")) {
+                if (Config.get().keepYawPitch) {
                     location.setYaw(entity.getLocation().getYaw());
                     location.setPitch(entity.getLocation().getPitch());
                 }
@@ -456,7 +457,7 @@ public class Portal {
      * @param player The player to display to.
      */
     public void displayRegion(Player player) {
-        String particleEffect = getPluginInstance().getConfig().getString("region-visual-effect");
+        String particleEffect = Config.get().regionEffect;
         if (particleEffect == null || particleEffect.isEmpty()) return;
 
         HashMap<String, BukkitTask> tasks = getPluginInstance().getManager().getTasks()

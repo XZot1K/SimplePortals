@@ -8,6 +8,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
+import xzot1k.plugins.sp.Config;
 import xzot1k.plugins.sp.SimplePortals;
 import xzot1k.plugins.sp.api.objects.Portal;
 
@@ -22,10 +23,10 @@ public class RegionTask extends BukkitRunnable {
 
     public RegionTask(SimplePortals pluginInstance, Player player, Portal portal) {
         setPluginInstance(pluginInstance);
-        setDuration(pluginInstance.getConfig().getInt("region-visual-duration"));
+        setDuration(Config.get().regionDuration);
         setPlayer(player);
         setWorld(getPluginInstance().getServer().getWorld(portal.getRegion().getPoint1().getWorldName()));
-        setParticleEffect(pluginInstance.getConfig().getString("region-visual-effect"));
+        setParticleEffect(Config.get().regionEffect);
         setLifeTime(0);
         setPortal(portal);
     }

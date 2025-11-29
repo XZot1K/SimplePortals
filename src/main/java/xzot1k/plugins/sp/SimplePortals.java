@@ -136,7 +136,7 @@ public class SimplePortals extends JavaPlugin {
      * Reloads all configs associated with DisplayShops.
      */
     public void reloadConfigs() {
-        reloadConfig();
+        Config.load(this);
 
         if (langFile == null) langFile = new File(getDataFolder(), "lang.yml");
         langConfig = YamlConfiguration.loadConfiguration(langFile);
@@ -208,8 +208,8 @@ public class SimplePortals extends JavaPlugin {
         }
 
         saveDefaultConfigs();
-        reloadConfigs();
         updateConfigs();
+        Config.load(this);
 
         setupDatabase();
 
@@ -238,7 +238,7 @@ public class SimplePortals extends JavaPlugin {
 
     // cross server
     private synchronized void setupDatabase() {
-        final String host = getConfig().getString("mysql.host");
+        final String host = Config.get().mysqlHost;
         if (host == null || host.isEmpty()) return;
 
         try {
@@ -249,12 +249,12 @@ public class SimplePortals extends JavaPlugin {
             }
         } catch (ClassNotFoundException | NoClassDefFoundError ignored) {return;}
 
-        final boolean useSSL = getConfig().getBoolean("mysql.use-ssl");
-        final String databaseName = getConfig().getString("mysql.database"),
-                port = getConfig().getString("mysql.port"), username = getConfig().getString("mysql.username"),
-                password = getConfig().getString("mysql.password"), syntax = ("jdbc:mysql://" + host + ":" + port + "/"
+        final boolean useSSL = Config.get().mysqlUseSSL;
+        final String databaseName = Config.get().mysqlDatabase,
+                port = Config.get().mysqlPort, username = Config.get().mysqlUsername,
+                password = Config.get().mysqlPassword, syntax = ("jdbc:mysql://" + host + ":" + port + "/"
                 + databaseName + "?useSSL=" + (useSSL ? "true" : "false") + "&autoReconnect=true&useUnicode=yes"),
-                transferTable = getConfig().getString("mysql.transfer-table");
+                transferTable = Config.get().mysqlTransferTable;
 
         try {
             databaseConnection = DriverManager.getConnection(syntax, username, password);
@@ -289,7 +289,7 @@ public class SimplePortals extends JavaPlugin {
             extraLine.append(extra[i]);
         }
 
-        final String table = getConfig().getString("mysql.transfer-table");
+        final String table = Config.get().mysqlTransferTable;
         try (PreparedStatement statement = getDatabaseConnection().prepareStatement("INSERT INTO " + table
                 + "(uuid, server, coordinates, commands, extra) VALUES( '" + player.getUniqueId() + "', '" + serverName + "', '" + coordsString + "', '" + commandLine + "', '" + extraLine + "')"
                 + " ON DUPLICATE KEY UPDATE uuid = '" + player.getUniqueId() + "', server = '" + serverName + "', coordinates = '" + coordsString + "', commands = '" + commandLine
