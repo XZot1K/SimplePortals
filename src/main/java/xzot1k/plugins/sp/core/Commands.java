@@ -486,7 +486,7 @@ public class Commands implements CommandExecutor {
 
                 World world = getPluginInstance().getServer().getWorld(foundPointOne.getWorldName());
                 if (world == null) {
-                    placeholders.put("name", foundPointOne.getWorldName());
+                    placeholders.put("world", foundPointOne.getWorldName());
                     player.sendMessage(LangConfig.get().get(LangKey.PREFIX) + LangConfig.get().get(LangKey.INVALID_WORLD, placeholders));
                     return;
                 }
