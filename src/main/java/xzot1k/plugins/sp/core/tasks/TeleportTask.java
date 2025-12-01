@@ -59,8 +59,8 @@ public class TeleportTask extends BukkitRunnable {
                 HashMap<String, String> placeholders = new HashMap<>();
                 placeholders.put("rem", String.valueOf(rem));
 
-                String title = LangConfig.get().get(LangKey.TELEPORT_TITLE),
-                        subTitle = LangConfig.get().get(LangKey.TELEPORT_SUBTITLE, placeholders);
+                String title = LangConfig.get().get(LangKey.TELEPORT_DELAY_TITLE),
+                        subTitle = LangConfig.get().get(LangKey.TELEPORT_DELAY_SUBTITLE, placeholders);
                 if ((title != null && !title.isEmpty()) || (subTitle != null && !subTitle.isEmpty())) {
                     player.sendTitle(title, subTitle, 0, 40, 0);
                 }
@@ -87,8 +87,8 @@ public class TeleportTask extends BukkitRunnable {
             HashMap<String, String> placeholders = new HashMap<>();
             placeholders.put("rem", String.valueOf(rem));
 
-            String title = LangConfig.get().get(LangKey.TELEPORT_TITLE),
-                    subTitle = LangConfig.get().get(LangKey.TELEPORT_SUBTITLE, placeholders);
+            String title = LangConfig.get().get(LangKey.TELEPORT_DELAY_TITLE),
+                    subTitle = LangConfig.get().get(LangKey.TELEPORT_DELAY_SUBTITLE, placeholders);
             if ((title != null && !title.isEmpty()) || (subTitle != null && !subTitle.isEmpty())) {
                 player.sendTitle(title, subTitle, 0, 40, 0);
             }

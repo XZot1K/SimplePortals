@@ -416,7 +416,7 @@ public class Commands implements CommandExecutor {
         final String worldName = args[2];
         if (getPluginInstance().getServer().getWorlds().parallelStream().noneMatch(world -> world.getName().equalsIgnoreCase(worldName))) {
             placeholders.put("world", worldName);
-            player.sendMessage(LangConfig.get().get(LangKey.PREFIX) + LangConfig.get().get(LangKey.INVALID_WORLD_KEY, placeholders));
+            player.sendMessage(LangConfig.get().get(LangKey.PREFIX) + LangConfig.get().get(LangKey.INVALID_WORLD, placeholders));
             return;
         }
 
