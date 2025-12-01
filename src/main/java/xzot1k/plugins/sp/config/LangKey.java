@@ -13,7 +13,6 @@ public enum LangKey {
     PORTAL_EXISTS("portal-exists-message"),
     INVALID_REGION("selected-region-invalid-message"),
     INVALID_PORTAL("portal-invalid-message"),
-    INVALID_WORLD("world-invalid-message"),
     SELECTION_MODE("selection-mode-message"),
     NOT_SAME_WORLD("not-same-world-message"),
     PORTAL_CREATED("portal-created-message"),
@@ -39,22 +38,22 @@ public enum LangKey {
     PORTAL_COMMANDS("portal-commands-message"),
     DM_DISABLED("portal-dm-message"),
     ALREADY_DISABLED("already-disabled-message"),
-    ALREADY_ENABLED("already-enabled-message"),
+    ALREADY_ENABLED("already-enabled-message"), // Unused
     PORTAL_ENABLED("portal-enabled-message"),
-    PORTAL_DISABLED("portal-disabled-message"),
+    PORTAL_DISABLED("portal-disabled-message"), // Unused
     PORTAL_LIST("portal-list-message"),
-    PORTAL_FIND("portal-find-message"),
-    INVALID_RANGE("invalid-range"),
-    INVALID_COOLDOWN("invalid-cooldown"),
-    INVALID_DELAY("invalid-delay"),
-    INVALID_WORLD_KEY("invalid-world"),
+    PORTAL_FIND("portal-find-message"), // Unused
+    INVALID_RANGE("invalid-range"), // Unused
+    INVALID_COOLDOWN("invalid-cooldown"), // Unused
+    INVALID_DELAY("invalid-delay"), // Unused
+    INVALID_WORLD("invalid-world"),
     INVALID_COORDINATE("invalid-coordinate"),
-    NO_FIND_RESULTS("no-find-results"),
-    COOLDOWN_SET("cooldown-set-message"),
-    DELAY_SET("delay-set-message"),
+    NO_FIND_RESULTS("no-find-results"), // Unused
+    COOLDOWN_SET("cooldown-set-message"), // Unused
+    DELAY_SET("delay-set-message"), // Unused
 
-    TELEPORT_TITLE("teleport.title"),
-    TELEPORT_SUBTITLE("teleport.sub-title"),
+    TELEPORT_TITLE("teleport.title"), // Unused
+    TELEPORT_SUBTITLE("teleport.sub-title"), // Unused
 
     TELEPORT_CANCELLED_TITLE("teleport-cancelled.title"),
     TELEPORT_CANCELLED_SUBTITLE("teleport-cancelled.sub-title"),
