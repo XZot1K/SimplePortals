@@ -17,7 +17,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
-import xzot1k.plugins.sp.Config;
+import xzot1k.plugins.sp.config.Config;
 import xzot1k.plugins.sp.SimplePortals;
 import xzot1k.plugins.sp.api.enums.Direction;
 import xzot1k.plugins.sp.api.enums.PortalCommandType;
@@ -60,10 +60,11 @@ public class Portal {
         setLastFillMaterial(Material.AIR);
         if (getRegion() != null && getRegion().getPoint1() != null)
             setTeleportLocation(getRegion().getPoint1().asBukkitLocation().clone().add(0, 2, 0));
-        setMessage(getPluginInstance().getLangConfig().getString("portal-message"));
-        setTitle(getPluginInstance().getLangConfig().getString("portal-title-message"));
-        setSubTitle(getPluginInstance().getLangConfig().getString("portal-subtitle-message"));
-        setBarMessage(getPluginInstance().getLangConfig().getString("portal-bar-message"));
+        // TODO: Should these be re-enabled?
+        setMessage("");
+        setTitle("");
+        setSubTitle("");
+        setBarMessage("");
         getPluginInstance().getManager().getPortalMap().put(getPortalId(), this);
     }
 

@@ -16,13 +16,15 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.BlockIterator;
 import org.bukkit.util.Vector;
-import xzot1k.plugins.sp.Config;
+import xzot1k.plugins.sp.config.Config;
 import xzot1k.plugins.sp.SimplePortals;
 import xzot1k.plugins.sp.api.enums.PointType;
 import xzot1k.plugins.sp.api.exceptions.PortalFormException;
 import xzot1k.plugins.sp.api.objects.Portal;
 import xzot1k.plugins.sp.api.objects.Region;
 import xzot1k.plugins.sp.api.objects.SerializableLocation;
+import xzot1k.plugins.sp.config.LangConfig;
+import xzot1k.plugins.sp.config.LangKey;
 import xzot1k.plugins.sp.core.packets.bar.ABH_Latest;
 import xzot1k.plugins.sp.core.packets.bar.ABH_Old;
 import xzot1k.plugins.sp.core.packets.bar.BarHandler;
@@ -44,8 +46,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.logging.Level;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class Manager {
 
@@ -211,35 +211,6 @@ public class Manager {
      */
     public boolean isNumeric(String string) {
         return string.matches("-?\\\\d+(\\\\.\\\\d+)?");
-    }
-
-    /**
-     * Colors the text passed.
-     *
-     * @param message The message to translate.
-     * @return The colored text.
-     */
-    public String colorText(String message) {
-        String messageCopy = message;
-        if ((!getPluginInstance().getServerVersion().startsWith("v1_15") && !getPluginInstance().getServerVersion().startsWith("v1_14")
-                && !getPluginInstance().getServerVersion().startsWith("v1_13") && !getPluginInstance().getServerVersion().startsWith("v1_12")
-                && !getPluginInstance().getServerVersion().startsWith("v1_11") && !getPluginInstance().getServerVersion().startsWith("v1_10")
-                && !getPluginInstance().getServerVersion().startsWith("v1_9") && !getPluginInstance().getServerVersion().startsWith("v1_8"))
-                && messageCopy.contains("#")) {
-            try {
-                final Pattern hexPattern = Pattern.compile("\\{#([A-Fa-f\\d]){6}}");
-                Matcher matcher = hexPattern.matcher(message);
-                while (matcher.find()) {
-                    final net.md_5.bungee.api.ChatColor hex = net.md_5.bungee.api.ChatColor.of(matcher.group().substring(1,
-                            matcher.group().length() - 1));
-                    final String pre = message.substring(0, matcher.start()), post = message.substring(matcher.end());
-                    matcher = hexPattern.matcher(message = (pre + hex + post));
-                }
-            } catch (IllegalArgumentException ignored) {}
-            return net.md_5.bungee.api.ChatColor.translateAlternateColorCodes('&', message);
-        }
-
-        return net.md_5.bungee.api.ChatColor.translateAlternateColorCodes('&', messageCopy);
     }
 
     public void sendBarMessage(Player player, String message) {
@@ -907,8 +878,7 @@ public class Manager {
 
     private boolean selectionWorldCheck(Player player, Region region) {
         if (!region.getPoint1().getWorldName().equalsIgnoreCase(region.getPoint2().getWorldName())) {
-            player.sendMessage(colorText(getPluginInstance().getLangConfig().getString("prefix")
-                    + getPluginInstance().getLangConfig().getString("not-same-world-message")));
+            player.sendMessage(LangConfig.get().get(LangKey.PREFIX) + LangConfig.get().get(LangKey.NOT_SAME_WORLD));
             return false;
         }
 

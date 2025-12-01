@@ -23,13 +23,15 @@ import org.bukkit.event.vehicle.VehicleMoveEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
-import xzot1k.plugins.sp.Config;
+import xzot1k.plugins.sp.config.Config;
 import xzot1k.plugins.sp.SimplePortals;
 import xzot1k.plugins.sp.api.enums.PointType;
 import xzot1k.plugins.sp.api.events.PortalEnterEvent;
 import xzot1k.plugins.sp.api.objects.Portal;
 import xzot1k.plugins.sp.api.objects.SerializableLocation;
 import xzot1k.plugins.sp.api.objects.TransferData;
+import xzot1k.plugins.sp.config.LangConfig;
+import xzot1k.plugins.sp.config.LangKey;
 import xzot1k.plugins.sp.core.tasks.TeleportTask;
 
 import java.lang.reflect.InvocationTargetException;
@@ -68,10 +70,9 @@ public class Listeners implements Listener {
             e.setCancelled(true);
             if (pluginInstance.getManager().updateCurrentSelection(e.getPlayer(), e.getClickedBlock().getLocation(), PointType.POINT_ONE)) {
                 pluginInstance.getManager().highlightBlock(e.getClickedBlock(), e.getPlayer(), PointType.POINT_ONE);
-                String message = pluginInstance.getLangConfig().getString("point-1-set-message");
+                String message = LangConfig.get().get(LangKey.POINT1_SET);
                 if (message != null && !message.equalsIgnoreCase(""))
-                    e.getPlayer().sendMessage(pluginInstance.getManager()
-                            .colorText(pluginInstance.getLangConfig().getString("prefix") + message));
+                    e.getPlayer().sendMessage(LangConfig.get().get(LangKey.PREFIX) + message);
             }
         }
 
@@ -84,9 +85,9 @@ public class Listeners implements Listener {
             if (pluginInstance.getManager().updateCurrentSelection(e.getPlayer(), e.getClickedBlock().getLocation(), PointType.POINT_TWO)) {
                 pluginInstance.getManager().highlightBlock(e.getClickedBlock(), e.getPlayer(), PointType.POINT_TWO);
 
-                String message = pluginInstance.getLangConfig().getString("point-2-set-message");
-                if (message != null && !message.equalsIgnoreCase(""))
-                    e.getPlayer().sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix") + message));
+                String message = LangConfig.get().get(LangKey.POINT2_SET);
+                if (message != null && !message.isEmpty())
+                    e.getPlayer().sendMessage(LangConfig.get().get(LangKey.PREFIX) + message);
             }
         }
     }
@@ -302,11 +303,10 @@ public class Listeners implements Listener {
                 if (teleportTask != null) teleportTask.cancel();
                 pluginInstance.getManager().getTeleportTasks().remove(player.getUniqueId());
 
-                String title = pluginInstance.getLangConfig().getString("teleport-cancelled.title"),
-                        subTitle = pluginInstance.getLangConfig().getString("teleport-cancelled.sub-title");
+                String title = LangConfig.get().get(LangKey.TELEPORT_CANCELLED_TITLE),
+                        subTitle = LangConfig.get().get(LangKey.TELEPORT_CANCELLED_SUBTITLE);
                 if ((title != null && !title.isEmpty()) || (subTitle != null && !subTitle.isEmpty())) {
-                    player.sendTitle(pluginInstance.getManager().colorText(title),
-                            pluginInstance.getManager().colorText(subTitle), 0, 40, 0);
+                    player.sendTitle(title, subTitle, 0, 40, 0);
                 }
             }
         }
@@ -352,12 +352,17 @@ public class Listeners implements Listener {
                         player.setVelocity(direction);
                     }
 
-                    String message = cooldownFail ? pluginInstance.getLangConfig().getString("enter-cooldown-message")
-                            : pluginInstance.getLangConfig().getString("enter-no-permission-message");
-                    if (message != null && !message.equalsIgnoreCase(""))
-                        player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                                + message.replace("{time}", String.valueOf(pluginInstance.getManager().getCooldownTimeLeft(player, "normal",
-                                Config.get().cooldownDuration)))));
+                    String message = cooldownFail ? LangConfig.get().get(LangKey.ENTER_COOLDOWN)
+                            : LangConfig.get().get(LangKey.ENTER_NO_PERMISSION);
+                    if (message != null && !message.equalsIgnoreCase("")) {
+                        HashMap<String, String> placeholders = new HashMap<>();
+                        placeholders.put("time",
+                                String.valueOf(pluginInstance.getManager()
+                                        .getCooldownTimeLeft(player, "normal", Config.get().cooldownDuration)
+                                )
+                        );
+                        player.sendMessage(LangConfig.get().get(LangKey.PREFIX) + LangConfig.parsePlaceholders(message, placeholders));
+                    }
                     return;
                 }
             }
@@ -372,7 +377,7 @@ public class Listeners implements Listener {
                 if (isPlayer) {
                     final Player player = (Player) entity;
                     if (portal.getMessage() != null && !portal.getMessage().isEmpty())
-                        player.sendMessage(pluginInstance.getManager().colorText(portal.getMessage().replace("{name}", portal.getPortalId())
+                        player.sendMessage(LangConfig.colorText(portal.getMessage().replace("{name}", portal.getPortalId())
                                 .replace("{time}", String.valueOf(pluginInstance.getManager().getCooldownTimeLeft(player, "normal",
                                         Config.get().cooldownDuration)))));
 

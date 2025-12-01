@@ -12,12 +12,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import xzot1k.plugins.sp.api.Manager;
+import xzot1k.plugins.sp.config.Config;
+import xzot1k.plugins.sp.config.LangConfig;
 import xzot1k.plugins.sp.core.Commands;
 import xzot1k.plugins.sp.core.Listeners;
 import xzot1k.plugins.sp.core.TabCompleter;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -32,8 +33,6 @@ public class SimplePortals extends JavaPlugin {
     private Manager manager;
     private String serverVersion;
     private Connection databaseConnection;
-    private FileConfiguration langConfig;
-    private File langFile;
     private boolean prismaInstalled;
 
     // getters & setters
@@ -58,7 +57,7 @@ public class SimplePortals extends JavaPlugin {
             InputStream inputStream = getClass().getResourceAsStream("/" + name + ".yml");
             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
             FileConfiguration yaml = YamlConfiguration.loadConfiguration(reader);
-            int updateCount = updateKeys(yaml, name.equalsIgnoreCase("config") ? getConfig() : getLangConfig());
+            int updateCount = updateKeys(yaml, name.equalsIgnoreCase("config") ? getConfig() : LangConfig.get().getLangConfig());
 
             if (name.equalsIgnoreCase("config")) {
                 String createSound = getConfig().getString("teleport-sound");
@@ -86,7 +85,11 @@ public class SimplePortals extends JavaPlugin {
                         saveConfig();
                         break;
                     case "lang":
-                        saveLangConfig();
+                        try {
+                            LangConfig.get().getLangConfig().save(LangConfig.get().getFile());
+                        } catch(Exception e) {
+                            e.printStackTrace();
+                        }
                         break;
                     default:
                         break;
@@ -137,38 +140,7 @@ public class SimplePortals extends JavaPlugin {
      */
     public void reloadConfigs() {
         Config.load(this);
-
-        if (langFile == null) langFile = new File(getDataFolder(), "lang.yml");
-        langConfig = YamlConfiguration.loadConfiguration(langFile);
-
-        InputStream path = this.getResource("lang.yml");
-        internalReloadConfig(path, langConfig);
-    }
-
-    private void internalReloadConfig(InputStream path, FileConfiguration portalsConfig) {
-        Reader defConfigStream;
-        if (path != null) {
-            defConfigStream = new InputStreamReader(path, StandardCharsets.UTF_8);
-            YamlConfiguration defConfig = YamlConfiguration.loadConfiguration(defConfigStream);
-            portalsConfig.setDefaults(defConfig);
-
-            try {
-                path.close();
-                defConfigStream.close();
-            } catch (IOException e) {
-                log(Level.WARNING, e.getMessage());
-            }
-        }
-    }
-
-    /**
-     * Gets the language file configuration.
-     *
-     * @return The FileConfiguration found.
-     */
-    public FileConfiguration getLangConfig() {
-        if (langConfig == null) reloadConfigs();
-        return langConfig;
+        LangConfig.get().reload();
     }
 
     /**
@@ -176,18 +148,7 @@ public class SimplePortals extends JavaPlugin {
      */
     public void saveDefaultConfigs() {
         saveDefaultConfig();
-        if (langFile == null) langFile = new File(getDataFolder(), "lang.yml");
-        if (!langFile.exists()) saveResource("lang.yml", false);
         reloadConfigs();
-    }
-
-    private void saveLangConfig() {
-        if (langConfig == null || langFile == null) return;
-        try {
-            getLangConfig().save(langFile);
-        } catch (IOException e) {
-            log(Level.WARNING, e.getMessage());
-        }
     }
 
     @Override
@@ -207,9 +168,10 @@ public class SimplePortals extends JavaPlugin {
                 file.renameTo(new File(getDataFolder(), "/old-config.yml"));
         }
 
+        LangConfig.init(this);
         saveDefaultConfigs();
         updateConfigs();
-        Config.load(this);
+        reloadConfigs();
 
         setupDatabase();
 

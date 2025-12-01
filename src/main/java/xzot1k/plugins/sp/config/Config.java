@@ -2,10 +2,11 @@
  * Copyright (c) XZot1K $year. All rights reserved.
  */
 
-package xzot1k.plugins.sp;
+package xzot1k.plugins.sp.config;
 
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.EntityType;
+import xzot1k.plugins.sp.SimplePortals;
 import xzot1k.plugins.sp.api.objects.SerializableLocation;
 
 import java.util.EnumSet;
