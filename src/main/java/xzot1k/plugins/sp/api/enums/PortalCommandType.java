@@ -8,8 +8,10 @@ public enum PortalCommandType {
     CONSOLE, PLAYER, CHAT;
 
     public static PortalCommandType getType(String typeString) {
+        String commandType = typeString.replace(" ", "_").replace("-", "_");
+
         for (PortalCommandType portalCommandType : PortalCommandType.values())
-            if (portalCommandType.name().equalsIgnoreCase(typeString.replace(" ", "_").replace("-", "_")))
+            if (portalCommandType.name().equalsIgnoreCase(commandType))
                 return portalCommandType;
         return null;
     }
