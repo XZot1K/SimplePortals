@@ -11,6 +11,8 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import xzot1k.plugins.sp.SimplePortals;
 import xzot1k.plugins.sp.api.objects.Portal;
+import xzot1k.plugins.sp.config.LangConfig;
+import xzot1k.plugins.sp.config.LangKey;
 
 import java.util.HashMap;
 
@@ -54,11 +56,13 @@ public class TeleportTask extends BukkitRunnable {
             if (entity instanceof Player) {
                 final Player player = ((Player) entity);
 
-                String title = INSTANCE.getLangConfig().getString("teleport.title"),
-                        subTitle = INSTANCE.getLangConfig().getString("teleport.sub-title");
+                HashMap<String, String> placeholders = new HashMap<>();
+                placeholders.put("rem", String.valueOf(rem));
+
+                String title = LangConfig.get().get(LangKey.TELEPORT_DELAY_TITLE),
+                        subTitle = LangConfig.get().get(LangKey.TELEPORT_DELAY_SUBTITLE, placeholders);
                 if ((title != null && !title.isEmpty()) || (subTitle != null && !subTitle.isEmpty())) {
-                    player.sendTitle(INSTANCE.getManager().colorText(title), INSTANCE.getManager().colorText(subTitle
-                            .replace("{rem}", String.valueOf(rem))), 0, 40, 0);
+                    player.sendTitle(title, subTitle, 0, 40, 0);
                 }
             }
 
@@ -80,11 +84,13 @@ public class TeleportTask extends BukkitRunnable {
         if (rem > 0 && entity instanceof Player) {
             final Player player = ((Player) entity);
 
-            String title = INSTANCE.getLangConfig().getString("teleport-delay.title"),
-                    subTitle = INSTANCE.getLangConfig().getString("teleport-delay.sub-title");
+            HashMap<String, String> placeholders = new HashMap<>();
+            placeholders.put("rem", String.valueOf(rem));
+
+            String title = LangConfig.get().get(LangKey.TELEPORT_DELAY_TITLE),
+                    subTitle = LangConfig.get().get(LangKey.TELEPORT_DELAY_SUBTITLE, placeholders);
             if ((title != null && !title.isEmpty()) || (subTitle != null && !subTitle.isEmpty())) {
-                player.sendTitle(INSTANCE.getManager().colorText(title), INSTANCE.getManager().colorText(subTitle
-                        .replace("{rem}", String.valueOf(rem))), 0, 40, 0);
+                player.sendTitle(title, subTitle, 0, 40, 0);
             }
         }
     }

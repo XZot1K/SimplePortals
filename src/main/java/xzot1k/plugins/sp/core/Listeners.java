@@ -23,12 +23,15 @@ import org.bukkit.event.vehicle.VehicleMoveEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
+import xzot1k.plugins.sp.config.Config;
 import xzot1k.plugins.sp.SimplePortals;
 import xzot1k.plugins.sp.api.enums.PointType;
 import xzot1k.plugins.sp.api.events.PortalEnterEvent;
 import xzot1k.plugins.sp.api.objects.Portal;
 import xzot1k.plugins.sp.api.objects.SerializableLocation;
 import xzot1k.plugins.sp.api.objects.TransferData;
+import xzot1k.plugins.sp.config.LangConfig;
+import xzot1k.plugins.sp.config.LangKey;
 import xzot1k.plugins.sp.core.tasks.TeleportTask;
 
 import java.lang.reflect.InvocationTargetException;
@@ -36,10 +39,7 @@ import java.lang.reflect.Method;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 
@@ -48,12 +48,12 @@ import static org.bukkit.GameMode.CREATIVE;
 public class Listeners implements Listener {
 
     private final SimplePortals pluginInstance;
-    private final List<UUID> PortalToPortalProtectionList;
+    private final HashSet<UUID> ptpProtectionPlayers;
     private final HashMap<UUID, TransferData> transferData;
 
     public Listeners(SimplePortals pluginInstance) {
         this.pluginInstance = pluginInstance;
-        this.PortalToPortalProtectionList = new ArrayList<>();
+        this.ptpProtectionPlayers = new HashSet<>();
         this.transferData = new HashMap<>();
     }
 
@@ -70,10 +70,9 @@ public class Listeners implements Listener {
             e.setCancelled(true);
             if (pluginInstance.getManager().updateCurrentSelection(e.getPlayer(), e.getClickedBlock().getLocation(), PointType.POINT_ONE)) {
                 pluginInstance.getManager().highlightBlock(e.getClickedBlock(), e.getPlayer(), PointType.POINT_ONE);
-                String message = pluginInstance.getLangConfig().getString("point-1-set-message");
+                String message = LangConfig.get().get(LangKey.POINT1_SET);
                 if (message != null && !message.equalsIgnoreCase(""))
-                    e.getPlayer().sendMessage(pluginInstance.getManager()
-                            .colorText(pluginInstance.getLangConfig().getString("prefix") + message));
+                    e.getPlayer().sendMessage(LangConfig.get().get(LangKey.PREFIX) + message);
             }
         }
 
@@ -86,9 +85,9 @@ public class Listeners implements Listener {
             if (pluginInstance.getManager().updateCurrentSelection(e.getPlayer(), e.getClickedBlock().getLocation(), PointType.POINT_TWO)) {
                 pluginInstance.getManager().highlightBlock(e.getClickedBlock(), e.getPlayer(), PointType.POINT_TWO);
 
-                String message = pluginInstance.getLangConfig().getString("point-2-set-message");
-                if (message != null && !message.equalsIgnoreCase(""))
-                    e.getPlayer().sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix") + message));
+                String message = LangConfig.get().get(LangKey.POINT2_SET);
+                if (message != null && !message.isEmpty())
+                    e.getPlayer().sendMessage(LangConfig.get().get(LangKey.PREFIX) + message);
             }
         }
     }
@@ -117,8 +116,8 @@ public class Listeners implements Listener {
     public void onPreJoin(AsyncPlayerPreLoginEvent e) {
         if (pluginInstance.getDatabaseConnection() == null) return;
 
-        final String serverName = pluginInstance.getConfig().getString("mysql.server-name"),
-                table = pluginInstance.getConfig().getString("mysql.transfer-table");
+        final String serverName = Config.get().mysqlServerName,
+                table = Config.get().mysqlTransferTable;
 
         CompletableFuture<TransferData> destinationFuture = CompletableFuture.supplyAsync(() -> {
             try (PreparedStatement statement = pluginInstance.getDatabaseConnection().prepareStatement("SELECT * FROM " + table + " WHERE uuid = '" + e.getUniqueId() + "';");
@@ -157,7 +156,7 @@ public class Listeners implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onQuit(PlayerQuitEvent e) {
         pluginInstance.getManager().getSmartTransferMap().remove(e.getPlayer().getUniqueId());
-        getPTPProtectionList().remove(e.getPlayer().getUniqueId());
+        getPTPProtectionPlayers().remove(e.getPlayer().getUniqueId());
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
@@ -188,9 +187,9 @@ public class Listeners implements Listener {
         if (e.getPlayer().getWorld().getEnvironment() != World.Environment.THE_END) return;
 
         // we don't want it to mess with deaths too if that config option is set to false
-        if (!pluginInstance.getConfig().getBoolean("end-portal-locations-handle-death")) return;
+        if (!Config.get().endOverrideDeath) return;
 
-        Location respawnLocation = pluginInstance.getManager().getVanillaPortalReplacement(e.getPlayer().getWorld(), PortalType.ENDER);
+        Location respawnLocation = pluginInstance.getManager().handleVanillaPortalReplacements(e.getPlayer().getWorld(), PortalType.ENDER);
         if (respawnLocation != null) e.setRespawnLocation(respawnLocation);
     }
 
@@ -214,7 +213,7 @@ public class Listeners implements Listener {
     public void onTeleportDestinationCheck(PlayerTeleportEvent e) {
         Portal fromPortal = pluginInstance.getManager().getPortalAtLocation(e.getFrom()),
                 toPortal = pluginInstance.getManager().getPortalAtLocation(e.getTo());
-        if (fromPortal != null && toPortal != null && !toPortal.isDisabled()) getPTPProtectionList().add(e.getPlayer().getUniqueId());
+        if (fromPortal != null && toPortal != null && !toPortal.isDisabled()) getPTPProtectionPlayers().add(e.getPlayer().getUniqueId());
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -224,7 +223,7 @@ public class Listeners implements Listener {
     public void onPortalEntry(PlayerPortalEvent e) {
         if (e.getPlayer().getGameMode() == GameMode.CREATIVE && pluginInstance.getManager().isPortalNearby(e.getFrom(), 5)) e.setCancelled(true);
 
-        if (pluginInstance.getConfig().getBoolean("block-creative-portal-entrance") && e.getPlayer().getGameMode() == CREATIVE) {
+        if (Config.get().blockCreativePortal && e.getPlayer().getGameMode() == CREATIVE) {
             for (Portal portal : pluginInstance.getManager().getPortalMap().values()) {
                 SerializableLocation centerPortal = new SerializableLocation(pluginInstance, portal.getRegion().getPoint1().getWorldName(),
                         ((portal.getRegion().getPoint1().getX() + portal.getRegion().getPoint2().getX()) / 2),
@@ -258,33 +257,30 @@ public class Listeners implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onItemSpawn(ItemSpawnEvent e) {
-        if (pluginInstance.getConfig().getBoolean("item-transfer"))
+        if (Config.get().itemTransfer)
             pluginInstance.getServer().getScheduler().runTaskLater(pluginInstance,
                     () -> initiatePortalStuff(e.getEntity().getLocation(), e.getLocation(), e.getEntity()),
-                    20L * pluginInstance.getConfig().getInt("item-teleport-delay"));
+                    20L * Config.get().itemTeleportDelay);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onItemSpawn(PlayerDropItemEvent e) {
-        if (pluginInstance.getConfig().getBoolean("item-transfer")) {
+        if (Config.get().itemTransfer) {
             final Location startLocation = e.getItemDrop().getLocation().clone();
             pluginInstance.getServer().getScheduler().runTaskLater(pluginInstance,
                     () -> initiatePortalStuff(e.getItemDrop().getLocation(), startLocation, e.getItemDrop()),
-                    20L * pluginInstance.getConfig().getInt("item-teleport-delay"));
+                    20L * Config.get().itemTeleportDelay);
         }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onSpawn(CreatureSpawnEvent e) {
-        List<String> blockedMobs = pluginInstance.getConfig().getStringList("creature-spawning-blacklist");
-        for (int i = -1; ++i < blockedMobs.size(); ) {
-            String blockedMob = blockedMobs.get(i);
-            if (blockedMob.replace(" ", "_").replace("-", "_").equalsIgnoreCase(e.getEntity().getType().name())) {
-                Portal portal = pluginInstance.getManager().getPortalAtLocation(e.getLocation());
-                if (portal != null && !portal.isDisabled()) e.setCancelled(true);
-                break;
-            }
-        }
+        if (!Config.get().creatureBlacklist.contains(e.getEntityType()))
+            return;
+
+        Portal portal = pluginInstance.getManager().getPortalAtLocation(e.getLocation());
+        if (portal != null && !portal.isDisabled())
+            e.setCancelled(true);
     }
 
     // helpers
@@ -294,7 +290,7 @@ public class Listeners implements Listener {
         if (portal == null) {
             if (isPlayer) {
                 final Player player = ((Player) entity);
-                getPTPProtectionList().remove(player.getUniqueId());
+                getPTPProtectionPlayers().remove(player.getUniqueId());
             }
 
             final Portal foundPortal = pluginInstance.getManager().getEntitiesInTeleportationAndPortals().getOrDefault(entity.getUniqueId(), null);
@@ -307,11 +303,10 @@ public class Listeners implements Listener {
                 if (teleportTask != null) teleportTask.cancel();
                 pluginInstance.getManager().getTeleportTasks().remove(player.getUniqueId());
 
-                String title = pluginInstance.getLangConfig().getString("teleport-cancelled.title"),
-                        subTitle = pluginInstance.getLangConfig().getString("teleport-cancelled.sub-title");
+                String title = LangConfig.get().get(LangKey.TELEPORT_CANCELLED_TITLE),
+                        subTitle = LangConfig.get().get(LangKey.TELEPORT_CANCELLED_SUBTITLE);
                 if ((title != null && !title.isEmpty()) || (subTitle != null && !subTitle.isEmpty())) {
-                    player.sendTitle(pluginInstance.getManager().colorText(title),
-                            pluginInstance.getManager().colorText(subTitle), 0, 40, 0);
+                    player.sendTitle(title, subTitle, 0, 40, 0);
                 }
             }
         }
@@ -321,7 +316,7 @@ public class Listeners implements Listener {
                 final Player player = (Player) entity;
 
                 // prevent teleporting due to join protection
-                if (pluginInstance.getConfig().getBoolean("join-protection") && getPTPProtectionList().contains(player.getUniqueId())) return;
+                if (Config.get().ptpProtection && getPTPProtectionPlayers().contains(player.getUniqueId())) return;
 
                 TeleportTask teleportTask = pluginInstance.getManager().getTeleportTasks().getOrDefault(player.getUniqueId(), null);
                 if (teleportTask != null && !teleportTask.isCancelled()) return;
@@ -339,9 +334,9 @@ public class Listeners implements Listener {
             if (isPlayer) {
                 final Player player = (Player) entity;
                 final boolean canBypassCooldown = (player.hasPermission("simpleportals.cdbypass") || player.hasPermission("simpleportals.admin")),
-                        cooldownFail = (pluginInstance.getConfig().getBoolean("use-portal-cooldown")
-                                && (pluginInstance.getManager().isPlayerOnCooldown(player, "normal", pluginInstance.getConfig().getInt("portal-cooldown-duration"))) && !canBypassCooldown),
-                        permissionFail = !pluginInstance.getConfig().getBoolean("bypass-portal-permissions")
+                        cooldownFail = (Config.get().usePortalCooldown
+                                && (pluginInstance.getManager().isPlayerOnCooldown(player, "normal", Config.get().cooldownDuration)) && !canBypassCooldown),
+                        permissionFail = !Config.get().bypassPortalPermissions
                                 && (!player.hasPermission("simpleportals.portal." + portal.getPortalId())
                                 && !player.hasPermission("simpleportals.portals." + portal.getPortalId())
                                 && !player.hasPermission("simpleportals.portal.*")
@@ -349,7 +344,7 @@ public class Listeners implements Listener {
                                 && !player.hasPermission("simpleportals.admin"));
 
                 if (cooldownFail || permissionFail) {
-                    double tv = pluginInstance.getConfig().getDouble("throw-velocity");
+                    double tv = Config.get().throwVelocity;
                     if (!(tv <= -1)) {
                         final Vector direction = new Vector(fromLocation.getX() - toLocation.getX(),
                                 ((fromLocation.getY() - toLocation.getY()) + (player.getVelocity().getY() / 2)),
@@ -357,17 +352,22 @@ public class Listeners implements Listener {
                         player.setVelocity(direction);
                     }
 
-                    String message = cooldownFail ? pluginInstance.getLangConfig().getString("enter-cooldown-message")
-                            : pluginInstance.getLangConfig().getString("enter-no-permission-message");
-                    if (message != null && !message.equalsIgnoreCase(""))
-                        player.sendMessage(pluginInstance.getManager().colorText(pluginInstance.getLangConfig().getString("prefix")
-                                + message.replace("{time}", String.valueOf(pluginInstance.getManager().getCooldownTimeLeft(player, "normal",
-                                pluginInstance.getConfig().getInt("portal-cooldown-duration"))))));
+                    String message = cooldownFail ? LangConfig.get().get(LangKey.ENTER_COOLDOWN)
+                            : LangConfig.get().get(LangKey.ENTER_NO_PERMISSION);
+                    if (message != null && !message.equalsIgnoreCase("")) {
+                        HashMap<String, String> placeholders = new HashMap<>();
+                        placeholders.put("time",
+                                String.valueOf(pluginInstance.getManager()
+                                        .getCooldownTimeLeft(player, "normal", Config.get().cooldownDuration)
+                                )
+                        );
+                        player.sendMessage(LangConfig.get().get(LangKey.PREFIX) + LangConfig.parsePlaceholders(message, placeholders));
+                    }
                     return;
                 }
             }
 
-            if (isPlayer && pluginInstance.getConfig().getBoolean("use-portal-cooldown")) {
+            if (isPlayer && Config.get().usePortalCooldown) {
                 final Player player = (Player) entity;
                 final boolean canBypassCooldown = player.hasPermission("simpleportals.cdbypass");
                 if (!canBypassCooldown) pluginInstance.getManager().updatePlayerPortalCooldown((Player) entity, "normal");
@@ -377,30 +377,30 @@ public class Listeners implements Listener {
                 if (isPlayer) {
                     final Player player = (Player) entity;
                     if (portal.getMessage() != null && !portal.getMessage().isEmpty())
-                        player.sendMessage(pluginInstance.getManager().colorText(portal.getMessage().replace("{name}", portal.getPortalId())
+                        player.sendMessage(LangConfig.colorText(portal.getMessage().replace("{name}", portal.getPortalId())
                                 .replace("{time}", String.valueOf(pluginInstance.getManager().getCooldownTimeLeft(player, "normal",
-                                        pluginInstance.getConfig().getInt("portal-cooldown-duration"))))));
+                                        Config.get().cooldownDuration)))));
 
                     if (portal.getBarMessage() != null && !portal.getBarMessage().isEmpty())
                         pluginInstance.getManager().sendBarMessage(player, portal.getBarMessage().replace("{name}", portal.getPortalId())
                                 .replace("{time}", String.valueOf(pluginInstance.getManager().getCooldownTimeLeft(player, "normal",
-                                        pluginInstance.getConfig().getInt("portal-cooldown-duration")))));
+                                        Config.get().cooldownDuration))));
 
                     if ((portal.getTitle() != null && !portal.getTitle().isEmpty()) && (portal.getSubTitle() != null && !portal.getSubTitle().isEmpty()))
                         pluginInstance.getManager().sendTitle(player, portal.getTitle().replace("{name}", portal.getPortalId())
                                         .replace("{time}", String.valueOf(pluginInstance.getManager().getCooldownTimeLeft(player,
-                                                "normal", pluginInstance.getConfig().getInt("portal-cooldown-duration")))),
+                                                "normal", Config.get().cooldownDuration))),
                                 portal.getSubTitle().replace("{name}", portal.getPortalId())
                                         .replace("{time}", String.valueOf(pluginInstance.getManager().getCooldownTimeLeft(player,
-                                                "normal", pluginInstance.getConfig().getInt("portal-cooldown-duration")))));
+                                                "normal", Config.get().cooldownDuration))));
                     else if (portal.getTitle() != null && !portal.getTitle().isEmpty())
                         pluginInstance.getManager().sendTitle(player, portal.getTitle().replace("{name}", portal.getPortalId())
                                 .replace("{time}", String.valueOf(pluginInstance.getManager().getCooldownTimeLeft(player,
-                                        "normal", pluginInstance.getConfig().getInt("portal-cooldown-duration")))), null);
+                                        "normal", Config.get().cooldownDuration))), null);
                     else if (portal.getSubTitle() != null && !portal.getSubTitle().isEmpty())
                         pluginInstance.getManager().sendTitle(player, null, portal.getSubTitle().replace("{name}", portal.getPortalId())
                                 .replace("{time}", String.valueOf(pluginInstance.getManager().getCooldownTimeLeft(player,
-                                        "normal", pluginInstance.getConfig().getInt("portal-cooldown-duration")))));
+                                        "normal", Config.get().cooldownDuration))));
                 }
 
                 portal.performAction(entity);
@@ -452,8 +452,8 @@ public class Listeners implements Listener {
     }
 
     private void forceJoin(@NotNull Player player) {
-        if (pluginInstance.getConfig().getBoolean("force-join")) {
-            final String worldName = pluginInstance.getConfig().getString("force-join-world");
+        if (Config.get().forceJoin) {
+            final String worldName = Config.get().forceJoinWorld;
             if (worldName != null && worldName.isEmpty()) {
                 if (player.getWorld().getSpawnLocation() != null) player.teleport(player.getWorld().getSpawnLocation(), PlayerTeleportEvent.TeleportCause.PLUGIN);
             } else {
@@ -464,20 +464,20 @@ public class Listeners implements Listener {
     }
 
     private void checkPTPProtection(@NotNull Player player) {
-        if (pluginInstance.getConfig().getBoolean("portal-to-portal-protection")) {
+        if (Config.get().ptpProtection) {
             Portal portal = pluginInstance.getManager().getPortalAtLocation(player.getLocation());
             if (portal == null || portal.isDisabled()) return;
 
-            getPTPProtectionList().add(player.getUniqueId());
+            getPTPProtectionPlayers().add(player.getUniqueId());
         }
     }
 
     // getters & setters
 
     /**
-     * @return The list of users who will be blocked from teleporting in a portal they join, spawn, or teleport into
+     * @return The Set of users who will be blocked from teleporting in a portal they join, spawn, or teleport into
      */
-    public List<UUID> getPTPProtectionList() {return PortalToPortalProtectionList;}
+    public HashSet<UUID> getPTPProtectionPlayers() {return ptpProtectionPlayers;}
 
     public HashMap<UUID, TransferData> getTransferData() {return transferData;}
 }

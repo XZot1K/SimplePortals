@@ -7,6 +7,7 @@ package xzot1k.plugins.sp.core.packets.titles.versions;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import xzot1k.plugins.sp.SimplePortals;
+import xzot1k.plugins.sp.config.LangConfig;
 import xzot1k.plugins.sp.core.packets.titles.TitleHandler;
 
 import java.lang.reflect.Constructor;
@@ -55,7 +56,7 @@ public class Titles_Old implements TitleHandler {
 
             final Method aMethod = csClass.getDeclaredMethod("a", String.class);
 
-            final String coloredText = SimplePortals.getPluginInstance().getManager().colorText(text);
+            final String coloredText = LangConfig.colorText(text);
             final Object textField = aMethod.invoke(csClass, "{\"text\":\"" + coloredText + "\"}");
 
 

@@ -7,6 +7,7 @@ package xzot1k.plugins.sp.core.packets.bar;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import xzot1k.plugins.sp.SimplePortals;
+import xzot1k.plugins.sp.config.LangConfig;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -39,7 +40,7 @@ public class ABH_Old implements BarHandler {
         try {
             final Method method = csClass.getDeclaredMethod("a", String.class);
             final Object icbc = method.invoke(csClass, ("{\"text\": \""
-                    + SimplePortals.getPluginInstance().getManager().colorText(message) + "\"}"));
+                    + LangConfig.colorText(message) + "\"}"));
 
             Constructor<?> packetConstructor = null;
             for (Constructor<?> con : packetChatClass.getConstructors()) {

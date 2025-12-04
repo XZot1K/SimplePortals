@@ -12,12 +12,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import xzot1k.plugins.sp.api.Manager;
+import xzot1k.plugins.sp.config.Config;
+import xzot1k.plugins.sp.config.LangConfig;
 import xzot1k.plugins.sp.core.Commands;
 import xzot1k.plugins.sp.core.Listeners;
 import xzot1k.plugins.sp.core.TabCompleter;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -32,8 +33,6 @@ public class SimplePortals extends JavaPlugin {
     private Manager manager;
     private String serverVersion;
     private Connection databaseConnection;
-    private FileConfiguration langConfig;
-    private File langFile;
     private boolean prismaInstalled;
 
     // getters & setters
@@ -58,7 +57,7 @@ public class SimplePortals extends JavaPlugin {
             InputStream inputStream = getClass().getResourceAsStream("/" + name + ".yml");
             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
             FileConfiguration yaml = YamlConfiguration.loadConfiguration(reader);
-            int updateCount = updateKeys(yaml, name.equalsIgnoreCase("config") ? getConfig() : getLangConfig());
+            int updateCount = updateKeys(yaml, name.equalsIgnoreCase("config") ? getConfig() : LangConfig.get().getLangConfig());
 
             if (name.equalsIgnoreCase("config")) {
                 String createSound = getConfig().getString("teleport-sound");
@@ -86,7 +85,11 @@ public class SimplePortals extends JavaPlugin {
                         saveConfig();
                         break;
                     case "lang":
-                        saveLangConfig();
+                        try {
+                            LangConfig.get().getLangConfig().save(LangConfig.get().getFile());
+                        } catch(Exception e) {
+                            e.printStackTrace();
+                        }
                         break;
                     default:
                         break;
@@ -136,39 +139,8 @@ public class SimplePortals extends JavaPlugin {
      * Reloads all configs associated with DisplayShops.
      */
     public void reloadConfigs() {
-        reloadConfig();
-
-        if (langFile == null) langFile = new File(getDataFolder(), "lang.yml");
-        langConfig = YamlConfiguration.loadConfiguration(langFile);
-
-        InputStream path = this.getResource("lang.yml");
-        internalReloadConfig(path, langConfig);
-    }
-
-    private void internalReloadConfig(InputStream path, FileConfiguration portalsConfig) {
-        Reader defConfigStream;
-        if (path != null) {
-            defConfigStream = new InputStreamReader(path, StandardCharsets.UTF_8);
-            YamlConfiguration defConfig = YamlConfiguration.loadConfiguration(defConfigStream);
-            portalsConfig.setDefaults(defConfig);
-
-            try {
-                path.close();
-                defConfigStream.close();
-            } catch (IOException e) {
-                log(Level.WARNING, e.getMessage());
-            }
-        }
-    }
-
-    /**
-     * Gets the language file configuration.
-     *
-     * @return The FileConfiguration found.
-     */
-    public FileConfiguration getLangConfig() {
-        if (langConfig == null) reloadConfigs();
-        return langConfig;
+        Config.load(this);
+        LangConfig.get().reload();
     }
 
     /**
@@ -176,18 +148,7 @@ public class SimplePortals extends JavaPlugin {
      */
     public void saveDefaultConfigs() {
         saveDefaultConfig();
-        if (langFile == null) langFile = new File(getDataFolder(), "lang.yml");
-        if (!langFile.exists()) saveResource("lang.yml", false);
         reloadConfigs();
-    }
-
-    private void saveLangConfig() {
-        if (langConfig == null || langFile == null) return;
-        try {
-            getLangConfig().save(langFile);
-        } catch (IOException e) {
-            log(Level.WARNING, e.getMessage());
-        }
     }
 
     @Override
@@ -207,9 +168,10 @@ public class SimplePortals extends JavaPlugin {
                 file.renameTo(new File(getDataFolder(), "/old-config.yml"));
         }
 
+        LangConfig.init(this);
         saveDefaultConfigs();
-        reloadConfigs();
         updateConfigs();
+        reloadConfigs();
 
         setupDatabase();
 
@@ -238,7 +200,7 @@ public class SimplePortals extends JavaPlugin {
 
     // cross server
     private synchronized void setupDatabase() {
-        final String host = getConfig().getString("mysql.host");
+        final String host = Config.get().mysqlHost;
         if (host == null || host.isEmpty()) return;
 
         try {
@@ -249,12 +211,12 @@ public class SimplePortals extends JavaPlugin {
             }
         } catch (ClassNotFoundException | NoClassDefFoundError ignored) {return;}
 
-        final boolean useSSL = getConfig().getBoolean("mysql.use-ssl");
-        final String databaseName = getConfig().getString("mysql.database"),
-                port = getConfig().getString("mysql.port"), username = getConfig().getString("mysql.username"),
-                password = getConfig().getString("mysql.password"), syntax = ("jdbc:mysql://" + host + ":" + port + "/"
+        final boolean useSSL = Config.get().mysqlUseSSL;
+        final String databaseName = Config.get().mysqlDatabase,
+                port = Config.get().mysqlPort, username = Config.get().mysqlUsername,
+                password = Config.get().mysqlPassword, syntax = ("jdbc:mysql://" + host + ":" + port + "/"
                 + databaseName + "?useSSL=" + (useSSL ? "true" : "false") + "&autoReconnect=true&useUnicode=yes"),
-                transferTable = getConfig().getString("mysql.transfer-table");
+                transferTable = Config.get().mysqlTransferTable;
 
         try {
             databaseConnection = DriverManager.getConnection(syntax, username, password);
@@ -289,7 +251,7 @@ public class SimplePortals extends JavaPlugin {
             extraLine.append(extra[i]);
         }
 
-        final String table = getConfig().getString("mysql.transfer-table");
+        final String table = Config.get().mysqlTransferTable;
         try (PreparedStatement statement = getDatabaseConnection().prepareStatement("INSERT INTO " + table
                 + "(uuid, server, coordinates, commands, extra) VALUES( '" + player.getUniqueId() + "', '" + serverName + "', '" + coordsString + "', '" + commandLine + "', '" + extraLine + "')"
                 + " ON DUPLICATE KEY UPDATE uuid = '" + player.getUniqueId() + "', server = '" + serverName + "', coordinates = '" + coordsString + "', commands = '" + commandLine

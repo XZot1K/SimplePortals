@@ -16,12 +16,15 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.BlockIterator;
 import org.bukkit.util.Vector;
+import xzot1k.plugins.sp.config.Config;
 import xzot1k.plugins.sp.SimplePortals;
 import xzot1k.plugins.sp.api.enums.PointType;
 import xzot1k.plugins.sp.api.exceptions.PortalFormException;
 import xzot1k.plugins.sp.api.objects.Portal;
 import xzot1k.plugins.sp.api.objects.Region;
 import xzot1k.plugins.sp.api.objects.SerializableLocation;
+import xzot1k.plugins.sp.config.LangConfig;
+import xzot1k.plugins.sp.config.LangKey;
 import xzot1k.plugins.sp.core.packets.bar.ABH_Latest;
 import xzot1k.plugins.sp.core.packets.bar.ABH_Old;
 import xzot1k.plugins.sp.core.packets.bar.BarHandler;
@@ -43,8 +46,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.logging.Level;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class Manager {
 
@@ -212,35 +213,6 @@ public class Manager {
         return string.matches("-?\\\\d+(\\\\.\\\\d+)?");
     }
 
-    /**
-     * Colors the text passed.
-     *
-     * @param message The message to translate.
-     * @return The colored text.
-     */
-    public String colorText(String message) {
-        String messageCopy = message;
-        if ((!getPluginInstance().getServerVersion().startsWith("v1_15") && !getPluginInstance().getServerVersion().startsWith("v1_14")
-                && !getPluginInstance().getServerVersion().startsWith("v1_13") && !getPluginInstance().getServerVersion().startsWith("v1_12")
-                && !getPluginInstance().getServerVersion().startsWith("v1_11") && !getPluginInstance().getServerVersion().startsWith("v1_10")
-                && !getPluginInstance().getServerVersion().startsWith("v1_9") && !getPluginInstance().getServerVersion().startsWith("v1_8"))
-                && messageCopy.contains("#")) {
-            try {
-                final Pattern hexPattern = Pattern.compile("\\{#([A-Fa-f\\d]){6}}");
-                Matcher matcher = hexPattern.matcher(message);
-                while (matcher.find()) {
-                    final net.md_5.bungee.api.ChatColor hex = net.md_5.bungee.api.ChatColor.of(matcher.group().substring(1,
-                            matcher.group().length() - 1));
-                    final String pre = message.substring(0, matcher.start()), post = message.substring(matcher.end());
-                    matcher = hexPattern.matcher(message = (pre + hex + post));
-                }
-            } catch (IllegalArgumentException ignored) {}
-            return net.md_5.bungee.api.ChatColor.translateAlternateColorCodes('&', message);
-        }
-
-        return net.md_5.bungee.api.ChatColor.translateAlternateColorCodes('&', messageCopy);
-    }
-
     public void sendBarMessage(Player player, String message) {
         if (getBarHandler() == null || message == null || message.isEmpty()) return;
         getBarHandler().sendActionBar(player, message);
@@ -251,14 +223,14 @@ public class Manager {
             return;
 
         if (title != null && !title.isEmpty() && subTitle != null && !subTitle.isEmpty())
-            getTitleHandler().sendTitle(player, title, subTitle, getPluginInstance().getConfig().getInt("titles.fade-in"),
-                    getPluginInstance().getConfig().getInt("titles.display-time"), getPluginInstance().getConfig().getInt("titles.fade-out"));
+            getTitleHandler().sendTitle(player, title, subTitle, Config.get().titleFadeIn,
+                    Config.get().titleDuration, Config.get().titleFadeOut);
         else if (title != null && !title.isEmpty())
-            getTitleHandler().sendTitle(player, title, getPluginInstance().getConfig().getInt("titles.fade-in"),
-                    getPluginInstance().getConfig().getInt("titles.display-time"), getPluginInstance().getConfig().getInt("titles.fade-out"));
+            getTitleHandler().sendTitle(player, title, Config.get().titleFadeIn,
+                    Config.get().titleDuration, Config.get().titleFadeOut);
         else if (subTitle != null && !subTitle.isEmpty())
-            getTitleHandler().sendSubTitle(player, subTitle, getPluginInstance().getConfig().getInt("titles.fade-in"),
-                    getPluginInstance().getConfig().getInt("titles.display-time"), getPluginInstance().getConfig().getInt("titles.fade-out"));
+            getTitleHandler().sendSubTitle(player, subTitle, Config.get().titleFadeIn,
+                    Config.get().titleDuration, Config.get().titleFadeOut);
     }
 
     /**
@@ -527,14 +499,14 @@ public class Manager {
      * @param location The location to show particles and play the sound.
      */
     public void playTeleportEffect(Location location) {
-        final String particleEffect = pluginInstance.getConfig().getString("teleport-visual-effect");
+        final String particleEffect = Config.get().teleportEffect;
         if (particleEffect != null && !particleEffect.isEmpty()) {
             final String particleFixed = particleEffect.toUpperCase().replace(" ", "_").replace("-", "_");
             pluginInstance.getManager().getParticleHandler().broadcastParticle(location,
                     1, 2, 1, 0, particleFixed, 50);
         }
 
-        final String sound = pluginInstance.getConfig().getString("teleport-sound");
+        final String sound = Config.get().teleportSound;
         if (sound != null && !sound.equalsIgnoreCase("")) {
             final String soundFixed = sound.toUpperCase().replace(" ", "_").replace("-", "_");
             for (int i = -1; ++i < SOUNDS.length; ) {
@@ -555,11 +527,13 @@ public class Manager {
      */
     @SuppressWarnings("deprecation")
     public void teleportWithEntity(Entity entity, Location location) {
-        final boolean vehicleTeleportation = getPluginInstance().getConfig().getBoolean("vehicle-teleportation"),
-                entityVelocity = getPluginInstance().getConfig().getBoolean("maintain-entity-velocity"),
-                vehicleVelocity = getPluginInstance().getConfig().getBoolean("maintain-vehicle-velocity");
-        boolean isNew = (!getPluginInstance().getServerVersion().startsWith("v1_7") && !getPluginInstance().getServerVersion().startsWith("v1_8")
-                && !getPluginInstance().getServerVersion().startsWith("v1_9") && !getPluginInstance().getServerVersion().startsWith("v1_10"));
+        final boolean vehicleTeleportation = Config.get().vehicleTeleportation,
+                entityVelocity = Config.get().maintainEntityVelocity,
+                vehicleVelocity = Config.get().maintainVehicleVelocity;
+        String serverVersion = getPluginInstance().getServerVersion();
+
+        boolean isNew = (!serverVersion.startsWith("v1_7") && !serverVersion.startsWith("v1_8")
+                && !serverVersion.startsWith("v1_9") && !serverVersion.startsWith("v1_10"));
 
         if (entity instanceof Vehicle && vehicleTeleportation) {
             final Vehicle vehicle = (Vehicle) entity;
@@ -711,7 +685,7 @@ public class Manager {
     public void highlightBlock(Block block, Player player, PointType pointType) {
         if (getParticleHandler() == null) return;
 
-        String particleEffect = getPluginInstance().getConfig().getString("selection-visual-effect").toUpperCase()
+        String particleEffect = Config.get().selectionEffect.toUpperCase()
                 .replace(" ", "_").replace("-", "_");
         if (particleEffect == null || particleEffect.isEmpty()) return;
 
@@ -882,49 +856,29 @@ public class Manager {
      * @return The destination.
      */
     public Location handleVanillaPortalReplacements(World world, PortalType portalType) {
-        String line = getPluginInstance().getConfig().getStringList((portalType == PortalType.NETHER ? "nether" : "end") + "-portal-locations")
-                .parallelStream().filter(cLine -> (cLine != null && cLine.contains(":") && cLine.contains(",")
-                        && cLine.toLowerCase().startsWith(world.getName().toLowerCase()))).findFirst().orElse(null);
-        if (line == null) return null;
+        Map<String, SerializableLocation> locations;
 
-        String[] split = line.split(":")[1].split(",");
-
-        World newWorld = getPluginInstance().getServer().getWorld(split[0]);
-        if (newWorld == null) return null;
-
-        return new Location(newWorld, Double.parseDouble(split[1]), Double.parseDouble(split[2]),
-                Double.parseDouble(split[3]), Float.parseFloat(split[4]), Float.parseFloat(split[5]));
-    }
-
-    /**
-     * Gets the vanilla portal teleport location replacement.
-     *
-     * @param world      The world where the nether/end portal is located.
-     * @param portalType The type of vanilla portal.
-     * @return Whether actions succeeded.
-     */
-    public Location getVanillaPortalReplacement(World world, PortalType portalType) {
-        for (String line :
-                getPluginInstance().getConfig().getStringList((portalType == PortalType.NETHER ? "nether" : "end") + "-portal-locations")) {
-            if (line == null || !line.contains(":") || !line.contains(",")) continue;
-
-            String[] mainSplit = line.split(":");
-            if (!mainSplit[0].equalsIgnoreCase(world.getName())) continue;
-
-            String[] subSplit = mainSplit[1].split(",");
-            World newWorld = getPluginInstance().getServer().getWorld(subSplit[0]);
-            if (newWorld == null) continue;
-
-            return new Location(newWorld, Double.parseDouble(subSplit[1]), Double.parseDouble(subSplit[2]), Double.parseDouble(subSplit[3]),
-                    Float.parseFloat(subSplit[4]), Float.parseFloat(subSplit[5]));
+        switch (portalType) {
+            case NETHER:
+                locations = Config.get().netherPortalLocations;
+                break;
+            case ENDER:
+            case END_GATEWAY:
+                locations = Config.get().endPortalLocations;
+                break;
+            default: // CUSTOM
+                return null;
         }
-        return null;
+
+        SerializableLocation sl = locations.get(world.getName().toLowerCase());
+        if (sl == null) return null;
+
+        return sl.asBukkitLocation();
     }
 
     private boolean selectionWorldCheck(Player player, Region region) {
         if (!region.getPoint1().getWorldName().equalsIgnoreCase(region.getPoint2().getWorldName())) {
-            player.sendMessage(colorText(getPluginInstance().getLangConfig().getString("prefix")
-                    + getPluginInstance().getLangConfig().getString("not-same-world-message")));
+            player.sendMessage(LangConfig.get().get(LangKey.PREFIX) + LangConfig.get().get(LangKey.NOT_SAME_WORLD));
             return false;
         }
 
